@@ -150,11 +150,11 @@ class Differential_Evolution(Algorithm):
 
             self.update_position_gbest_population()
 
-        graficar_convergencia(
-            self.solutions_generate,
-            "report/2004 Purchia Experimentation Wrapping constraint.png",
-            "2004 Purcha Experimentation - Wrapping constraint",
-        )
+        # graficar_convergencia(
+        #     self.solutions_generate,
+        #     "report/2004 Purchia Experimentation Wrapping constraint.png",
+        #     "2004 Purcha Experimentation - Wrapping constraint",
+        # )
 
         if verbose:
             self.report()

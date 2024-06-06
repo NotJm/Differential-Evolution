@@ -179,6 +179,8 @@ class BoundaryHandler(Algorithm):
                 z[d] = x[d]
 
         return z
+    
+    """2004 – Robinson Particle"""
 
     @staticmethod
     # Muros Absorbentes
@@ -215,13 +217,27 @@ class BoundaryHandler(Algorithm):
     @staticmethod
     def wrapping_purchia(u, l, x):
         return l + np.mod(x - l, u - l)
+    
+    
+    """2004 Mendes Population"""
+    def apply_bound_restriction(positions, velocities, lower_bounds, upper_bounds):
+        for i in range(positions.shape[0]):
+            for d in range(positions.shape[1]):
+                if positions[i, d] < lower_bounds[d]:
+                    positions[i, d] = lower_bounds[d]
+                    velocities[i, d] = 0  # Opcional: Resetear velocidad a 0
+                elif positions[i, d] > upper_bounds[d]:
+                    positions[i, d] = upper_bounds[d]
+                    velocities[i, d] = 0  # Opcional: Resetear velocidad a 0
+        return positions
 
-      """
+
+    """
     2006 Clerc Confinements
     """
 
     @staticmethod
-    def no_Confinement(position, velocity, lower_bound, upper_bound):
+    def no_Confinement(position, velocity):
         return position, velocity
 
     @staticmethod
@@ -293,3 +309,5 @@ class BoundaryHandler(Algorithm):
                 position = np.clip(position, lower_bound, upper_bound)
                 velocity = -velocity / (1 + np.abs(velocity))
         return position, velocity
+    
+    
