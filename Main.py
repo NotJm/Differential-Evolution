@@ -1,5 +1,5 @@
 # Limites y restricciones
-from bounds_handler import BoundaryHandler
+from boundary_handler import BoundaryHandler
 from contraints_functions import ConstriantsFunctionsHandler
 
 # Estrategias de velocidad
