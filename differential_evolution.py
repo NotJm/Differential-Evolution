@@ -145,15 +145,15 @@ class Differential_Evolution(Algorithm):
                 objective = self.population[i]
                 mutant = self._mutation_operator_(i)
                 trial = self._crossover_operator_(objective, mutant)
-                trial = self.bounds_constraints(trial, self.lower, self.upper)
+                trial = self.bounds_constraints(self.upper, self.lower, trial)
                 self._selection_operator_(i, trial)
 
             self.update_position_gbest_population()
 
         graficar_convergencia(
             self.solutions_generate,
-            "report/2004 Robison Handling - periodic_mode constraint.png",
-            "2004 Robinson Handling - periodic_mode constraint",
+            "report/2004 Purchia Experimentation Wrapping constraint.png",
+            "2004 Purcha Experimentation - Wrapping constraint",
         )
 
         if verbose:

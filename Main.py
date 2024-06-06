@@ -14,16 +14,17 @@ from differential_evolution import Differential_Evolution
 
 problema = CEC2006_G01()
 
-def main():
+def main():        
     de = Differential_Evolution(
         problema.fitness,
         ConstriantsFunctionsHandler.a_is_better_than_b_deb,
-        BoundaryHandler.periodic_mode,
+        BoundaryHandler.wrapping_purchia,
         (problema.SUPERIOR, problema.INFERIOR),
         problema.rest_g,
         problema.rest_h,
     )
     de.evolution()
+    
     
 if __name__ == "__main__":
     main()
