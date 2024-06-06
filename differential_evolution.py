@@ -4,7 +4,7 @@ from contraints_functions import ConstriantsFunctionsHandler
 from utils.constants import SIZE_POPULATION, GENERATIONS
 from utils.convergencia import graficar_convergencia
 from tqdm import tqdm
-from MutationStrategies import MutationStrategies
+from mutation_strategy import MutationStrategies
 import numpy as np
 
 class Differential_Evolution(Algorithm):
@@ -59,20 +59,6 @@ class Differential_Evolution(Algorithm):
             self.violations[index] = total_de_violaciones
 
     def _mutation_operator_(self, idx):
-
-        index = np.arange(len(self.population))
-        index = np.delete(index, idx)
-
-        r1, r2, r3 = np.random.choice(index, 3, replace=False)
-
-        X_r1 = self.population[r1]
-        X_r2 = self.population[r2]
-        X_r3 = self.population[r3]
-
-        mutado = X_r1 + self.F * (X_r2 - X_r3)
-        
-
-        return mutado
 
         samples = np.random.choice(SIZE_POPULATION, 5, replace=False)
         if self.strategy == 'best1':
@@ -159,15 +145,15 @@ class Differential_Evolution(Algorithm):
                 objective = self.population[i]
                 mutant = self._mutation_operator_(i)
                 trial = self._crossover_operator_(objective, mutant)
-                trial = self.bounds_constraints(self.upper, self.lower, trial)
+                trial = self.bounds_constraints(trial, self.lower, self.upper)
                 self._selection_operator_(i, trial)
 
             self.update_position_gbest_population()
 
         graficar_convergencia(
             self.solutions_generate,
-            "report/1999 Lampiden Mixed DE - repeat_unitl_within_bounds constraint.png",
-            "1999 Lampiden Mixed DE - repeat_unitl_within_bounds constraint",
+            "report/2004 Robison Handling - periodic_mode constraint.png",
+            "2004 Robinson Handling - periodic_mode constraint",
         )
 
         if verbose:

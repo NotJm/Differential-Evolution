@@ -131,7 +131,48 @@ class BoundaryHandler:
     
     @staticmethod
     def handle_boundary_constraint(value, lower_limit, upper_limit):
-        if value < lower_limit or value > upper_limit:
+        if np.any(value < lower_limit) or np.any(value > upper_limit):
             return np.random.uniform(lower_limit, upper_limit)
         else:
             return value
+        
+        
+    "2004 Zhang Handling"
+    @staticmethod
+    def periodic_mode(x, l, u):
+        s = u - l  # rango de la dimensión
+        z = np.copy(x)
+
+        for d in range(len(x)):
+            if x[d] < l[d]:
+                z[d] = u[d] - (x[d] % s[d])
+            elif x[d] > u[d]:
+                z[d] = l[d] + (x[d] % s[d])
+            else:
+                z[d] = x[d]
+        
+        return z
+    
+    @staticmethod
+    # Muros Absorbentes
+    def absorbing_walls(position, velocity, bounds):
+        for i in range(len(position)):
+            if position[i] < bounds[i][0] or position[i] > bounds[i][1]:
+                velocity[i] = 0
+        return velocity
+
+    @staticmethod
+    # Muros Reflectantes
+    def reflecting_walls(position, velocity, bounds):
+        for i in range(len(position)):
+            if position[i] < bounds[i][0] or position[i] > bounds[i][1]:
+                velocity[i] = -velocity[i]
+        return velocity
+
+    @staticmethod
+    # Muros Invisibles
+    def invisible_walls(position, fitness_function, bounds):
+        for i in range(len(position)):
+            if position[i] < bounds[i][0] or position[i] > bounds[i][1]:
+                return np.inf  # Asignar un valor muy alto al fitness para partículas fuera del límite
+        return fitness_function(position)
