@@ -158,3 +158,6 @@ class Differential_Evolution(Algorithm):
 
         if verbose:
             self.report()
+
+        self.best_fitness = self.gbest_fitness
+        self.best_violations = self.gbest_violation
