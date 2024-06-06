@@ -215,3 +215,81 @@ class BoundaryHandler(Algorithm):
     @staticmethod
     def wrapping_purchia(u, l, x):
         return l + np.mod(x - l, u - l)
+
+      """
+    2006 Clerc Confinements
+    """
+
+    @staticmethod
+    def no_Confinement(position, velocity, lower_bound, upper_bound):
+        return position, velocity
+
+    @staticmethod
+    def no_Confinement_ArtificialLandscape(position, velocity, lower_bound, upper_bound):
+        if np.any(position < lower_bound) or np.any(position > upper_bound):
+            position = np.clip(position, lower_bound, upper_bound)
+        return position, velocity
+
+    @staticmethod 
+    def standard(position, velocity, lower_bound, upper_bound):
+        position = np.clip(position, lower_bound, upper_bound)
+        velocity = np.where(position == lower_bound, -velocity, velocity)
+        velocity = np.where(position == upper_bound, -velocity, velocity)
+        return position, velocity
+
+    @staticmethod
+    def deterministic_back(position, velocity, lower_bound, upper_bound, gamma=0.5):
+        if np.any(position < lower_bound) or np.any(position > upper_bound):
+            position = np.clip(position, lower_bound, upper_bound)
+            velocity *= -gamma
+        return position, velocity
+    
+    @staticmethod
+    def random_back(position, velocity, lower_bound, upper_bound):
+        if np.any(position < lower_bound) or np.any(position > upper_bound):
+            random_factor = np.random.uniform(0, 1, size=position.shape)
+            position = np.clip(position, lower_bound, upper_bound)
+            velocity *= -random_factor
+        return position, velocity
+
+    @staticmethod
+    def consistent(position, velocity, lower_bound, upper_bound):
+        if np.any(position < lower_bound) or np.any(position > upper_bound):
+            for i in range(len(position)):
+                if position[i] < lower_bound[i] or position[i] > upper_bound[i]:
+                    velocity[i] = -velocity[i]
+        return position, velocity
+
+    @staticmethod
+    def hyperbolic(position, velocity, lower_bound, upper_bound):
+        if np.any(position < lower_bound) or np.any(position > upper_bound):
+            position = np.clip(position, lower_bound, upper_bound)
+            velocity = -velocity / (1 + np.abs(velocity))
+        return position, velocity
+
+    @staticmethod
+    def relativity_like(position, velocity, lower_bound, upper_bound, c=1):
+        if np.any(position < lower_bound) or np.any(position > upper_bound):
+            position = np.clip(position, lower_bound, upper_bound)
+            velocity = -velocity / (1 + (velocity**2 / c**2))
+        return position, velocity
+
+    @staticmethod
+    def random_forth(position, velocity, lower_bound, upper_bound):
+        if np.any(position < lower_bound) or np.any(position > upper_bound):
+            random_factor = np.random.uniform(0, 1, size=position.shape)
+            position = np.clip(position, lower_bound, upper_bound)
+            velocity *= random_factor
+        return position, velocity
+
+    @staticmethod       
+    def hybrid(position, velocity, lower_bound, upper_bound):
+        position = np.clip(position, lower_bound, upper_bound)
+        velocity = np.where(position == lower_bound, -velocity, velocity)
+        velocity = np.where(position == upper_bound, -velocity, velocity)
+        
+        if np.any(position < lower_bound) or np.any(position > upper_bound):
+            if np.any(position < lower_bound) or np.any(position > upper_bound):
+                position = np.clip(position, lower_bound, upper_bound)
+                velocity = -velocity / (1 + np.abs(velocity))
+        return position, velocity
