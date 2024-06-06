@@ -4,8 +4,8 @@ from contraints_functions import ConstriantsFunctionsHandler
 from utils.constants import SIZE_POPULATION, GENERATIONS
 from utils.convergencia import graficar_convergencia
 from tqdm import tqdm
+from MutationStrategies import MutationStrategies
 import numpy as np
-
 
 class Differential_Evolution(Algorithm):
     def __init__(
@@ -18,13 +18,23 @@ class Differential_Evolution(Algorithm):
         h_functions: List[Callable] = [],
         F: float = 0.7,
         CR: float = 0.9,
+        strategy: str = 'rand1'
     ):
+
         self.F = F
         self.CR = CR
         self.upper, self.lower = bounds
         self.g_functions = g_functions
         self.h_functions = h_functions
         self.solutions_generate = []
+
+        self.F = F  
+        self.CR = CR  
+        self.upper, self.lower = bounds  
+        self.g_functions = g_functions  
+        self.h_functions = h_functions  
+        self.strategy = strategy
+
 
         self.population = self.generate(self.upper, self.lower)
         self.fitness = np.zeros(SIZE_POPULATION)
@@ -35,6 +45,8 @@ class Differential_Evolution(Algorithm):
         self._compute_fitness_and_violations_()
 
         self._get_gbest_pobulation_zero_()
+
+        self.mutation_strategies = MutationStrategies(self.population, self.F)
 
     def _compute_fitness_and_violations_(self):
         for index, individual in enumerate(self.population):
@@ -47,6 +59,7 @@ class Differential_Evolution(Algorithm):
             self.violations[index] = total_de_violaciones
 
     def _mutation_operator_(self, idx):
+
         index = np.arange(len(self.population))
         index = np.delete(index, idx)
 
@@ -60,6 +73,22 @@ class Differential_Evolution(Algorithm):
         
 
         return mutado
+
+        samples = np.random.choice(SIZE_POPULATION, 5, replace=False)
+        if self.strategy == 'best1':
+            return self.mutation_strategies._best1(samples)
+        elif self.strategy == 'rand1':
+            return self.mutation_strategies._rand1(samples)
+        elif self.strategy == 'randtobest1':
+            return self.mutation_strategies._randtobest1(samples)
+        elif self.strategy == 'currenttobest1':
+            return self.mutation_strategies._currenttobest1(idx, samples)
+        elif self.strategy == 'best2':
+            return self.mutation_strategies._best2(samples)
+        elif self.strategy == 'rand2':
+            return self.mutation_strategies._rand2(samples)
+        else:
+            raise ValueError(f"Unknown strategy: {self.strategy}")
 
     def _crossover_operator_(self, target, mutant):
         dimensions = len(target)
