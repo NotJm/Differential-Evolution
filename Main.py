@@ -20,7 +20,7 @@ def main():
     de = Differential_Evolution(
         problema.fitness,
         ConstriantsFunctionsHandler.a_is_better_than_b_deb,
-        BoundaryHandler.reflex,
+        BoundaryHandler.repeat_unitl_within_bounds,
         (problema.SUPERIOR, problema.INFERIOR),
         problema.rest_g,
         problema.rest_h

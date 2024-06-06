@@ -113,15 +113,15 @@ class BoundaryHandler:
     
     
     @staticmethod    
-    def replace_out_of_bounds(value, lower_bound, upper_bound) -> float:
-        if value < lower_bound and value > upper_bound:
+    def replace_out_of_bounds(upper_bound, lower_bound, value) -> float:
+        if np.any(value < lower_bound) or np.any(value > upper_bound):
             value = np.random.uniform(lower_bound, upper_bound)
         return value
     
     
     @staticmethod 
-    def repeat_unitl_within_bounds(value, lower_bound, upper_bound):
-        while value < lower_bound and value > upper_bound:
+    def repeat_unitl_within_bounds(upper_bound, lower_bound, value):
+        while np.any(value < lower_bound) or np.any(value > upper_bound):
             value = np.random.uniform(lower_bound, upper_bound)
         return value
     

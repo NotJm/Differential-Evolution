@@ -2,6 +2,7 @@ from typing import Callable, Tuple, List
 from algorithm import Algorithm
 from contraints_functions import ConstriantsFunctionsHandler
 from utils.constants import SIZE_POPULATION, GENERATIONS
+from utils.convergencia import graficar_convergencia
 from tqdm import tqdm
 import numpy as np
 
@@ -18,11 +19,12 @@ class Differential_Evolution(Algorithm):
         F: float = 0.7,
         CR: float = 0.9,
     ):
-        self.F = F  
-        self.CR = CR  
-        self.upper, self.lower = bounds  
-        self.g_functions = g_functions  
-        self.h_functions = h_functions  
+        self.F = F
+        self.CR = CR
+        self.upper, self.lower = bounds
+        self.g_functions = g_functions
+        self.h_functions = h_functions
+        self.solutions_generate = []
 
         self.population = self.generate(self.upper, self.lower)
         self.fitness = np.zeros(SIZE_POPULATION)
@@ -55,6 +57,7 @@ class Differential_Evolution(Algorithm):
         X_r3 = self.population[r3]
 
         mutado = X_r1 + self.F * (X_r2 - X_r3)
+        
 
         return mutado
 
@@ -65,7 +68,9 @@ class Differential_Evolution(Algorithm):
 
         prob_crossover = np.random.rand(dimensions) < self.CR
 
-        trial[prob_crossover | (np.arange(dimensions) == j_rand)] = mutant[prob_crossover | (np.arange(dimensions) == j_rand)]
+        trial[prob_crossover | (np.arange(dimensions) == j_rand)] = mutant[
+            prob_crossover | (np.arange(dimensions) == j_rand)
+        ]
 
         return trial
 
@@ -108,6 +113,8 @@ class Differential_Evolution(Algorithm):
                 self.gbest_fitness = current_fitness
                 self.gbest_violation = current_violation
                 self.gbest_individual = self.population[idx]
+                
+                self.solutions_generate.append(self.gbest_violation)
 
     def report(self):
         print("================================")
@@ -127,6 +134,12 @@ class Differential_Evolution(Algorithm):
                 self._selection_operator_(i, trial)
 
             self.update_position_gbest_population()
+
+        graficar_convergencia(
+            self.solutions_generate,
+            "report/1999 Lampiden Mixed DE - repeat_unitl_within_bounds constraint.png",
+            "1999 Lampiden Mixed DE - repeat_unitl_within_bounds constraint",
+        )
 
         if verbose:
             self.report()
