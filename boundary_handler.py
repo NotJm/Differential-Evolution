@@ -12,7 +12,7 @@ class BoundaryHandler(Algorithm):
         upper: np.array, 
         lower: np.array
     ):
-        points = generate(upper - 1, lower - 1)
+        points = self.generate(upper - 1, lower - 1)
 
         p1 = np.array([method_1(upper, lower, p) for p in points])
         p2 = np.array(
