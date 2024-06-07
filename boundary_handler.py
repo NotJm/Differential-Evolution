@@ -320,4 +320,93 @@ class BoundaryHandler(Algorithm):
                 velocity = -velocity / (1 + np.abs(velocity))
         return position, velocity
     
+    """
+    2007 Clerc Confinements
+    """
+
+    def clamp_position(position, lower_bound, upper_bound):
+        """
+        Clamps the particle position to the given bounds.
+        
+        Parameters:
+        - position (np.array): The current position of the particle.
+        - lower_bound (np.array): The lower bound of the search space.
+        - upper_bound (np.array): The upper bound of the search space.
+        
+        Returns:
+        - np.array: The clamped position of the particle.
+        """
+        return np.maximum(lower_bound, np.minimum(position, upper_bound))
+
+    def random_reinitialize(position, lower_bound, upper_bound):
+        """
+        Randomly reinitializes the particle position if it exceeds the bounds.
+        
+        Parameters:
+        - position (np.array): The current position of the particle.
+        - lower_bound (np.array): The lower bound of the search space.
+        - upper_bound (np.array): The upper bound of the search space.
+        
+        Returns:
+        - np.array: The reinitialized position of the particle.
+        """
+        reinitialized_position = np.where(
+            (position < lower_bound) | (position > upper_bound),
+            np.random.uniform(lower_bound, upper_bound),
+            position
+        )
+        return reinitialized_position
     
+    def reflect_position(position, lower_bound, upper_bound):
+        """
+        Reflects the particle position if it exceeds the bounds.
+        
+        Parameters:
+        - position (np.array): The current position of the particle.
+        - lower_bound (np.array): The lower bound of the search space.
+        - upper_bound (np.array): The upper bound of the search space.
+        
+        Returns:
+        - np.array: The reflected position of the particle.
+        """
+        reflected_position = position.copy()
+        below_lower = position < lower_bound
+        above_upper = position > upper_bound
+        
+        reflected_position[below_lower] = lower_bound[below_lower] + (lower_bound[below_lower] - position[below_lower])
+        reflected_position[above_upper] = upper_bound[above_upper] - (position[above_upper] - upper_bound[above_upper])
+        
+        return reflected_position
+    
+    def shrink_position(position, lower_bound, upper_bound):
+        """
+        Shrinks the particle position to be within the bounds proportionally.
+        
+        Parameters:
+        - position (np.array): The current position of the particle.
+        - lower_bound (np.array): The lower bound of the search space.
+        - upper_bound (np.array): The upper bound of the search space.
+        
+        Returns:
+        - np.array: The shrunk position of the particle.
+        """
+        shrunk_position = position.copy()
+        shrunk_position[position < lower_bound] = lower_bound[position < lower_bound]
+        shrunk_position[position > upper_bound] = upper_bound[position > upper_bound]
+        
+        return shrunk_position
+    
+    def eliminate_particles(positions, lower_bound, upper_bound):
+        """
+        Eliminates particles that exceed the bounds.
+        
+        Parameters:
+        - positions (np.array): The current positions of the particles.
+        - lower_bound (np.array): The lower bound of the search space.
+        - upper_bound (np.array): The upper bound of the search space.
+        
+        Returns:
+        - np.array: The positions of the particles that are within bounds.
+        """
+        within_bounds = np.all((positions >= lower_bound) & (positions <= upper_bound), axis=1)
+        return positions[within_bounds]
