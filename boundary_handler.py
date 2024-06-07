@@ -410,3 +410,84 @@ class BoundaryHandler(Algorithm):
         """
         within_bounds = np.all((positions >= lower_bound) & (positions <= upper_bound), axis=1)
         return positions[within_bounds]
+     #2009
+
+    # Función de Reinicialización Aleatoria
+    def random_reinitialization(x, L, U):
+        """
+        Reinicializa aleatoriamente los componentes del vector que están fuera de los límites.
+
+        Parámetros:
+        - x (np.array): El vector actual de posiciones.
+        - L (np.array): El límite inferior del espacio de búsqueda.
+        - U (np.array): El límite superior del espacio de búsqueda.
+
+        Retorna:
+        - np.array: El vector de posiciones con componentes reinicializados dentro de los límites.
+        """
+        for i in range(len(x)):
+            if x[i] < L[i] or x[i] > U[i]:
+                x[i] = np.random.uniform(L[i], U[i])
+        return x
+
+
+    # Función de Reparación de Bordes
+    def boundary_repair(x, L, U):
+        """
+        Ajusta los componentes del vector que están fuera de los límites a los valores de los límites.
+
+        Parámetros:
+        - x (np.array): El vector actual de posiciones.
+        - L (np.array): El límite inferior del espacio de búsqueda.
+        - U (np.array): El límite superior del espacio de búsqueda.
+
+        Retorna:
+        - np.array: El vector de posiciones con componentes ajustados a los límites.
+        """
+        for i in range(len(x)):
+            if x[i] < L[i]:
+                x[i] = L[i]
+            elif x[i] > U[i]:
+                x[i] = U[i]
+        return x
+
+    # Función de Reflejo
+    def reflection(x, L, U):
+        """
+        Refleja los componentes del vector que están fuera de los límites dentro del rango permitido.
+
+        Parámetros:
+        - x (np.array): El vector actual de posiciones.
+        - L (np.array): El límite inferior del espacio de búsqueda.
+        - U (np.array): El límite superior del espacio de búsqueda.
+
+        Retorna:
+        - np.array: El vector de posiciones con componentes reflejados dentro de los límites.
+        """
+        for i in range(len(x)):
+            if x[i] < L[i]:
+                x[i] = L[i] + (L[i] - x[i])
+            elif x[i] > U[i]:
+                x[i] = U[i] - (x[i] - U[i])
+        return x
+
+
+    # Función de Envolvimiento
+    def wrapping(x, L, U):
+        """
+        Envuelve los componentes del vector que están fuera de los límites dentro del rango permitido, similar a un comportamiento cíclico.
+
+        Parámetros:
+        - x (np.array): El vector actual de posiciones.
+        - L (np.array): El límite inferior del espacio de búsqueda.
+        - U (np.array): El límite superior del espacio de búsqueda.
+
+        Retorna:
+        - np.array: El vector de posiciones con componentes envueltos dentro de los límites.
+        """
+        for i in range(len(x)):
+            if x[i] < L[i]:
+                x[i] = U[i] - (L[i] - x[i]) % (U[i] - L[i])
+            elif x[i] > U[i]:
+                x[i] = L[i] + (x[i] - U[i]) % (U[i] - L[i])
+        return x
