@@ -2,6 +2,7 @@ from typing import Callable
 from algorithm import Algorithm
 import numpy as np
 
+# TODO: Graficar con promedio y programar centroide, leer articulos relacionados, investigar 2008
 
 class BoundaryHandler(Algorithm):
 
@@ -19,12 +20,12 @@ class BoundaryHandler(Algorithm):
             [method_2(upper, lower, p) for p in points]
         )
 
-        presicion_boxcontraints = np.mean(np.abs(points - p1))
-        presicion_other_boxcontraints = np.mean(
+        presicion_p1 = np.mean(np.abs(points - p1))
+        presicion_p2 = np.mean(
             np.abs(points - p2)
         )
 
-        return (presicion_boxcontraints, presicion_other_boxcontraints)
+        return (presicion_p1, presicion_p2)
 
     """Bounds Methdos Default"""
 
@@ -221,6 +222,7 @@ class BoundaryHandler(Algorithm):
     
     """2004 Mendes Population"""
     
+    @staticmethod
     def apply_bound_restriction(positions, velocities, lower_bounds, upper_bounds):
         for i in range(positions.shape[0]):
             for d in range(positions.shape[1]):
@@ -235,6 +237,8 @@ class BoundaryHandler(Algorithm):
     """
     2005 Huang Hybrid
     """
+    
+    @staticmethod
     def apply_damping_boundaries(position, velocity):
         for i in range(len(position)):
             if position[i] < 0 or position[i] > 1:
@@ -325,31 +329,9 @@ class BoundaryHandler(Algorithm):
     """
 
     def clamp_position(position, lower_bound, upper_bound):
-        """
-        Clamps the particle position to the given bounds.
-        
-        Parameters:
-        - position (np.array): The current position of the particle.
-        - lower_bound (np.array): The lower bound of the search space.
-        - upper_bound (np.array): The upper bound of the search space.
-        
-        Returns:
-        - np.array: The clamped position of the particle.
-        """
         return np.maximum(lower_bound, np.minimum(position, upper_bound))
 
     def random_reinitialize(position, lower_bound, upper_bound):
-        """
-        Randomly reinitializes the particle position if it exceeds the bounds.
-        
-        Parameters:
-        - position (np.array): The current position of the particle.
-        - lower_bound (np.array): The lower bound of the search space.
-        - upper_bound (np.array): The upper bound of the search space.
-        
-        Returns:
-        - np.array: The reinitialized position of the particle.
-        """
         reinitialized_position = np.where(
             (position < lower_bound) | (position > upper_bound),
             np.random.uniform(lower_bound, upper_bound),
@@ -358,17 +340,6 @@ class BoundaryHandler(Algorithm):
         return reinitialized_position
     
     def reflect_position(position, lower_bound, upper_bound):
-        """
-        Reflects the particle position if it exceeds the bounds.
-        
-        Parameters:
-        - position (np.array): The current position of the particle.
-        - lower_bound (np.array): The lower bound of the search space.
-        - upper_bound (np.array): The upper bound of the search space.
-        
-        Returns:
-        - np.array: The reflected position of the particle.
-        """
         reflected_position = position.copy()
         below_lower = position < lower_bound
         above_upper = position > upper_bound
@@ -379,17 +350,6 @@ class BoundaryHandler(Algorithm):
         return reflected_position
     
     def shrink_position(position, lower_bound, upper_bound):
-        """
-        Shrinks the particle position to be within the bounds proportionally.
-        
-        Parameters:
-        - position (np.array): The current position of the particle.
-        - lower_bound (np.array): The lower bound of the search space.
-        - upper_bound (np.array): The upper bound of the search space.
-        
-        Returns:
-        - np.array: The shrunk position of the particle.
-        """
         shrunk_position = position.copy()
         shrunk_position[position < lower_bound] = lower_bound[position < lower_bound]
         shrunk_position[position > upper_bound] = upper_bound[position > upper_bound]
@@ -397,16 +357,18 @@ class BoundaryHandler(Algorithm):
         return shrunk_position
     
     def eliminate_particles(positions, lower_bound, upper_bound):
-        """
-        Eliminates particles that exceed the bounds.
-        
-        Parameters:
-        - positions (np.array): The current positions of the particles.
-        - lower_bound (np.array): The lower bound of the search space.
-        - upper_bound (np.array): The upper bound of the search space.
-        
-        Returns:
-        - np.array: The positions of the particles that are within bounds.
-        """
         within_bounds = np.all((positions >= lower_bound) & (positions <= upper_bound), axis=1)
         return positions[within_bounds]
+    
+    
+    """ 2019 Efren Juarez Manejo de Restricciones"""
+    
+    
+    def centroid(X, W_p, W_r_list, l, u):
+        # Verificar si todos los elementos de X están dentro de los límites
+        if np.all((X >= l) & (X <= u)):
+            return X
+        else:
+            K = len(W_r_list)
+            centroid = W_p + sum(W_r_list) / (K + 1)
+            return centroid

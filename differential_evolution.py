@@ -2,7 +2,7 @@ from typing import Callable, Tuple, List
 from algorithm import Algorithm
 from contraints_functions import ConstriantsFunctionsHandler
 from utils.constants import SIZE_POPULATION, GENERATIONS
-from utils.convergencia import graficar_convergencia
+from utils.convergencia import generate_convergencia_graphic
 from tqdm import tqdm
 from mutation_strategy import MutationStrategies
 import numpy as np
@@ -150,14 +150,13 @@ class Differential_Evolution(Algorithm):
 
             self.update_position_gbest_population()
 
-        # graficar_convergencia(
+        # generate_convergencia_graphic(
         #     self.solutions_generate,
-        #     "report/2004 Purchia Experimentation Wrapping constraint.png",
-        #     "2004 Purcha Experimentation - Wrapping constraint",
+        #     "report/cec2020/Box Constraints Default CEC2020 R01 Reflex constraint.png",
+        #     "Box Constraints CEC2020 R01 - Reflex constraint",
+        #     "Iteraciones",
+        #     "Infracciones"
         # )
 
         if verbose:
             self.report()
-
-        self.best_fitness = self.gbest_fitness
-        self.best_violations = self.gbest_violation

@@ -2,7 +2,7 @@ import csv
 import os
 
 # Función para guardar los resultados óptimos en un CSV, agregando nuevas filas
-def guardar_resultados_csv(datos: dict, filename: str):
+def save_results_csv_file(datos: dict, filename: str):
     # Verificar si el archivo ya existe
     file_exists = os.path.isfile(filename)
 
