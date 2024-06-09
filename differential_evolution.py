@@ -18,7 +18,8 @@ class Differential_Evolution(Algorithm):
         h_functions: List[Callable] = [],
         F: float = 0.7,
         CR: float = 0.9,
-        strategy: str = 'rand1'
+        strategy: str = 'rand1',
+        centroide: bool = True
     ):
 
         self.F = F
@@ -34,6 +35,7 @@ class Differential_Evolution(Algorithm):
         self.g_functions = g_functions  
         self.h_functions = h_functions  
         self.strategy = strategy
+        self.centroide = centroide
 
 
         self.population = self.generate(self.upper, self.lower)
@@ -86,7 +88,8 @@ class Differential_Evolution(Algorithm):
         trial[prob_crossover | (np.arange(dimensions) == j_rand)] = mutant[
             prob_crossover | (np.arange(dimensions) == j_rand)
         ]
-
+        
+        
         return trial
 
     def _selection_operator_(self, idx, trial):
@@ -141,19 +144,28 @@ class Differential_Evolution(Algorithm):
 
     def evolution(self, verbose: bool = True):
         for _ in tqdm(range(GENERATIONS), desc="Evolucionando"):
+            
+            if self.centroide:
+                self.SFS = [ind for ind, v in zip(self.population, self.violations) if v == 0]
+                self.SIS = [ind for ind, v in zip(self.population, self.violations) if v > 0]
+            
             for i in range(SIZE_POPULATION):
                 objective = self.population[i]
                 mutant = self._mutation_operator_(i)
                 trial = self._crossover_operator_(objective, mutant)
-                trial = self.bounds_constraints(self.upper, self.lower, trial)
+                if self.centroide:
+                    if not np.all((self.lower <= trial) & (trial <= self.upper)):
+                        trial = self.bounds_constraints(trial, self.lower, self.upper, SFS=self.SFS, SIS=self.SIS, K=3)
+                else: trial = self.bounds_constraints(self.upper, self.lower, trial)
+
                 self._selection_operator_(i, trial)
 
             self.update_position_gbest_population()
 
         # generate_convergencia_graphic(
         #     self.solutions_generate,
-        #     "report/cec2020/Box Constraints Default CEC2020 R01 Reflex constraint.png",
-        #     "Box Constraints CEC2020 R01 - Reflex constraint",
+        #     "report/cec2020/Centroid Constriant CEC2020 R01.png",
+        #     "Box Constraints CEC2020 R01 - Centroide Constraint",
         #     "Iteraciones",
         #     "Infracciones"
         # )
