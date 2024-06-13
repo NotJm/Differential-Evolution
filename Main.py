@@ -6,6 +6,7 @@ from constraints_functions import ConstriantsFunctionsHandler
 from utils.constants import EXECUTIONS
 from differential_evolution import Differential_Evolution
 from functions.cec2020problems import *
+from functions.cec2006problems import *
 
 problems = {
     "R01": CEC2020_RC01,
@@ -21,8 +22,9 @@ fitness_bounds = {
     "R06": [1.5, 2]
 }
 
+
 bounds = {
-    "juarez-centroide": BoundaryHandler.juarez_centroide,
+    # "juarez-centroide": BoundaryHandler.juarez_centroide,
     "adham-clamp": BoundaryHandler.adham_clamp_position,
     "adham-shink": BoundaryHandler.adham_shrink_position,
     "andreaa-saturation": BoundaryHandler.andreaa_saturation,
@@ -30,7 +32,14 @@ bounds = {
     "andreaa-uniform": BoundaryHandler.andreaa_uniform,
     "andreaa-nearest": BoundaryHandler.andreaa_nearest,
     "andreaa-random-within-bounds": BoundaryHandler.andreaa_random_within_bounds,
+    "agarwl-reflection": BoundaryHandler.agarwl_reflect,
+    "agarwl-nearest": BoundaryHandler.agarwl_nearest,
+    "wessing-wrapping": BoundaryHandler.wessing_wrapping,
+    "wessing-projection": BoundaryHandler.wessing_projection_repair,
+    "shi_classical": BoundaryHandler.shi_classical_boundary_handling,
+    
 }
+
 
 
 
@@ -41,7 +50,7 @@ def run():
         problema = problem_class()
         lower_bound, upper_bound = fitness_bounds[problem_name]
         results = {
-            "juarez-centroide": np.zeros((EXECUTIONS, 2)),
+            # "juarez-centroide": np.zeros((EXECUTIONS, 2)),
             "adham-clamp": np.zeros((EXECUTIONS, 2)),
             "adham-shink": np.zeros((EXECUTIONS, 2)),
             "andreaa-saturation": np.zeros((EXECUTIONS, 2)),
@@ -49,6 +58,7 @@ def run():
             "andreaa-uniform": np.zeros((EXECUTIONS, 2)),
             "andreaa-nearest": np.zeros((EXECUTIONS, 2)),
             "andreaa-random-within-bounds": np.zeros((EXECUTIONS, 2)),
+            
         }
 
         for _ in range(EXECUTIONS):

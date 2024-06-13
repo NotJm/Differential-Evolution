@@ -20,9 +20,11 @@ class Differential_Evolution(Algorithm):
         F: float = 0.7,
         CR: float = 0.9,
         strategy: str = "rand1",
+        res_rand: bool = False,
+        res_rand_function: Callable = None,
         centroide: bool = False,
         w_p_function: Callable = None,
-        centroide_function: Callable = None
+        centroide_function: Callable = None,
     ):
 
         self.F = F
@@ -38,7 +40,10 @@ class Differential_Evolution(Algorithm):
         self.g_functions = g_functions
         self.h_functions = h_functions
         self.strategy = strategy
-        
+
+        self.res_rand = res_rand
+        self.res_rand_function = res_rand_function
+
         self.centroide = centroide
         self.centroide_function = centroide_function
         self.w_p_function = w_p_function
@@ -80,6 +85,16 @@ class Differential_Evolution(Algorithm):
             return self.mutation_strategies._best2(samples)
         elif self.strategy == "rand2":
             return self.mutation_strategies._rand2(samples)
+        elif self.res_rand:
+            return self.res_rand_function(
+                idx,
+                self.population,
+                self.F,
+                self.lower,
+                self.upper,
+                self.isValid,
+                max_resamples=3 * len(self.lower),
+            )
         else:
             raise ValueError(f"Unknown strategy: {self.strategy}")
 
@@ -136,7 +151,6 @@ class Differential_Evolution(Algorithm):
                 self.gbest_violation = current_violation
                 self.gbest_individual = self.population[idx]
 
-
     def report(self):
         print("================================")
         print("Solución Óptima")
@@ -147,7 +161,7 @@ class Differential_Evolution(Algorithm):
 
     def evolution(self, verbose: bool = True):
         for _ in tqdm(range(GENERATIONS), desc="Evolucionando"):
-            
+
             check_for_pause()
 
             for i in range(SIZE_POPULATION):
@@ -156,18 +170,30 @@ class Differential_Evolution(Algorithm):
                 trial = self._crossover_operator_(objective, mutant)
                 trial = self.bounds_constraints(self.upper, self.lower, trial)
                 self._selection_operator_(i, trial)
-                
+
                 if self.centroide:
-                    SFS = [ind for ind, violation in zip(self.population, self.violations) if violation == 0]
-                    SIS = [ind for ind, violation in zip(self.population, self.violations) if violation != 0]
+                    SFS = [
+                        ind
+                        for ind, violation in zip(self.population, self.violations)
+                        if violation == 0
+                    ]
+                    SIS = [
+                        ind
+                        for ind, violation in zip(self.population, self.violations)
+                        if violation != 0
+                    ]
                     AFS = len(SFS)
                     W_p = self.w_p_function(SFS, SIS, AFS)
-                    W_r_list = [self.population[np.random.randint(SIZE_POPULATION)] for _ in range(3)]
-                    trial = self.centroide_function(trial, W_p, W_r_list, self.upper, self.lower)
+                    W_r_list = [
+                        self.population[np.random.randint(SIZE_POPULATION)]
+                        for _ in range(3)
+                    ]
+                    trial = self.centroide_function(
+                        trial, W_p, W_r_list, self.upper, self.lower
+                    )
                     trial = self.bounds_constraints(self.upper, self.lower, trial)
                     self._selection_operator_(i, trial)
-                    
-                
+
             self.update_position_gbest_population()
 
         if verbose:
