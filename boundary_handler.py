@@ -630,3 +630,100 @@ class BoundaryHandler(Algorithm):
             return np.random.choice(SFS)
         else:
             return min(SIS, key=lambda x: np.linalg.norm(x))
+
+
+    """ 2023  """
+     import numpy as np
+
+    def saturation(y, a, b):
+        return np.clip(y, a, b)
+
+    def mirror(y, a, b):
+        y_mirrored = np.where(y < a, 2 * a - y, y)
+        y_mirrored = np.where(y_mirrored > b, 2 * b - y_mirrored, y_mirrored)
+        return y_mirrored
+
+    def vector_wise_correction(y, a, b, R):
+        alpha = np.min([
+            np.where(y < a, (R - a) / (R - y), 1),
+            np.where(y > b, (b - R) / (y - R), 1)
+        ])
+        return alpha * y + (1 - alpha) * R
+
+    def uniform(y, a, b):
+        return np.random.uniform(a, b, size=y.shape)
+
+    def beta(y, a, b, mean, var):
+        m = (mean - a) / (b - a)
+        v = var / (b - a) ** 2
+        alpha = m * ((m * (1 - m) / v) - 1)
+        beta_param = alpha * ((1 - m) / m)
+        return a + np.random.beta(alpha, beta_param, size=y.shape) * (b - a)
+
+    def exp_confined(y, a, b, R):
+        r = np.random.uniform(0, 1, size=y.shape)
+        y_exp = np.where(
+            y < a, a - np.log(1 + r * (np.exp(a - R) - 1)),
+            b + np.log(1 + (1 - r) * (np.exp(R - b) - 1))
+        )
+        return y_exp
+
+    def absorbing(y, a, b, v):
+    y_absorbed = np.where(y < a, a, y)
+    y_absorbed = np.where(y_absorbed > b, b, y_absorbed)
+    v_absorbed = np.where((y < a) | (y > b), 0, v)
+    return y_absorbed, v_absorbed
+
+    def reflecting(y, a, b, v):
+        y_reflected = np.where(y < a, a, y)
+        y_reflected = np.where(y_reflected > b, b, y_reflected)
+        v_reflected = np.where(y < a, -v, v)
+        v_reflected = np.where(y_reflected > b, -v_reflected, v_reflected)
+        return y_reflected, v_reflected
+
+    def damping(y, a, b, v):
+        y_damped = np.where(y < a, a, y)
+        y_damped = np.where(y_damped > b, b, y_damped)
+        v_damped = np.where(y < a, -v * np.random.uniform(0, 1), v)
+        v_damped = np.where(y_damped > b, -v_damped * np.random.uniform(0, 1), v_damped)
+        return y_damped, v_damped
+
+    def invisible(y, a, b, fitness, bad_fitness_value):
+        fitness_invisible = np.where((y < a) | (y > b), bad_fitness_value, fitness)
+        return y, fitness_invisible
+
+    def invisible_reflecting(y, a, b, v, fitness, bad_fitness_value):
+        y_invisible_reflecting, v_reflected = reflecting(y, a, b, v)
+        fitness_invisible = np.where((y < a) | (y > b), bad_fitness_value, fitness)
+        return y_invisible_reflecting, v_reflected, fitness_invisible
+
+    def invisible_damping(y, a, b, v, fitness, bad_fitness_value):
+        y_invisible_damping, v_damped = damping(y, a, b, v)
+        fitness_invisible = np.where((y < a) | (y > b), bad_fitness_value, fitness)
+        return y_invisible_damping, v_damped, fitness_invisible
+
+    def inf(y, a, b):
+    y_inf = np.where(y < a, -np.inf, y)
+    y_inf = np.where(y_inf > b, np.inf, y_inf)
+    return y_inf
+
+    def nearest(y, a, b):
+        y_nearest = np.where(y < a, a, y)
+        y_nearest = np.where(y_nearest > b, b, y_nearest)
+        return y_nearest
+
+    def nearest_turb(y, a, b):
+        y_nearest_turb = nearest(y, a, b)
+        turbulence = np.random.normal(0, 1, size=y.shape)
+        y_nearest_turb += turbulence
+        return nearest(y_nearest_turb, a, b)
+
+    def random_within_bounds(y, a, b):
+        y_random = np.random.uniform(a, b, size=y.shape)
+        return y_random
+
+    def shr(y, a, b, v):
+        factor = np.where(y < a, (a - y) / v, 1)
+        factor = np.where(y > b, (b - y) / v, factor)
+        y_shr = y + v * np.min(factor)
+        return y_shr
