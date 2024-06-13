@@ -20,8 +20,6 @@ class Differential_Evolution(Algorithm):
         F: float = 0.7,
         CR: float = 0.9,
         strategy: str = "rand1",
-        res_rand: bool = False,
-        res_rand_function: Callable = None,
         centroide: bool = False,
         w_p_function: Callable = None,
         centroide_function: Callable = None,
@@ -41,8 +39,6 @@ class Differential_Evolution(Algorithm):
         self.h_functions = h_functions
         self.strategy = strategy
 
-        self.res_rand = res_rand
-        self.res_rand_function = res_rand_function
 
         self.centroide = centroide
         self.centroide_function = centroide_function
@@ -85,16 +81,6 @@ class Differential_Evolution(Algorithm):
             return self.mutation_strategies._best2(samples)
         elif self.strategy == "rand2":
             return self.mutation_strategies._rand2(samples)
-        elif self.res_rand:
-            return self.res_rand_function(
-                idx,
-                self.population,
-                self.F,
-                self.lower,
-                self.upper,
-                self.isValid,
-                max_resamples=3 * len(self.lower),
-            )
         else:
             raise ValueError(f"Unknown strategy: {self.strategy}")
 

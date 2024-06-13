@@ -631,8 +631,6 @@ class BoundaryHandler(Algorithm):
         else:
             return min(SIS, key=lambda x: np.linalg.norm(x))
 
-        
-    """ 2019 juarez efren  """
     #example:
     #max resamples
     #3 * len(lower_bounds)
