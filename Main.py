@@ -1,16 +1,9 @@
-import keyboard
 import pandas as pd
-import matplotlib.pyplot as plt
-import os
 import gc
 import numpy as np
-from typing import Callable
-from algorithm import Algorithm
 from boundary_handler import BoundaryHandler
 from constraints_functions import ConstriantsFunctionsHandler
 from utils.constants import EXECUTIONS
-from utils.generate_csv import save_results_csv_file
-from utils.calculate_mean import calculate_mean
 from differential_evolution import Differential_Evolution
 from functions.cec2020problems import *
 
@@ -39,16 +32,7 @@ bounds = {
     "andreaa-random-within-bounds": BoundaryHandler.andreaa_random_within_bounds,
 }
 
-def check_for_pause():
-    """
-    Function to pause the execution when Ctrl+P is pressed.
-    """
-    if keyboard.is_pressed('ctrl') and keyboard.is_pressed('p'):
-        print("Paused. Press Ctrl+R to resume.")
-        while True:
-            if keyboard.is_pressed('ctrl') and keyboard.is_pressed('r'):
-                print("Resuming...")
-                break
+
 
 def run():
     all_results = []
@@ -63,11 +47,8 @@ def run():
             "andreaa-saturation": np.zeros((EXECUTIONS, 2)),
             "andreaa-mirror": np.zeros((EXECUTIONS, 2)),
             "andreaa-uniform": np.zeros((EXECUTIONS, 2)),
-            "andreaa-inf": np.zeros((EXECUTIONS, 2)),
             "andreaa-nearest": np.zeros((EXECUTIONS, 2)),
-            "andreaa-nearest-turb": np.zeros((EXECUTIONS, 2)),
             "andreaa-random-within-bounds": np.zeros((EXECUTIONS, 2)),
-            "andreaa-shr": np.zeros((EXECUTIONS, 2)),
         }
 
         for _ in range(EXECUTIONS):
@@ -75,8 +56,7 @@ def run():
             for key, boundary_function in bounds.items():
                 print(f"Constraint {key}:")
                 
-                # Check for pause before each iteration
-                check_for_pause()
+                
                 
                 algorithm = Differential_Evolution(
                     problema.fitness,

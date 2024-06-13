@@ -641,12 +641,7 @@ class BoundaryHandler(Algorithm):
         y_mirrored = np.where(y < a, 2 * a - y, y)
         y_mirrored = np.where(y_mirrored > b, 2 * b - y_mirrored, y_mirrored)
         return y_mirrored
-    # v: Vector de velocidades de partículas.
-    # fitness: Vector de valores de fitness de las partículas.
-    # bad_fitness_value: Valor de fitness malo asignado a partículas fuera de los límites.
-    # R: Vector de referencia factible.
-    # mean: Media de la población actual.
-    # var: Varianza de la población actual.
+
 
     def saturation(particle, lower_bound, upper_bound):
         return np.clip(particle, lower_bound, upper_bound)

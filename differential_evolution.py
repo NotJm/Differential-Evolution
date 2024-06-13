@@ -2,6 +2,7 @@ from typing import Callable, Tuple, List
 from algorithm import Algorithm
 from constraints_functions import ConstriantsFunctionsHandler
 from utils.constants import SIZE_POPULATION, GENERATIONS
+from utils.check_pause import check_for_pause
 from tqdm import tqdm
 from mutation_strategy import MutationStrategies
 import numpy as np
@@ -146,6 +147,8 @@ class Differential_Evolution(Algorithm):
 
     def evolution(self, verbose: bool = True):
         for _ in tqdm(range(GENERATIONS), desc="Evolucionando"):
+            
+            check_for_pause()
 
             for i in range(SIZE_POPULATION):
                 objective = self.population[i]
