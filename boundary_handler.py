@@ -739,6 +739,7 @@ class BoundaryHandler(Algorithm):
 
     def andreaa_uniform(b, a, y):
         return np.random.uniform(a, b, size=y.shape)
+    
     def uniform(particle, lower_bound, upper_bound):
         return np.random.uniform(lower_bound, upper_bound, size=particle.shape)
 
