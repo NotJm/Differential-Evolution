@@ -633,97 +633,101 @@ class BoundaryHandler(Algorithm):
 
 
     """ 2023  """
-     import numpy as np
+    
+    # v: Vector de velocidades de partículas.
+    # fitness: Vector de valores de fitness de las partículas.
+    # bad_fitness_value: Valor de fitness malo asignado a partículas fuera de los límites.
+    # R: Vector de referencia factible.
+    # mean: Media de la población actual.
+    # var: Varianza de la población actual.
 
-    def saturation(y, a, b):
-        return np.clip(y, a, b)
+    def saturation(particle, lower_bound, upper_bound):
+        return np.clip(particle, lower_bound, upper_bound)
 
-    def mirror(y, a, b):
-        y_mirrored = np.where(y < a, 2 * a - y, y)
-        y_mirrored = np.where(y_mirrored > b, 2 * b - y_mirrored, y_mirrored)
-        return y_mirrored
+    def mirror(particle, lower_bound, upper_bound):
+        particle_mirrored = np.where(particle < lower_bound, 2 * lower_bound - particle, particle)
+        particle_mirrored = np.where(particle_mirrored > upper_bound, 2 * upper_bound - particle_mirrored, particle_mirrored)
+        return particle_mirrored
 
-    def vector_wise_correction(y, a, b, R):
+    def vector_wise_correction(particle, lower_bound, upper_bound, R):
         alpha = np.min([
-            np.where(y < a, (R - a) / (R - y), 1),
-            np.where(y > b, (b - R) / (y - R), 1)
+            np.where(particle < lower_bound, (R - lower_bound) / (R - particle), 1),
+            np.where(particle > upper_bound, (upper_bound - R) / (particle - R), 1)
         ])
-        return alpha * y + (1 - alpha) * R
+        return alpha * particle + (1 - alpha) * R
 
-    def uniform(y, a, b):
-        return np.random.uniform(a, b, size=y.shape)
+    def uniform(particle, lower_bound, upper_bound):
+        return np.random.uniform(lower_bound, upper_bound, size=particle.shape)
 
-    def beta(y, a, b, mean, var):
-        m = (mean - a) / (b - a)
-        v = var / (b - a) ** 2
+    def beta(particle, lower_bound, upper_bound, mean, var):
+        m = (mean - lower_bound) / (upper_bound - lower_bound)
+        v = var / (upper_bound - lower_bound) ** 2
         alpha = m * ((m * (1 - m) / v) - 1)
         beta_param = alpha * ((1 - m) / m)
-        return a + np.random.beta(alpha, beta_param, size=y.shape) * (b - a)
+        return lower_bound + np.random.beta(alpha, beta_param, size=particle.shape) * (upper_bound - lower_bound)
 
-    def exp_confined(y, a, b, R):
-        r = np.random.uniform(0, 1, size=y.shape)
-        y_exp = np.where(
-            y < a, a - np.log(1 + r * (np.exp(a - R) - 1)),
-            b + np.log(1 + (1 - r) * (np.exp(R - b) - 1))
+    def exp_confined(particle, lower_bound, upper_bound, R):
+        r = np.random.uniform(0, 1, size=particle.shape)
+        particle_exp = np.where(
+            particle < lower_bound, lower_bound - np.log(1 + r * (np.exp(lower_bound - R) - 1)),
+            upper_bound + np.log(1 + (1 - r) * (np.exp(R - upper_bound) - 1))
         )
-        return y_exp
+        return particle_exp
 
-    def absorbing(y, a, b, v):
-    y_absorbed = np.where(y < a, a, y)
-    y_absorbed = np.where(y_absorbed > b, b, y_absorbed)
-    v_absorbed = np.where((y < a) | (y > b), 0, v)
-    return y_absorbed, v_absorbed
+    def absorbing(particle, lower_bound, upper_bound, velocity):
+        particle_absorbed = np.where(particle < lower_bound, lower_bound, particle)
+        particle_absorbed = np.where(particle_absorbed > upper_bound, upper_bound, particle_absorbed)
+        velocity_absorbed = np.where((particle < lower_bound) | (particle > upper_bound), 0, velocity)
+        return particle_absorbed, velocity_absorbed
 
-    def reflecting(y, a, b, v):
-        y_reflected = np.where(y < a, a, y)
-        y_reflected = np.where(y_reflected > b, b, y_reflected)
-        v_reflected = np.where(y < a, -v, v)
-        v_reflected = np.where(y_reflected > b, -v_reflected, v_reflected)
-        return y_reflected, v_reflected
+    def reflecting(particle, lower_bound, upper_bound, velocity):
+        particle_reflected = np.where(particle < lower_bound, lower_bound, particle)
+        particle_reflected = np.where(particle_reflected > upper_bound, upper_bound, particle_reflected)
+        velocity_reflected = np.where(particle < lower_bound, -velocity, velocity)
+        velocity_reflected = np.where(particle_reflected > upper_bound, -velocity_reflected, velocity_reflected)
+        return particle_reflected, velocity_reflected
 
-    def damping(y, a, b, v):
-        y_damped = np.where(y < a, a, y)
-        y_damped = np.where(y_damped > b, b, y_damped)
-        v_damped = np.where(y < a, -v * np.random.uniform(0, 1), v)
-        v_damped = np.where(y_damped > b, -v_damped * np.random.uniform(0, 1), v_damped)
-        return y_damped, v_damped
+    def damping(particle, lower_bound, upper_bound, velocity):
+        particle_damped = np.where(particle < lower_bound, lower_bound, particle)
+        particle_damped = np.where(particle_damped > upper_bound, upper_bound, particle_damped)
+        velocity_damped = np.where(particle < lower_bound, -velocity * np.random.uniform(0, 1), velocity)
+        velocity_damped = np.where(particle_damped > upper_bound, -velocity_damped * np.random.uniform(0, 1), velocity_damped)
+        return particle_damped, velocity_damped
 
-    def invisible(y, a, b, fitness, bad_fitness_value):
-        fitness_invisible = np.where((y < a) | (y > b), bad_fitness_value, fitness)
-        return y, fitness_invisible
+    def invisible(particle, lower_bound, upper_bound, fitness, bad_fitness_value):
+        fitness_invisible = np.where((particle < lower_bound) | (particle > upper_bound), bad_fitness_value, fitness)
+        return particle, fitness_invisible
 
-    def invisible_reflecting(y, a, b, v, fitness, bad_fitness_value):
-        y_invisible_reflecting, v_reflected = reflecting(y, a, b, v)
-        fitness_invisible = np.where((y < a) | (y > b), bad_fitness_value, fitness)
-        return y_invisible_reflecting, v_reflected, fitness_invisible
+    def invisible_reflecting(particle, lower_bound, upper_bound, velocity, fitness, bad_fitness_value):
+        particle_invisible_reflecting, velocity_reflected = reflecting(particle, lower_bound, upper_bound, velocity)
+        fitness_invisible = np.where((particle < lower_bound) | (particle > upper_bound), bad_fitness_value, fitness)
+        return particle_invisible_reflecting, velocity_reflected, fitness_invisible
 
-    def invisible_damping(y, a, b, v, fitness, bad_fitness_value):
-        y_invisible_damping, v_damped = damping(y, a, b, v)
-        fitness_invisible = np.where((y < a) | (y > b), bad_fitness_value, fitness)
-        return y_invisible_damping, v_damped, fitness_invisible
+    def invisible_damping(particle, lower_bound, upper_bound, velocity, fitness, bad_fitness_value):
+        particle_invisible_damping, velocity_damped = damping(particle, lower_bound, upper_bound, velocity)
+        fitness_invisible = np.where((particle < lower_bound) | (particle > upper_bound), bad_fitness_value, fitness)
+        return particle_invisible_damping, velocity_damped, fitness_invisible
 
-    def inf(y, a, b):
-    y_inf = np.where(y < a, -np.inf, y)
-    y_inf = np.where(y_inf > b, np.inf, y_inf)
-    return y_inf
+    def inf(particle, lower_bound, upper_bound):
+        particle_inf = np.where(particle < lower_bound, -np.inf, particle)
+        particle_inf = np.where(particle_inf > upper_bound, np.inf, particle_inf)
+        return particle_inf
 
-    def nearest(y, a, b):
-        y_nearest = np.where(y < a, a, y)
-        y_nearest = np.where(y_nearest > b, b, y_nearest)
-        return y_nearest
+    def nearest(particle, lower_bound, upper_bound):
+        particle_nearest = np.where(particle < lower_bound, lower_bound, particle)
+        particle_nearest = np.where(particle_nearest > upper_bound, upper_bound, particle_nearest)
+        return particle_nearest
 
-    def nearest_turb(y, a, b):
-        y_nearest_turb = nearest(y, a, b)
-        turbulence = np.random.normal(0, 1, size=y.shape)
-        y_nearest_turb += turbulence
-        return nearest(y_nearest_turb, a, b)
+    def nearest_turb(particle, lower_bound, upper_bound):
+        particle_nearest_turb = nearest(particle, lower_bound, upper_bound)
+        turbulence = np.random.normal(0, 1, size=particle.shape)
+        particle_nearest_turb += turbulence
+        return nearest(particle_nearest_turb, lower_bound, upper_bound)
 
-    def random_within_bounds(y, a, b):
-        y_random = np.random.uniform(a, b, size=y.shape)
-        return y_random
+    def random_within_bounds(particle, lower_bound, upper_bound):
+        return np.random.uniform(lower_bound, upper_bound, size=particle.shape)
 
-    def shr(y, a, b, v):
-        factor = np.where(y < a, (a - y) / v, 1)
-        factor = np.where(y > b, (b - y) / v, factor)
-        y_shr = y + v * np.min(factor)
-        return y_shr
+    def shr(particle, lower_bound, upper_bound, velocity):
+        factor = np.where(particle < lower_bound, (lower_bound - particle) / velocity, 1)
+        factor = np.where(particle > upper_bound, (upper_bound - particle) / velocity, factor)
+        return particle + velocity * np.min(factor)
