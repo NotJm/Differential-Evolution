@@ -633,12 +633,11 @@ class BoundaryHandler(Algorithm):
 
 
     """ 2023  """
-     import numpy as np
-
-    def saturation(y, a, b):
+    
+    def andreaa_saturation(b, a, y):
         return np.clip(y, a, b)
 
-    def mirror(y, a, b):
+    def andreaa_mirror(b, a, y):
         y_mirrored = np.where(y < a, 2 * a - y, y)
         y_mirrored = np.where(y_mirrored > b, 2 * b - y_mirrored, y_mirrored)
         return y_mirrored
@@ -650,7 +649,7 @@ class BoundaryHandler(Algorithm):
         ])
         return alpha * y + (1 - alpha) * R
 
-    def uniform(y, a, b):
+    def andreaa_uniform(b, a, y):
         return np.random.uniform(a, b, size=y.shape)
 
     def beta(y, a, b, mean, var):
@@ -669,11 +668,12 @@ class BoundaryHandler(Algorithm):
         return y_exp
 
     def absorbing(y, a, b, v):
-    y_absorbed = np.where(y < a, a, y)
-    y_absorbed = np.where(y_absorbed > b, b, y_absorbed)
-    v_absorbed = np.where((y < a) | (y > b), 0, v)
-    return y_absorbed, v_absorbed
+        y_absorbed = np.where(y < a, a, y)
+        y_absorbed = np.where(y_absorbed > b, b, y_absorbed)
+        v_absorbed = np.where((y < a) | (y > b), 0, v)
+        return y_absorbed, v_absorbed
 
+    @staticmethod
     def reflecting(y, a, b, v):
         y_reflected = np.where(y < a, a, y)
         y_reflected = np.where(y_reflected > b, b, y_reflected)
@@ -681,6 +681,7 @@ class BoundaryHandler(Algorithm):
         v_reflected = np.where(y_reflected > b, -v_reflected, v_reflected)
         return y_reflected, v_reflected
 
+    @staticmethod
     def damping(y, a, b, v):
         y_damped = np.where(y < a, a, y)
         y_damped = np.where(y_damped > b, b, y_damped)
@@ -693,36 +694,37 @@ class BoundaryHandler(Algorithm):
         return y, fitness_invisible
 
     def invisible_reflecting(y, a, b, v, fitness, bad_fitness_value):
-        y_invisible_reflecting, v_reflected = reflecting(y, a, b, v)
+        y_invisible_reflecting, v_reflected = BoundaryHandler.reflecting(y, a, b, v)
         fitness_invisible = np.where((y < a) | (y > b), bad_fitness_value, fitness)
         return y_invisible_reflecting, v_reflected, fitness_invisible
 
     def invisible_damping(y, a, b, v, fitness, bad_fitness_value):
-        y_invisible_damping, v_damped = damping(y, a, b, v)
+        y_invisible_damping, v_damped = BoundaryHandler.damping(y, a, b, v)
         fitness_invisible = np.where((y < a) | (y > b), bad_fitness_value, fitness)
         return y_invisible_damping, v_damped, fitness_invisible
 
-    def inf(y, a, b):
-    y_inf = np.where(y < a, -np.inf, y)
-    y_inf = np.where(y_inf > b, np.inf, y_inf)
-    return y_inf
+    def andreaa_inf(b, a, y):
+        y_inf = np.where(y < a, -np.inf, y)
+        y_inf = np.where(y_inf > b, np.inf, y_inf)
+        return y_inf
 
-    def nearest(y, a, b):
+    @staticmethod
+    def andreaa_nearest(b, a, y):
         y_nearest = np.where(y < a, a, y)
         y_nearest = np.where(y_nearest > b, b, y_nearest)
         return y_nearest
 
-    def nearest_turb(y, a, b):
-        y_nearest_turb = nearest(y, a, b)
+    def andreaa_nearest_turb(b, a, y):
+        y_nearest_turb = BoundaryHandler.nearest(y, a, b)
         turbulence = np.random.normal(0, 1, size=y.shape)
         y_nearest_turb += turbulence
-        return nearest(y_nearest_turb, a, b)
+        return BoundaryHandler.adham_reflect_position(y_nearest_turb, a, b)
 
-    def random_within_bounds(y, a, b):
+    def andreaa_random_within_bounds(b, a, y):
         y_random = np.random.uniform(a, b, size=y.shape)
         return y_random
 
-    def shr(y, a, b, v):
+    def andreaa_shr(y, a, b, v):
         factor = np.where(y < a, (a - y) / v, 1)
         factor = np.where(y > b, (b - y) / v, factor)
         y_shr = y + v * np.min(factor)
