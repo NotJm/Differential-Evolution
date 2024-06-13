@@ -32,15 +32,8 @@ bounds = {
     "andreaa-uniform": BoundaryHandler.andreaa_uniform,
     "andreaa-nearest": BoundaryHandler.andreaa_nearest,
     "andreaa-random-within-bounds": BoundaryHandler.andreaa_random_within_bounds,
-    "agarwl-reflection": BoundaryHandler.agarwl_reflect,
-    "agarwl-nearest": BoundaryHandler.agarwl_nearest,
-    "wessing-wrapping": BoundaryHandler.wessing_wrapping,
-    "wessing-projection": BoundaryHandler.wessing_projection_repair,
-    "shi_classical": BoundaryHandler.shi_classical_boundary_handling,
-    
 }
 
-<<<<<<< HEAD
 def check_for_pause():
     """
     Function to pause the execution when Ctrl+P is pressed.
@@ -49,12 +42,8 @@ def check_for_pause():
         print("Paused. Press Ctrl+R to resume.")
         while True:
             if keyboard.is_pressed('ctrl') and keyboard.is_pressed('r'):
-                print("Resuming...")    
+                print("Resuming...")
                 break
-=======
-
-
->>>>>>> ea3184cd67ef597f4055d13dc9c98d4920bd34fd
 
 def run():
     all_results = []
@@ -71,11 +60,7 @@ def run():
             "andreaa-uniform": np.zeros((EXECUTIONS, 2)),
             "andreaa-nearest": np.zeros((EXECUTIONS, 2)),
             "andreaa-random-within-bounds": np.zeros((EXECUTIONS, 2)),
-<<<<<<< HEAD
             "andreaa-shr": np.zeros((EXECUTIONS, 2)),
-=======
->>>>>>> ea3184cd67ef597f4055d13dc9c98d4920bd34fd
-            
         }
 
         for _ in range(EXECUTIONS):
