@@ -47,7 +47,7 @@ def check_for_pause():
         print("Paused. Press Ctrl+R to resume.")
         while True:
             if keyboard.is_pressed('ctrl') and keyboard.is_pressed('r'):
-                print("Resuming...")
+                print("Resuming...")    
                 break
 
 def run():
@@ -68,6 +68,7 @@ def run():
             "andreaa-nearest-turb": np.zeros((EXECUTIONS, 2)),
             "andreaa-random-within-bounds": np.zeros((EXECUTIONS, 2)),
             "andreaa-shr": np.zeros((EXECUTIONS, 2)),
+            
         }
 
         for _ in range(EXECUTIONS):
