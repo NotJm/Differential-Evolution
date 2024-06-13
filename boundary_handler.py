@@ -398,7 +398,7 @@ class BoundaryHandler(Algorithm):
     """ 2013 Wessing Repair"""
 
     @staticmethod
-    def projection_repair(x, lower, upper):
+    def wessing_projection_repair(x, lower, upper):
         return max(lower, min(x, upper))
 
     @staticmethod
@@ -410,7 +410,7 @@ class BoundaryHandler(Algorithm):
         return x
 
     @staticmethod
-    def wrapping_reapir(upper, lower, x):
+    def wessing_wrapping_reapir(upper, lower, x):
         range_ = upper - lower
         if x < lower:
             return BoundaryHandler.wrapping_reapir(x + range_, lower, upper)
@@ -584,7 +584,7 @@ class BoundaryHandler(Algorithm):
 
     """ 2016 Agarwl Experimental """
 
-    def reflect(position, lower_bound, upper_bound):
+    def agarwl_reflect(upper_bound, lower_bound, position):
         for i in range(len(position)):
             if position[i] < lower_bound[i]:
                 position[i] = lower_bound[i] + (lower_bound[i] - position[i])
@@ -592,7 +592,7 @@ class BoundaryHandler(Algorithm):
                 position[i] = upper_bound[i] - (position[i] - upper_bound[i])
         return position
 
-    def nearest(position, lower_bound, upper_bound):
+    def agarwl_nearest(upper_bound, lower_bound, position):
         for i in range(len(position)):
             if position[i] < lower_bound[i]:
                 position[i] = lower_bound[i]
@@ -645,7 +645,7 @@ class BoundaryHandler(Algorithm):
     #example:
     #max resamples
     #3 * len(lower_bounds)
-    def res_ran_DE_rand_1_bin(target_vector_index, population, F, lower_bounds, upper_bounds, is_valid,max_resamples=1):
+    def juarez_res_ran_DE_rand_1_bin(target_vector_index, population, F, lower_bounds, upper_bounds, is_valid, max_resamples=1):
         D = len(lower_bounds)
         NP = len(population)
         resamples = 0
@@ -659,7 +659,7 @@ class BoundaryHandler(Algorithm):
             mutant_vector = population[r1] + F * (population[r2] - population[r3])
             mutant_vector = np.clip(mutant_vector, lower_bounds, upper_bounds)
             resamples += 1
-            is_valid(mutant_vector, lower_bounds, upper_bounds)
+            is_valid(upper_bounds, lower_bounds, mutant_vector)
 
         if not valid:
             mutant_vector = lower_bounds + np.random.rand(D) * (upper_bounds - lower_bounds)
@@ -720,12 +720,7 @@ class BoundaryHandler(Algorithm):
         y_mirrored = np.where(y < a, 2 * a - y, y)
         y_mirrored = np.where(y_mirrored > b, 2 * b - y_mirrored, y_mirrored)
         return y_mirrored
-    # v: Vector de velocidades de partículas.
-    # fitness: Vector de valores de fitness de las partículas.
-    # bad_fitness_value: Valor de fitness malo asignado a partículas fuera de los límites.
-    # R: Vector de referencia factible.
-    # mean: Media de la población actual.
-    # var: Varianza de la población actual.
+
 
     def saturation(particle, lower_bound, upper_bound):
         return np.clip(particle, lower_bound, upper_bound)
