@@ -1,6 +1,7 @@
 from typing import Callable
 from algorithm import Algorithm
 import numpy as np
+import random
 
 # TODO: Graficar con promedio y programar centroide, leer articulos relacionados, investigar 2008
 # TODO: 2008 y 2014 no existen articulos
@@ -612,17 +613,25 @@ class BoundaryHandler(Algorithm):
         return velocity
 
     """ 2016 Gandomi Evolutionary """
-
-    """ 2019 Efren Juarez """
-
-    def juarez_centroide(X, W_p, W_r_list, l, u):
-
-        if np.all((X >= l) & (X <= u)):
-            return X
+    
+    """ 2018 kadavy and gandomi """
+    def periodic_method(x, lower_bound, upper_bound):
+        if x > upper_bound or x < lower_bound:
+            return lower_bound + (x % (upper_bound - lower_bound))
         else:
-            K = len(W_r_list)
-            sum_W_r = np.sum(W_r_list, axis=0)
-            return (W_p + sum_W_r) / (K + 1)
+            return x
+
+ 
+
+    def probabilistic_method(x, lower_bound, upper_bound, probability=0.5):
+        if x > upper_bound or x < lower_bound:
+            if random.random() < probability:
+                return random.uniform(lower_bound, upper_bound)
+            else:
+                return x
+        else:
+            return x
+
 
     def juarez_W_p(SFS, SIS, AFS):
 
@@ -654,6 +663,51 @@ class BoundaryHandler(Algorithm):
             mutant_vector = lower_bounds + np.random.rand(D) * (upper_bounds - lower_bounds)
 
         return mutant_vector
+    
+           
+    """ 2020 biedrzycki  """
+    def reinitialization(m, l, u):
+        return np.where((m >= l) & (m <= u), m, np.random.uniform(l, u))
+
+    def projection(m, l, u):
+        return np.where(m < l, l, np.where(m > u, u, m))
+
+    def reflection(m, l, u):
+        return np.where(m < l, 2*l - m, np.where(m > u, 2*u - m, m))
+
+    def wrapping(m, l, u):
+        return np.where(m < l, u + (m - l), np.where(m > u, l + (m - u), m))
+
+    def transformation(m, l, u):
+        a_lj = np.minimum((u - l) / 2, (1 + np.abs(l)) / 20)
+        a_uj = np.minimum((u - l) / 2, (1 + np.abs(u)) / 20)
+        
+        mask_l = (l - a_lj <= m) & (m < l + a_lj)
+        mask_u = (u - a_uj <= m) & (m < u + a_uj)
+        
+        m_transformed = np.where(mask_l, l + ((m - (l - a_lj))**2 / (4 * a_lj)), m)
+        m_transformed = np.where(mask_u, u - ((m - (u + a_uj))**2 / (4 * a_uj)), m_transformed)
+        
+        return np.where((m >= l + a_lj) & (m <= u - a_uj), m, m_transformed)
+
+    def projection_to_midpoint(m, l, u):
+        midpoint = (l + u) / 2
+        alpha = np.minimum((m - midpoint) / (m - l), (m - midpoint) / (u - m))
+        return (1 - alpha) * midpoint + alpha * m
+
+    def rand_base(m, l, u, o):
+        return np.where(m < l, np.random.uniform(l, o), np.where(m > u, np.random.uniform(o, u), m))
+
+    def midpoint_base(m, l, u, o):
+        return np.where(m < l, (l + o) / 2, np.where(m > u, (o + u) / 2, m))
+
+    def conservative(m, l, u, o):
+        return np.where((m >= l) & (m <= u), m, o)
+
+    def projection_to_base(m, l, u, o):
+        alpha = np.minimum((m - o) / (m - l), (m - o) / (u - m))
+        return (1 - alpha) * o + alpha * m
+        
     
     """ 2023  """
     
