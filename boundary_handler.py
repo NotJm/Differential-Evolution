@@ -631,7 +631,32 @@ class BoundaryHandler(Algorithm):
         else:
             return min(SIS, key=lambda x: np.linalg.norm(x))
 
+        
+    """ 2019 juarez efren  """
+    #example:
+    #max resamples
+    #3 * len(lower_bounds)
+    def res_ran_DE_rand_1_bin(target_vector_index, population, F, lower_bounds, upper_bounds, is_valid,max_resamples=1):
+        D = len(lower_bounds)
+        NP = len(population)
+        resamples = 0
+        valid = False
 
+        while not valid and resamples < 3 * D:
+            r1, r2, r3 = np.random.choice(NP, 3, replace=False)
+            if len(set([target_vector_index, r1, r2, r3])) != 4:
+                continue
+            
+            mutant_vector = population[r1] + F * (population[r2] - population[r3])
+            mutant_vector = np.clip(mutant_vector, lower_bounds, upper_bounds)
+            resamples += 1
+            is_valid(mutant_vector, lower_bounds, upper_bounds)
+
+        if not valid:
+            mutant_vector = lower_bounds + np.random.rand(D) * (upper_bounds - lower_bounds)
+
+        return mutant_vector
+    
     """ 2023  """
     
     def andreaa_saturation(b, a, y):
