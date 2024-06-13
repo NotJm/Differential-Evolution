@@ -643,7 +643,7 @@ class BoundaryHandler(Algorithm):
     #example:
     #max resamples
     #3 * len(lower_bounds)
-    def juarez_res_ran_DE_rand_1_bin(target_vector_index, population, F, lower_bounds, upper_bounds, is_valid, max_resamples=1):
+    def juarez_res_ran_DE_rand_1_bin(target_vector_index, population, F, lower_bounds, upper_bounds, is_valid, max_resamples):
         D = len(lower_bounds)
         NP = len(population)
         resamples = 0
