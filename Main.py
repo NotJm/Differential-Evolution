@@ -1,72 +1,95 @@
-import gc
+# Clases para el manejo de límites y restricciones
 from boundary_handler import BoundaryHandler
-from contraints_functions import ConstriantsFunctionsHandler
+from constraints_functions import ConstriantsFunctionsHandler
 
+# Funciones Generalizadas
 from utils.constants import EXECUTIONS
-from utils.convergencia import generate_convergencia_mean_graphic
-from utils.calculate_mean import calculate_mean_boxes_constraints
-
+from utils.generate_csv import save_results_csv_file
+from utils.calculate_mean import calculate_mean
 # Funciones objetivas
 from functions.cec2020problems import *
 
+import pandas as pd
+import matplotlib.pyplot as plt
+import os
+
+# Algoritmo
 from differential_evolution import Differential_Evolution
 
+# Garbage collector
+import gc
+import numpy as np
+
+problems = {
+    "R01": CEC2020_RC01,
+    "R02": CEC2020_RC02,
+    "R03": CEC2020_RC03,
+    "R06": CEC2020_RC06, 
+}
+
+
+
+bounds = {
+    "juarez-centroide": BoundaryHandler.juarez_centroide,
+    "adham-clamp": BoundaryHandler.adham_clamp_position,
+    "adham-shrink": BoundaryHandler.adham_shrink_position,
+    "qin-wrapping": BoundaryHandler.qin_wrapping,
+    "qin-reflection": BoundaryHandler.qin_reflection,
+    "qin-boundary-repair": BoundaryHandler.qin_boundary_repair
+}
+
 def run():
-    problema = CEC2020_RC01()
-    
-    results_generate_lampiden = []
-    results_generate_centroid = []
+    all_results = []
 
-    for _ in range(1, EXECUTIONS + 1):
-        print(f"Execution {_}:")
-        
-        # Ejecutar Differential Evolution sin centroid
-        diffential_evolution = Differential_Evolution(
-            problema.fitness,
-            ConstriantsFunctionsHandler.a_is_better_than_b_deb,
-            BoundaryHandler.periodic_mode,
-            (problema.superior, problema.inferior),
-            problema.rest_g,
-            problema.rest_h,
-            centroide=False
-        )
-        diffential_evolution.evolution(verbose=True)
-        results_generate_lampiden.append(diffential_evolution.solutions_generate)
-        
-        # Liberar memoria innecesaria
-        del diffential_evolution
-        gc.collect()
-        
-        # Ejecutar Differential Evolution con centroid
-        differentia_Evolution_ceontroide = Differential_Evolution(
-            problema.fitness,
-            ConstriantsFunctionsHandler.a_is_better_than_b_deb,
-            BoundaryHandler.calculate_centroid,
-            (problema.superior, problema.inferior),
-            problema.rest_g,
-            problema.rest_h,
-            centroide=True
-        )
-        
-        differentia_Evolution_ceontroide.evolution(verbose=True)
-        results_generate_centroid.append(differentia_Evolution_ceontroide.solutions_generate)
-        
-        # Liberar memoria innecesaria
-        del differentia_Evolution_ceontroide
-        gc.collect()
+    for problem_name, problem_class in problems.items():
+        problema = problem_class()
 
-    # Calcular las medias para cada método
-    mean, mean_centroide = calculate_mean_boxes_constraints(results_generate_lampiden, results_generate_centroid)
-     
-    # Generar la gráfica de convergencia
-    generate_convergencia_mean_graphic(
-        ["Zhang Handling Periodic Mode Constraint", "Juarez Efren Centroid Constraint"],  # Nombres de los métodos
-        "Zhang vs Juarez Efren.png",  # Nombre del archivo de la gráfica
-        "Zhang Handling Periodic Mode Constraint vs Juarez Efren Centroid Constraint",  # Título de la gráfica
-        "Generations",  # Etiqueta del eje x
-        "Violations",  # Etiqueta del eje y
-        (mean, mean_centroide)  # Medias de los métodos
-    )
+        results = {
+            "juarez-centroide": np.zeros((EXECUTIONS, 1)),
+            "adham-clamp": np.zeros((EXECUTIONS, 1)),
+            "adham-shrink": np.zeros((EXECUTIONS, 1)),
+            "qin-wrapping": np.zeros((EXECUTIONS, 1)),
+            "qin-reflection": np.zeros((EXECUTIONS, 1)),
+            "qin-boundary-repair": np.zeros((EXECUTIONS, 1))
+        }
+        
+        for _ in range(EXECUTIONS):
+            print(f"Execution {_ + 1} for problem {problem_name}:")
+            for key, boundary_function in bounds.items():
+                print(f"Constraint {key}:")
+                algorithm = Differential_Evolution(
+                    problema.fitness,
+                    ConstriantsFunctionsHandler.a_is_better_than_b_deb,
+                    bounds_constraints=BoundaryHandler.mirror if key == "juarez-centroide" else boundary_function,
+                    bounds=(problema.superior, problema.inferior),
+                    g_functions=problema.rest_g,
+                    h_functions=problema.rest_h,
+                    centroide=(key == "juarez-centroide"),
+                    w_p_function=BoundaryHandler.juarez_W_p if key == "juarez-centroide" else None,
+                    centroide_function=BoundaryHandler.juarez_centroide if key == "juarez-centroide" else None,
+                )
+                
+                algorithm.evolution(verbose=True)
+                
+               
+                del algorithm
+                gc.collect()
+        
+        # Guardar los resultados en el formato deseado
+        for key, result in results.items():
+            for fitness in result:
+                all_results.append({
+                    "Problema": problem_name,
+                    "Restriccion": key,
+                    "Fitness": fitness[0]
+                })
+
+    # Crear DataFrame y guardar en CSV
+    df_results = pd.DataFrame(all_results)
+    df_results.to_csv("results_combined.csv", index=False)
+    print("Resultados guardados en 'results_combined.csv'")
+
 
 if __name__ == "__main__":
-    run() 
+    pass
+    

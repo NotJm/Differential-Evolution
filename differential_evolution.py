@@ -1,11 +1,11 @@
 from typing import Callable, Tuple, List
 from algorithm import Algorithm
-from contraints_functions import ConstriantsFunctionsHandler
+from constraints_functions import ConstriantsFunctionsHandler
 from utils.constants import SIZE_POPULATION, GENERATIONS
-from utils.convergencia import generate_convergencia_graphic
 from tqdm import tqdm
 from mutation_strategy import MutationStrategies
 import numpy as np
+
 
 class Differential_Evolution(Algorithm):
     def __init__(
@@ -18,8 +18,10 @@ class Differential_Evolution(Algorithm):
         h_functions: List[Callable] = [],
         F: float = 0.7,
         CR: float = 0.9,
-        strategy: str = 'rand1',
-        centroide: bool = True
+        strategy: str = "rand1",
+        centroide: bool = False,
+        w_p_function: Callable = None,
+        centroide_function: Callable = None
     ):
 
         self.F = F
@@ -29,14 +31,16 @@ class Differential_Evolution(Algorithm):
         self.h_functions = h_functions
         self.solutions_generate = []
 
-        self.F = F  
-        self.CR = CR  
-        self.upper, self.lower = bounds  
-        self.g_functions = g_functions  
-        self.h_functions = h_functions  
+        self.F = F
+        self.CR = CR
+        self.upper, self.lower = bounds
+        self.g_functions = g_functions
+        self.h_functions = h_functions
         self.strategy = strategy
+        
         self.centroide = centroide
-
+        self.centroide_function = centroide_function
+        self.w_p_function = w_p_function
 
         self.population = self.generate(self.upper, self.lower)
         self.fitness = np.zeros(SIZE_POPULATION)
@@ -63,17 +67,17 @@ class Differential_Evolution(Algorithm):
     def _mutation_operator_(self, idx):
 
         samples = np.random.choice(SIZE_POPULATION, 5, replace=False)
-        if self.strategy == 'best1':
+        if self.strategy == "best1":
             return self.mutation_strategies._best1(samples)
-        elif self.strategy == 'rand1':
+        elif self.strategy == "rand1":
             return self.mutation_strategies._rand1(samples)
-        elif self.strategy == 'randtobest1':
+        elif self.strategy == "randtobest1":
             return self.mutation_strategies._randtobest1(samples)
-        elif self.strategy == 'currenttobest1':
+        elif self.strategy == "currenttobest1":
             return self.mutation_strategies._currenttobest1(idx, samples)
-        elif self.strategy == 'best2':
+        elif self.strategy == "best2":
             return self.mutation_strategies._best2(samples)
-        elif self.strategy == 'rand2':
+        elif self.strategy == "rand2":
             return self.mutation_strategies._rand2(samples)
         else:
             raise ValueError(f"Unknown strategy: {self.strategy}")
@@ -88,8 +92,7 @@ class Differential_Evolution(Algorithm):
         trial[prob_crossover | (np.arange(dimensions) == j_rand)] = mutant[
             prob_crossover | (np.arange(dimensions) == j_rand)
         ]
-        
-        
+
         return trial
 
     def _selection_operator_(self, idx, trial):
@@ -131,8 +134,7 @@ class Differential_Evolution(Algorithm):
                 self.gbest_fitness = current_fitness
                 self.gbest_violation = current_violation
                 self.gbest_individual = self.population[idx]
-                
-                self.solutions_generate.append(self.gbest_violation)
+
 
     def report(self):
         print("================================")
@@ -144,31 +146,26 @@ class Differential_Evolution(Algorithm):
 
     def evolution(self, verbose: bool = True):
         for _ in tqdm(range(GENERATIONS), desc="Evolucionando"):
-            
-            if self.centroide:
-                self.SFS = [ind for ind, v in zip(self.population, self.violations) if v == 0]
-                self.SIS = [ind for ind, v in zip(self.population, self.violations) if v > 0]
-            
+
             for i in range(SIZE_POPULATION):
                 objective = self.population[i]
                 mutant = self._mutation_operator_(i)
                 trial = self._crossover_operator_(objective, mutant)
-                if self.centroide:
-                    if not np.all((self.lower <= trial) & (trial <= self.upper)):
-                        trial = self.bounds_constraints(trial, self.lower, self.upper, SFS=self.SFS, SIS=self.SIS, K=3)
-                else: trial = self.bounds_constraints(self.upper, self.lower, trial)
-
+                trial = self.bounds_constraints(self.upper, self.lower, trial)
                 self._selection_operator_(i, trial)
-
+                
+                if self.centroide:
+                    SFS = [ind for ind, violation in zip(self.population, self.violations) if violation == 0]
+                    SIS = [ind for ind, violation in zip(self.population, self.violations) if violation != 0]
+                    AFS = len(SFS)
+                    W_p = self.w_p_function(SFS, SIS, AFS)
+                    W_r_list = [self.population[np.random.randint(SIZE_POPULATION)] for _ in range(3)]
+                    trial = self.centroide_function(trial, W_p, W_r_list, self.upper, self.lower)
+                    trial = self.bounds_constraints(self.upper, self.lower, trial)
+                    self._selection_operator_(i, trial)
+                    
+                
             self.update_position_gbest_population()
-
-        # generate_convergencia_graphic(
-        #     self.solutions_generate,
-        #     "report/cec2020/Centroid Constriant CEC2020 R01.png",
-        #     "Box Constraints CEC2020 R01 - Centroide Constraint",
-        #     "Iteraciones",
-        #     "Infracciones"
-        # )
 
         if verbose:
             self.report()
