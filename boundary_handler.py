@@ -641,31 +641,47 @@ class BoundaryHandler(Algorithm):
         y_mirrored = np.where(y < a, 2 * a - y, y)
         y_mirrored = np.where(y_mirrored > b, 2 * b - y_mirrored, y_mirrored)
         return y_mirrored
+    # v: Vector de velocidades de partículas.
+    # fitness: Vector de valores de fitness de las partículas.
+    # bad_fitness_value: Valor de fitness malo asignado a partículas fuera de los límites.
+    # R: Vector de referencia factible.
+    # mean: Media de la población actual.
+    # var: Varianza de la población actual.
 
-    def vector_wise_correction(y, a, b, R):
+    def saturation(particle, lower_bound, upper_bound):
+        return np.clip(particle, lower_bound, upper_bound)
+
+    def mirror(particle, lower_bound, upper_bound):
+        particle_mirrored = np.where(particle < lower_bound, 2 * lower_bound - particle, particle)
+        particle_mirrored = np.where(particle_mirrored > upper_bound, 2 * upper_bound - particle_mirrored, particle_mirrored)
+        return particle_mirrored
+
+    def vector_wise_correction(particle, lower_bound, upper_bound, R):
         alpha = np.min([
-            np.where(y < a, (R - a) / (R - y), 1),
-            np.where(y > b, (b - R) / (y - R), 1)
+            np.where(particle < lower_bound, (R - lower_bound) / (R - particle), 1),
+            np.where(particle > upper_bound, (upper_bound - R) / (particle - R), 1)
         ])
-        return alpha * y + (1 - alpha) * R
+        return alpha * particle + (1 - alpha) * R
 
     def andreaa_uniform(b, a, y):
         return np.random.uniform(a, b, size=y.shape)
+    def uniform(particle, lower_bound, upper_bound):
+        return np.random.uniform(lower_bound, upper_bound, size=particle.shape)
 
-    def beta(y, a, b, mean, var):
-        m = (mean - a) / (b - a)
-        v = var / (b - a) ** 2
+    def beta(particle, lower_bound, upper_bound, mean, var):
+        m = (mean - lower_bound) / (upper_bound - lower_bound)
+        v = var / (upper_bound - lower_bound) ** 2
         alpha = m * ((m * (1 - m) / v) - 1)
         beta_param = alpha * ((1 - m) / m)
-        return a + np.random.beta(alpha, beta_param, size=y.shape) * (b - a)
+        return lower_bound + np.random.beta(alpha, beta_param, size=particle.shape) * (upper_bound - lower_bound)
 
-    def exp_confined(y, a, b, R):
-        r = np.random.uniform(0, 1, size=y.shape)
-        y_exp = np.where(
-            y < a, a - np.log(1 + r * (np.exp(a - R) - 1)),
-            b + np.log(1 + (1 - r) * (np.exp(R - b) - 1))
+    def exp_confined(particle, lower_bound, upper_bound, R):
+        r = np.random.uniform(0, 1, size=particle.shape)
+        particle_exp = np.where(
+            particle < lower_bound, lower_bound - np.log(1 + r * (np.exp(lower_bound - R) - 1)),
+            upper_bound + np.log(1 + (1 - r) * (np.exp(R - upper_bound) - 1))
         )
-        return y_exp
+        return particle_exp
 
     def absorbing(y, a, b, v):
         y_absorbed = np.where(y < a, a, y)
@@ -688,10 +704,29 @@ class BoundaryHandler(Algorithm):
         v_damped = np.where(y < a, -v * np.random.uniform(0, 1), v)
         v_damped = np.where(y_damped > b, -v_damped * np.random.uniform(0, 1), v_damped)
         return y_damped, v_damped
+    def absorbing(particle, lower_bound, upper_bound, velocity):
+        particle_absorbed = np.where(particle < lower_bound, lower_bound, particle)
+        particle_absorbed = np.where(particle_absorbed > upper_bound, upper_bound, particle_absorbed)
+        velocity_absorbed = np.where((particle < lower_bound) | (particle > upper_bound), 0, velocity)
+        return particle_absorbed, velocity_absorbed
 
-    def invisible(y, a, b, fitness, bad_fitness_value):
-        fitness_invisible = np.where((y < a) | (y > b), bad_fitness_value, fitness)
-        return y, fitness_invisible
+    def reflecting(particle, lower_bound, upper_bound, velocity):
+        particle_reflected = np.where(particle < lower_bound, lower_bound, particle)
+        particle_reflected = np.where(particle_reflected > upper_bound, upper_bound, particle_reflected)
+        velocity_reflected = np.where(particle < lower_bound, -velocity, velocity)
+        velocity_reflected = np.where(particle_reflected > upper_bound, -velocity_reflected, velocity_reflected)
+        return particle_reflected, velocity_reflected
+
+    def damping(particle, lower_bound, upper_bound, velocity):
+        particle_damped = np.where(particle < lower_bound, lower_bound, particle)
+        particle_damped = np.where(particle_damped > upper_bound, upper_bound, particle_damped)
+        velocity_damped = np.where(particle < lower_bound, -velocity * np.random.uniform(0, 1), velocity)
+        velocity_damped = np.where(particle_damped > upper_bound, -velocity_damped * np.random.uniform(0, 1), velocity_damped)
+        return particle_damped, velocity_damped
+
+    def invisible(particle, lower_bound, upper_bound, fitness, bad_fitness_value):
+        fitness_invisible = np.where((particle < lower_bound) | (particle > upper_bound), bad_fitness_value, fitness)
+        return particle, fitness_invisible
 
     def invisible_reflecting(y, a, b, v, fitness, bad_fitness_value):
         y_invisible_reflecting, v_reflected = BoundaryHandler.reflecting(y, a, b, v)
