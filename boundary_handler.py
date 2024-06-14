@@ -638,37 +638,13 @@ class BoundaryHandler(Algorithm):
         if AFS > 0 and np.random.rand() > 0.5:
             Wp = SFS[np.random.randint(AFS)]
         else:
-            if len(SIS) > 0:
-                Wp = SIS[np.argmin([np.sum(np.maximum(0, lower - ind) + np.maximum(0, ind - upper)) for ind in SIS])]
-            else:
-                # Si SIS está vacío, seleccionamos aleatoriamente un vector de la población
-                Wp = population[np.random.randint(NP)]
+            return min(SIS, key=lambda x: np.linalg.norm(x))
 
-        Wr = np.empty((K, D))
-        for i in range(K):
-            Wi = np.copy(X)
-            for j in range(D):
-                if Wi[j] < lower[j] or Wi[j] > upper[j]:
-                    Wi[j] = lower[j] + np.random.rand() * (upper[j] - lower[j])
-            Wr[i] = Wi
-        
-        Xc = (Wp + Wr.sum(axis=0)) / (K + 1)
-
-        return Xc
-
-    # example:
-    # max resamples
-    # 3 * len(lowers)
-    def juarez_res_ran_DE_rand_1_bin(
-        target_vector_index,
-        population,
-        F,
-        lowers,
-        uppers,
-        is_valid,
-        max_resamples=1,
-    ):
-        D = len(lowers)
+    #example:
+    #max resamples
+    #3 * len(lower_bounds)
+    def juarez_res_ran_DE_rand_1_bin(target_vector_index, population, F, lower, upper, is_valid, max_resamples=1):
+        D = len(lower)
         NP = len(population)
         resamples = 0
         valid = False
@@ -679,13 +655,13 @@ class BoundaryHandler(Algorithm):
                 continue
 
             mutant_vector = population[r1] + F * (population[r2] - population[r3])
-            mutant_vector = np.clip(mutant_vector, lowers, uppers)
+            mutant_vector = np.clip(mutant_vector, lower, upper)
             resamples += 1
-            is_valid(uppers, lowers, mutant_vector)
+            is_valid(upper, lower, mutant_vector)
 
         if not valid:
-            mutant_vector = lowers + np.random.rand(D) * (
-                uppers - lowers
+            mutant_vector = lower + np.random.rand(D) * (
+                upper - lower
             )
 
         return mutant_vector
@@ -777,9 +753,8 @@ class BoundaryHandler(Algorithm):
 
     def andreaa_uniform(b, a, y):
         return np.random.uniform(a, b, size=y.shape)
-
-    def uniform(particle, lower, upper):
-        return np.random.uniform(lower, upper, size=particle.shape)
+    def uniform(particle, lower_bound, upper_bound):
+        return np.random.uniform(lower_bound, upper_bound, size=particle.shape)
 
     def beta(particle, lower, upper, mean, var):
         m = (mean - lower) / (upper - lower)
