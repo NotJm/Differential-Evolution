@@ -47,6 +47,7 @@ def run():
         lower_bound, upper_bound = fitness_bounds[problem_name]
         results = {key: np.zeros((EXECUTIONS, 1)) for key in bounds.keys()}
 
+<<<<<<< HEAD
         for _ in range(EXECUTIONS):
             print(f"Execution {_ + 1} for problem {problem_name}:")
             for key, boundary_function in bounds.items():
@@ -61,6 +62,10 @@ def run():
                         h_functions=problema.rest_h,
                         centroid=(key == "juarez-centroid")
                     )
+=======
+    with Pool(5) as pool:
+        results = pool.map(execute_experiment, tasks)
+>>>>>>> d36a495477e4e07a583f7fcdedf79312d850797f
 
                     algorithm.evolution(verbose=True)
                     
