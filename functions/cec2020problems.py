@@ -372,131 +372,131 @@ class CEC2020_RC06(Problem):
 
     @staticmethod
     def CEC2020_RC06_h1(x):
-        return x[3] + x[2] + x[1] + x[0] 
-    
+        return x[3] + x[2] + x[1] + x[0] - 300  # restricción de igualdad = 300
+
     @staticmethod
     def CEC2020_RC06_h2(x):
-        return x[5] +  x[7] + x[6] # restriccion de igualdad de 0 
+        return x[5] - x[7] - x[6]   # restricción de igualdad = 0
 
     @staticmethod
     def CEC2020_RC06_h3(x):
-        return x[8] + x[10] + x[9] + x[11] # restriccion de igualdad de 0 
+        return x[8] - x[10] - x[9] - x[11]  # restricción de igualdad = 0
 
     @staticmethod
     def CEC2020_RC06_h4(x):
-        return x[13] + x[15] + x[16] + x[14] # restriccion de igualdad de 0 
+        return x[13] - x[15] - x[16] - x[14]    # restricción de igualdad = 0
 
     @staticmethod
     def CEC2020_RC06_h5(x):
-        return x[17] + x[19] + x[18] # restriccion de igualdad de 0 
+        return x[17] - x[19] - x[18]    # restricción de igualdad = 0
 
     @staticmethod
     def CEC2020_RC06_h6(x):
-        return x[5] * x[20]  -  x[5] * x[21]  -  x[8] * x[22] 
+        return x[4] * x[20] - x[5] * x[21] - x[8] * x[22]   # restricción de igualdad = 0
 
-    @staticmethod 
+    @staticmethod
     def CEC2020_RC06_h7(x):
-        return  x[4] * x[23]  -  x[5] * x[24]  -  x[8] * x[25] # restricciones de igualdad de 0 
+        return x[4] * x[23] - x[5] * x[24] - x[8] * x[25]   # restricción de igualdad = 0
 
-    @staticmethod 
+    @staticmethod
     def CEC2020_RC06_h8(x):
-        return x[4] * x[26]  -  x[5] * x[27]  -  x[8] * x[28] # restricciones de igualdad de 0 
+        return x[4] * x[26] - x[5] * x[27] - x[8] * x[28]   # restricción de igualdad = 0
 
     @staticmethod
     def CEC2020_RC06_h9(x):
-        return x[12] * x[29]  -  x[13] * x[30]  -  x[17] * x[31] # restricciones de igualdad de 0 
+        return x[12] * x[29] - x[13] * x[30] - x[17] * x[31]    # restricción de igualdad = 0
 
     @staticmethod
     def CEC2020_RC06_h10(x):
-        return x[12] * x[32]  -  x[13] * x[33]  -  x[17] * x[34] # restricciones de igualdad de 0 
+        return x[12] * x[32] - x[13] * x[33] - x[17] * x[34]    # restricción de igualdad = 0
 
     @staticmethod
     def CEC2020_RC06_h11(x):
-        return x[12] * x[35]  -  x[13] * x[36]  -  x[17] * x[34] # restricciones de igualdad de 0 13
+        return x[12] * x[35] - x[13] * x[36] - x[17] * x[34]    # restricción de igualdad = 0
 
     @staticmethod
     def CEC2020_RC06_h12(x):
-        return 0.333 * x[0]   +  x[14] * x[30]  -  x[4] * x[20]    # restricciones de igualdad de 0 
+        return 0.333 * x[0] + x[14] * x[30] - x[4] * x[20]  # restricción de igualdad = 0
 
     @staticmethod
     def CEC2020_RC06_h13(x):
-        return 0.333 * x[0]   +  x[14] * x[33]  -  x[4] * x[23]    # restricciones de igualdad de 0 
+        return 0.333 * x[0] + x[14] * x[33] - x[4] * x[23]  # restricción de igualdad = 0
 
     @staticmethod
     def CEC2020_RC06_h14(x):
-        return 0.333 * x[0]   +  x[14] * x[36]  -  x[4] * x[26]    # restricciones de igualdad de 0  
+        return 0.333 * x[0] + x[14] * x[36] - x[4] * x[26]  # restricción de igualdad = 0
 
     @staticmethod
     def CEC2020_RC06_h15(x):
-        return 0.333 * x[1]   +  x[9] * x[22]  -  x[12] * x[29]    # restricciones de igualdad de 0  
+        return 0.333 * x[1] + x[9] * x[22] - x[12] * x[29]  # restricción de igualdad = 0
 
     @staticmethod
     def CEC2020_RC06_h16(x):
-        return 0.333 * x[1]   +  x[9] * x[25]  -  x[12] * x[32]    # restricciones de igualdad de 0  
+        return 0.333 * x[1] + x[9] * x[25] - x[12] * x[32]  # restricción de igualdad = 0
 
     @staticmethod
     def CEC2020_RC06_h17(x):
-        return 0.333 * x[1]   +  x[9] * x[28]  -  x[12] * x[35]    # restricciones de igualdad de 0
+        return 0.333 * x[1] + x[9] * x[28] - x[12] * x[35]  # restricción de igualdad = 0
 
     @staticmethod
     def CEC2020_RC06_h18(x):
-        return 0.333 * x[2]   +  x[6] * x[21] +   x[10] * x[22]  +   x[15] * x[30] +   x[18] * x[31]     # restricciones de igualdad de 30
+        return 0.333 * x[2] + x[6] * x[21] + x[10] * x[22] + x[15] * x[30] + x[18] * x[31] - 30 # restricción de igualdad = 30
 
     @staticmethod
     def CEC2020_RC06_h19(x):
-        return 0.333 * x[2]   +  x[6] * x[24] +   x[10] * x[25]  +   x[15] * x[33] +   x[18] * x[34]     # restricciones de igualdad de 50
+        return 0.333 * x[2] + x[6] * x[24] + x[10] * x[25] + x[15] * x[33] + x[18] * x[34] - 50 # restricción de igualdad = 50
 
     @staticmethod
     def CEC2020_RC06_h20(x):
-        return 0.333 * x[2]   +  x[6] * x[27] +   x[10] * x[28]  +   x[15] * x[36] +   x[18] * x[37]     # restricciones de igualdad de 30
+        return 0.333 * x[2] + x[6] * x[27] + x[10] * x[28] + x[15] * x[36] + x[18] * x[37] - 30 # restricción de igualdad = 30
 
     @staticmethod
     def CEC2020_RC06_h21(x):
-        return x[20] + x[23] + x[26]      # restricciones de igualdad de 1
+        return x[20] + x[23] + x[26] - 1    # restricción de igualdad = 1
 
     @staticmethod
     def CEC2020_RC06_h22(x):
-        return x[21] + x[24] + x[27]      # restricciones de igualdad de 1
+        return x[21] + x[24] + x[27] - 1    # restricción de igualdad = 1
 
     @staticmethod
     def CEC2020_RC06_h23(x):
-        return x[22] + x[25] + x[28]      # restricciones de igualdad de 1
+        return x[22] + x[25] + x[28] - 1    # restricción de igualdad = 1
 
     @staticmethod
     def CEC2020_RC06_h24(x):
-        return x[29] + x[32] + x[35]      # restricciones de igualdad de 1
+        return x[29] + x[32] + x[35] - 1    # restricción de igualdad = 1
 
     @staticmethod
     def CEC2020_RC06_h25(x):
-        return x[30] + x[33] + x[36]      # restricciones de igualdad de 1
+        return x[30] + x[33] + x[36] - 1    # restricción de igualdad = 1
 
     @staticmethod
     def CEC2020_RC06_h26(x):
-        return x[31] + x[34] + x[37]      # restricciones de igualdad de 1
-    
-    @staticmethod 
+        return x[31] + x[34] + x[37] - 1    # restricción de igualdad = 1
+
+    @staticmethod
     def CEC2020_RC06_h27(x):
-        return x[25] 
-    
+        return x[25]    
+
     @staticmethod
     def CEC2020_RC06_h28(x):
         return x[27]
-    
+
     @staticmethod
     def CEC2020_RC06_h29(x):
         return x[22]
-    
+
     @staticmethod
     def CEC2020_RC06_h30(x):
         return x[36]
-    
+
     @staticmethod
     def CEC2020_RC06_h31(x):
         return x[31]
 
     @staticmethod
     def CEC2020_RC06_h32(x):
-        return x[34] 
+        return x[34]
 
 #********************************************************************************************************************************
 
