@@ -638,7 +638,23 @@ class BoundaryHandler(Algorithm):
         if AFS > 0 and np.random.rand() > 0.5:
             Wp = SFS[np.random.randint(AFS)]
         else:
-            return min(SIS, key=lambda x: np.linalg.norm(x))
+            if len(SIS) > 0:
+                Wp = SIS[np.argmin([np.sum(np.maximum(0, lower - ind) + np.maximum(0, ind - upper)) for ind in SIS])]
+            else:
+                # Si SIS está vacío, seleccionamos aleatoriamente un vector de la población
+                Wp = population[np.random.randint(NP)]
+
+        Wr = np.empty((K, D))
+        for i in range(K):
+            Wi = np.copy(X)
+            for j in range(D):
+                if Wi[j] < lower[j] or Wi[j] > upper[j]:
+                    Wi[j] = lower[j] + np.random.rand() * (upper[j] - lower[j])
+            Wr[i] = Wi
+        
+        Xc = (Wp + Wr.sum(axis=0)) / (K + 1)
+
+        return Xc
 
     #example:
     #max resamples
