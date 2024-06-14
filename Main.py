@@ -1,11 +1,12 @@
 import pandas as pd
 import gc
 import numpy as np
-from multiprocessing import Pool
+import tabulate
 from boundary_handler import BoundaryHandler
 from constraints_functions import ConstriantsFunctionsHandler
 from utils.constants import EXECUTIONS
 from differential_evolution import Differential_Evolution
+from utils.calculate_time_execution import measurement_timer_execution
 from functions.cec2020problems import *
 from functions.cec2006problems import *
 
@@ -37,75 +38,64 @@ bounds = {
     "shi_classical": BoundaryHandler.shi_classical_boundary_handling,
 }
 
-def execute_experiment(args):
-    problem_name, problem_class, execution, key, boundary_function = args
-    problema = problem_class()
-    lower_bound, upper_bound = fitness_bounds[problem_name]
-    
-    try:
-        algorithm = Differential_Evolution(
-            problema.fitness,
-            ConstriantsFunctionsHandler.a_is_better_than_b_deb,
-            bounds_constraints=boundary_function,
-            bounds=(problema.superior, problema.inferior),
-            g_functions=problema.rest_g,
-            h_functions=problema.rest_h,
-            centroid=(key == "juarez-centroid")
-        )
-
-        algorithm.evolution(verbose=False)
-        
-        if lower_bound <= algorithm.gbest_fitness <= upper_bound:
-            fitness = algorithm.gbest_fitness
-        else:
-            fitness = np.nan
-            print(f"Fitness fuera de los límites: {algorithm.gbest_fitness}")
-
-    except Exception as e:
-        print(f"Error con constraint {key} en ejecución {execution + 1}: {e}")
-        fitness = np.nan
-
-    del algorithm
-    gc.collect()
-    return (problem_name, key, fitness)
-
 def run():
     all_results = []
     precision_results = []
-    tasks = []
 
     for problem_name, problem_class in problems.items():
-        for key, boundary_function in bounds.items():
-            for execution in range(EXECUTIONS):
-                tasks.append((problem_name, problem_class, execution, key, boundary_function))
+        problema = problem_class()
+        lower_bound, upper_bound = fitness_bounds[problem_name]
+        results = {key: np.zeros((EXECUTIONS, 1)) for key in bounds.keys()}
 
-    with Pool(3) as pool:
-        results = pool.map(execute_experiment, tasks)
+        for _ in range(EXECUTIONS):
+            print(f"Execution {_ + 1} for problem {problem_name}:")
+            for key, boundary_function in bounds.items():
+                print(f"Constraint {key}:")
+                try:
+                    algorithm = Differential_Evolution(
+                        problema.fitness,
+                        ConstriantsFunctionsHandler.a_is_better_than_b_deb,
+                        bounds_constraints=boundary_function,
+                        bounds=(problema.superior, problema.inferior),
+                        g_functions=problema.rest_g,
+                        h_functions=problema.rest_h,
+                        centroid=(key == "juarez-centroid")
+                    )
 
-    results_dict = {key: [] for key in bounds.keys()}
-    
-    for problem_name, key, fitness in results:
-        if not np.isnan(fitness):
-            results_dict[key].append(fitness)
-            all_results.append(
-                {
-                    "Problema": problem_name,
-                    "Restriccion": key,
-                    "Fitness": fitness,
-                }
-            )
-    
-    for key, fitness_list in results_dict.items():
-        if fitness_list:
-            avg_fitness = np.mean(fitness_list)
-            precision = np.std(fitness_list)
-            precision_results.append(
-                {
-                    "Problema": problem_name,
-                    "Restriccion": key,
-                    "Precision": precision,
-                }
-            )
+                    algorithm.evolution(verbose=True)
+                    
+                    if lower_bound <= algorithm.gbest_fitness <= upper_bound:
+                        results[key][_] = algorithm.gbest_fitness
+                    else:
+                        print(f"Fitness fuera de los límites: {algorithm.gbest_fitness}")
+
+                except Exception as e:
+                    print(f"Error con constraint {key} en ejecución {_ + 1}: {e}")
+
+                del algorithm
+                gc.collect()
+
+        # Guardar los resultados en el formato deseado
+        for key, result in results.items():
+            valid_fitness = [fitness[0] for fitness in result if not np.isnan(fitness)]
+            if valid_fitness:
+                avg_fitness = np.mean(valid_fitness)
+                precision = np.std(valid_fitness)  # Calcula la precisión como desviación estándar
+                precision_results.append(
+                    {
+                        "Problema": problem_name,
+                        "Restriccion": key,
+                        "Precision": precision,
+                    }
+                )
+                for fitness in valid_fitness:
+                    all_results.append(
+                        {
+                            "Problema": problem_name,
+                            "Restriccion": key,
+                            "Fitness": fitness,
+                        }
+                    )
 
     # Crear DataFrame y guardar en CSV
     df_results = pd.DataFrame(all_results)
