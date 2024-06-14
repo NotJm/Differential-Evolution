@@ -1,4 +1,4 @@
-from typing import Callable, Tuple, List
+from typing import Callable, Tuple, List, Dict, Any
 from algorithm import Algorithm
 from constraints_functions import ConstriantsFunctionsHandler
 from utils.constants import SIZE_POPULATION, GENERATIONS
@@ -20,10 +20,9 @@ class Differential_Evolution(Algorithm):
         F: float = 0.7,
         CR: float = 0.9,
         strategy: str = "rand1",
-        centroide: bool = False,
-        w_p_function: Callable = None,
-        centroide_function: Callable = None,
+        centroid=False
     ):
+        
 
         self.F = F
         self.CR = CR
@@ -32,18 +31,9 @@ class Differential_Evolution(Algorithm):
         self.h_functions = h_functions
         self.solutions_generate = []
 
-        self.F = F
-        self.CR = CR
-        self.upper, self.lower = bounds
-        self.g_functions = g_functions
-        self.h_functions = h_functions
         self.strategy = strategy
-
-
-        self.centroide = centroide
-        self.centroide_function = centroide_function
-        self.w_p_function = w_p_function
-
+        self.centroid = centroid
+        
         self.population = self.generate(self.upper, self.lower)
         self.fitness = np.zeros(SIZE_POPULATION)
         self.violations = np.zeros(SIZE_POPULATION)
@@ -81,6 +71,8 @@ class Differential_Evolution(Algorithm):
             return self.mutation_strategies._best2(samples)
         elif self.strategy == "rand2":
             return self.mutation_strategies._rand2(samples)
+        elif self.strategy == "res&ran":
+            return self.mutation_strategies.res_rand(idx, self.lower, self.upper)
         else:
             raise ValueError(f"Unknown strategy: {self.strategy}")
 
@@ -154,31 +146,11 @@ class Differential_Evolution(Algorithm):
                 objective = self.population[i]
                 mutant = self._mutation_operator_(i)
                 trial = self._crossover_operator_(objective, mutant)
-                trial = self.bounds_constraints(self.upper, self.lower, trial)
-                self._selection_operator_(i, trial)
-
-                if self.centroide:
-                    SFS = [
-                        ind
-                        for ind, violation in zip(self.population, self.violations)
-                        if violation == 0
-                    ]
-                    SIS = [
-                        ind
-                        for ind, violation in zip(self.population, self.violations)
-                        if violation != 0
-                    ]
-                    AFS = len(SFS)
-                    W_p = self.w_p_function(SFS, SIS, AFS)
-                    W_r_list = [
-                        self.population[np.random.randint(SIZE_POPULATION)]
-                        for _ in range(3)
-                    ]
-                    trial = self.centroide_function(
-                        trial, W_p, W_r_list, self.upper, self.lower
-                    )
+                if self.centroid:
+                    trial = self.bounds_constraints(trial, self.population, self.lower, self.upper, K=3)
+                else:
                     trial = self.bounds_constraints(self.upper, self.lower, trial)
-                    self._selection_operator_(i, trial)
+                self._selection_operator_(i, trial)
 
             self.update_position_gbest_population()
 

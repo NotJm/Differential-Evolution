@@ -33,7 +33,6 @@ def compare(method_1: Callable, method_2: Callable, upper: np.array, lower: np.a
 
 
 class BoundaryHandler(Algorithm):
-    
     """Boundary Methods Default"""
 
     @staticmethod
@@ -141,10 +140,14 @@ class BoundaryHandler(Algorithm):
     """
 
     @staticmethod
-    def robinson_invisible_walls(x, objective_function, bounds):
-        for i in range(len(x)):
-            if x[i] < bounds[i][0] or x[i] > bounds[i][1]:
-                return np.inf
+    def robinson_invisible_walls(
+        x: np.ndarray,
+        objective_function: Callable[[np.ndarray], float],
+        upper: np.ndarray,
+        lower: np.ndarray,
+    ) -> float:
+        if np.any(x < lower) or np.any(x > upper):
+            return np.inf
         return objective_function(x)
 
     """
@@ -158,12 +161,6 @@ class BoundaryHandler(Algorithm):
     @staticmethod
     def purchia_wrapping(upper, lower, x):
         return lower + np.mod(x - lower, upper - lower)
-
-    """ 2004 Mendes Population """
-
-    """ 2005 Huang Hybrid """
-
-    """ 2006 ClercConfinements """
 
     """
     2007 Adham Particle
@@ -183,37 +180,37 @@ class BoundaryHandler(Algorithm):
         return reinitialized_position
 
     @staticmethod
-    def adham_reflect_position(upper_bound, lower_bound, position):
-        reflected_position = position.copy()
-        below_lower = position < lower_bound
-        above_upper = position > upper_bound
+    def adham_reflect_position(upper, lower, x):
+        reflected_position = x.copy()
+        below_lower = x < lower
+        above_upper = x > upper
 
-        reflected_position[below_lower] = lower_bound[below_lower] + (
-            lower_bound[below_lower] - position[below_lower]
+        reflected_position[below_lower] = lower[below_lower] + (
+            lower[below_lower] - x[below_lower]
         )
-        reflected_position[above_upper] = upper_bound[above_upper] - (
-            position[above_upper] - upper_bound[above_upper]
+        reflected_position[above_upper] = upper[above_upper] - (
+            x[above_upper] - upper[above_upper]
         )
 
         return reflected_position
 
     @staticmethod
-    def adham_shrink_position(upper_bound, lower_bound, position):
-        shrunk_position = position.copy()
-        shrunk_position[position < lower_bound] = lower_bound[position < lower_bound]
-        shrunk_position[position > upper_bound] = upper_bound[position > upper_bound]
+    def adham_shrink_position(upper, lower, x):
+        shrunk_position = x.copy()
+        shrunk_position[x < lower] = lower[x < lower]
+        shrunk_position[x > upper] = upper[x > upper]
 
         return shrunk_position
 
     @staticmethod
-    def adham_eliminate_particles(upper_bound, lower_bound, positions):
-        within_bounds = (positions >= lower_bound) & (positions <= upper_bound)
+    def adham_eliminate_particles(upper, lower, positions):
+        within_bounds = (positions >= lower) & (positions <= upper)
         out_of_bounds = ~np.all(within_bounds, axis=1)
 
         new_positions = positions.copy()
-        new_positions[out_of_bounds] = lower_bound + np.random.rand(
+        new_positions[out_of_bounds] = lower + np.random.rand(
             np.sum(out_of_bounds), positions.shape[1]
-        ) * (upper_bound - lower_bound)
+        ) * (upper - lower)
 
         return new_positions
 
@@ -279,23 +276,6 @@ class BoundaryHandler(Algorithm):
                 x[i] = 2 * upper[i] - x[i]
         return x
 
-    """ 2011 Omeltschuk heterogeneous """
-
-    @staticmethod
-    def phi_static(x, f, constraints, K=1e6):
-        # Evaluar si x cumple con todas las restricciones
-        satisfied_constraints = [g(x) <= 0 for g in constraints["inequality"]] + [
-            abs(h(x)) <= 1e-6 for h in constraints["equality"]
-        ]
-        s = sum(satisfied_constraints)
-        l = len(constraints["inequality"])
-        m = len(constraints["equality"])
-
-        # Calcular la función penalizada
-        if s == l + m:
-            return f(x)
-        else:
-            return K * (1 - s / (l + m))
 
     """ 2012 Shi Experimental """
 
@@ -306,20 +286,20 @@ class BoundaryHandler(Algorithm):
         return new_x
 
     @staticmethod
-    def shi_deterministic_boundary_handling(x, prev_x, lower, upper):
+    def shi_deterministic_boundary_handling(upper, lower, x, prev_x):
         new_x = np.copy(x)
         new_x = np.where(x > upper, (prev_x + upper) / 2, new_x)
         new_x = np.where(x < lower, (prev_x + lower) / 2, new_x)
         return new_x
 
     @staticmethod
-    def shi_stochastic_boundary_handling(upper, lower, particles):
-        num_particles, num_dimensions = particles.shape
+    def shi_stochastic_boundary_handling(upper, lower, population):
+        num_particles, num_dimensions = population.shape
         for i in range(num_particles):
             for j in range(num_dimensions):
-                if particles[i, j] < lower[j] or particles[i, j] > upper[j]:
-                    particles[i, j] = np.random.uniform(lower[j], upper[j])
-        return particles
+                if population[i, j] < lower[j] or population[i, j] > upper[j]:
+                    population[i, j] = np.random.uniform(lower[j], upper[j])
+        return population
 
     """ 2012 Gandomi Evolutionary """
 
@@ -360,19 +340,19 @@ class BoundaryHandler(Algorithm):
 
     @staticmethod
     def bounded_mirror(position, velocity, bounds):
-        lower_bound, upper_bound = bounds
+        lower, upper = bounds
         new_position = position + velocity
 
         for i in range(len(new_position)):
-            if new_position[i] < lower_bound[i]:
-                new_position[i] = lower_bound[i] + (lower_bound[i] - new_position[i])
-            elif new_position[i] > upper_bound[i]:
-                new_position[i] = upper_bound[i] - (new_position[i] - upper_bound[i])
+            if new_position[i] < lower[i]:
+                new_position[i] = lower[i] + (lower[i] - new_position[i])
+            elif new_position[i] > upper[i]:
+                new_position[i] = upper[i] - (new_position[i] - upper[i])
 
             # Aplicando el espejo acotado
-            if new_position[i] < lower_bound[i] or new_position[i] > upper_bound[i]:
-                new_position[i] = lower_bound[i] + (
-                    new_position[i] % (2 * upper_bound[i] - lower_bound[i])
+            if new_position[i] < lower[i] or new_position[i] > upper[i]:
+                new_position[i] = lower[i] + (
+                    new_position[i] % (2 * upper[i] - lower[i])
                 )
 
         return new_position
@@ -551,100 +531,144 @@ class BoundaryHandler(Algorithm):
 
     """ 2016 Abdallah Solving """
 
-    def repair_OEI(individual, best_individual, lower_bound, upper_bound):
-        if lower_bound <= best_individual <= upper_bound:
+    def repair_OEI(individual, best_individual, lower, upper):
+        if lower <= best_individual <= upper:
             return best_individual
-        elif best_individual < lower_bound:
-            return lower_bound
+        elif best_individual < lower:
+            return lower
         else:
-            return upper_bound
+            return upper
 
     def repair_scaling(
         infeasible_value,
-        lower_bound_old,
-        upper_bound_old,
-        lower_bound_new,
-        upper_bound_new,
+        lower_old,
+        upper_old,
+        lower_new,
+        upper_new,
     ):
-        S_old = upper_bound_old - lower_bound_old
-        S_new = upper_bound_new - lower_bound_new
-        return upper_bound_new - ((upper_bound_old - infeasible_value) * S_old / S_new)
+        S_old = upper_old - lower_old
+        S_new = upper_new - lower_new
+        return upper_new - ((upper_old - infeasible_value) * S_old / S_new)
 
     def repair_stochastic_new_boundaries(
-        infeasible_value, lower_bound_new, upper_bound_new
+        infeasible_value, lower_new, upper_new
     ):
-        if infeasible_value > upper_bound_new:
-            return upper_bound_new - 0.50 * np.random.random() * (
-                upper_bound_new - lower_bound_new
+        if infeasible_value > upper_new:
+            return upper_new - 0.50 * np.random.random() * (
+                upper_new - lower_new
             )
-        elif infeasible_value < lower_bound_new:
-            return lower_bound_new + 0.50 * np.random.random() * (
-                upper_bound_new - lower_bound_new
+        elif infeasible_value < lower_new:
+            return lower_new + 0.50 * np.random.random() * (
+                upper_new - lower_new
             )
 
     """ 2016 Agarwl Experimental """
 
-    def agarwl_reflect(upper_bound, lower_bound, position):
+    def agarwl_reflect(upper, lower, position):
         for i in range(len(position)):
-            if position[i] < lower_bound[i]:
-                position[i] = lower_bound[i] + (lower_bound[i] - position[i])
-            elif position[i] > upper_bound[i]:
-                position[i] = upper_bound[i] - (position[i] - upper_bound[i])
+            if position[i] < lower[i]:
+                position[i] = lower[i] + (lower[i] - position[i])
+            elif position[i] > upper[i]:
+                position[i] = upper[i] - (position[i] - upper[i])
         return position
 
-    def agarwl_nearest(upper_bound, lower_bound, position):
+    def agarwl_nearest(upper, lower, position):
         for i in range(len(position)):
-            if position[i] < lower_bound[i]:
-                position[i] = lower_bound[i]
-            elif position[i] > upper_bound[i]:
-                position[i] = upper_bound[i]
+            if position[i] < lower[i]:
+                position[i] = lower[i]
+            elif position[i] > upper[i]:
+                position[i] = upper[i]
         return position
 
-    def hyperbolic_2016(position, velocity, lower_bound, upper_bound):
+    def hyperbolic_2016(position, velocity, lower, upper):
         for i in range(len(position)):
             if velocity[i] > 0:
                 velocity[i] = velocity[i] / (
-                    1 + velocity[i] / (upper_bound[i] - position[i])
+                    1 + velocity[i] / (upper[i] - position[i])
                 )
             elif velocity[i] < 0:
                 velocity[i] = velocity[i] / (
-                    1 + velocity[i] / (position[i] - lower_bound[i])
+                    1 + velocity[i] / (position[i] - lower[i])
                 )
         return velocity
 
     """ 2016 Gandomi Evolutionary """
-    
+
     """ 2018 kadavy and gandomi """
-    def periodic_method(x, lower_bound, upper_bound):
-        if x > upper_bound or x < lower_bound:
-            return lower_bound + (x % (upper_bound - lower_bound))
+
+    def periodic_method(x, lower, upper):
+        if x > upper or x < lower:
+            return lower + (x % (upper - lower))
         else:
             return x
 
- 
-
-    def probabilistic_method(x, lower_bound, upper_bound, probability=0.5):
-        if x > upper_bound or x < lower_bound:
+    def probabilistic_method(x, lower, upper, probability=0.5):
+        if x > upper or x < lower:
             if random.random() < probability:
-                return random.uniform(lower_bound, upper_bound)
+                return random.uniform(lower, upper)
             else:
                 return x
         else:
             return x
+        
+    
 
+    """ 2019 Efren Juarez Centroid """
+    def centroid_method(X, population, lower, upper, K=3):
+        """
+        Implementación del método Centroid para manejo de límites usando numpy.
 
-    def juarez_W_p(SFS, SIS, AFS):
+        Parámetros:
+        X (numpy.ndarray): El vector que se encuentra fuera de los límites.
+        population (numpy.ndarray): Población actual de soluciones.
+        lower (numpy.ndarray): Límites inferiores para cada dimensión.
+        upper (numpy.ndarray): Límites superiores para cada dimensión.
+        K (int): Cantidad de vectores aleatorios. Default es 3.
 
-        if AFS > 0 and np.random.random() > 0.5:
-            return np.random.choice(SFS)
+        Retorna:
+        numpy.ndarray: Vector corregido.
+        """
+        NP, D = population.shape
+        
+        # Soluciones Factibles (SFS) y Soluciones No Factibles (SIS)
+        SFS = np.array([ind for ind in population if np.all(lower <= ind) and np.all(ind <= upper)])
+        SIS = np.array([ind for ind in population if ind not in SFS])
+        AFS = len(SFS)
+
+        if AFS > 0 and np.random.rand() > 0.5:
+            Wp = SFS[np.random.randint(AFS)]
         else:
-            return min(SIS, key=lambda x: np.linalg.norm(x))
+            if len(SIS) > 0:
+                Wp = SIS[np.argmin([np.sum(np.maximum(0, lower - ind) + np.maximum(0, ind - upper)) for ind in SIS])]
+            else:
+                # Si SIS está vacío, seleccionamos aleatoriamente un vector de la población
+                Wp = population[np.random.randint(NP)]
 
-    #example:
-    #max resamples
-    #3 * len(lower_bounds)
-    def juarez_res_ran_DE_rand_1_bin(target_vector_index, population, F, lower_bounds, upper_bounds, is_valid, max_resamples=1):
-        D = len(lower_bounds)
+        Wr = np.empty((K, D))
+        for i in range(K):
+            Wi = np.copy(X)
+            for j in range(D):
+                if Wi[j] < lower[j] or Wi[j] > upper[j]:
+                    Wi[j] = lower[j] + np.random.rand() * (upper[j] - lower[j])
+            Wr[i] = Wi
+        
+        Xc = (Wp + Wr.sum(axis=0)) / (K + 1)
+
+        return Xc
+
+    # example:
+    # max resamples
+    # 3 * len(lowers)
+    def juarez_res_ran_DE_rand_1_bin(
+        target_vector_index,
+        population,
+        F,
+        lowers,
+        uppers,
+        is_valid,
+        max_resamples=1,
+    ):
+        D = len(lowers)
         NP = len(population)
         resamples = 0
         valid = False
@@ -653,19 +677,21 @@ class BoundaryHandler(Algorithm):
             r1, r2, r3 = np.random.choice(NP, 3, replace=False)
             if len(set([target_vector_index, r1, r2, r3])) != 4:
                 continue
-            
+
             mutant_vector = population[r1] + F * (population[r2] - population[r3])
-            mutant_vector = np.clip(mutant_vector, lower_bounds, upper_bounds)
+            mutant_vector = np.clip(mutant_vector, lowers, uppers)
             resamples += 1
-            is_valid(upper_bounds, lower_bounds, mutant_vector)
+            is_valid(uppers, lowers, mutant_vector)
 
         if not valid:
-            mutant_vector = lower_bounds + np.random.rand(D) * (upper_bounds - lower_bounds)
+            mutant_vector = lowers + np.random.rand(D) * (
+                uppers - lowers
+            )
 
         return mutant_vector
-    
-           
+
     """ 2020 biedrzycki  """
+
     def reinitialization(m, l, u):
         return np.where((m >= l) & (m <= u), m, np.random.uniform(l, u))
 
@@ -673,7 +699,7 @@ class BoundaryHandler(Algorithm):
         return np.where(m < l, l, np.where(m > u, u, m))
 
     def reflection(m, l, u):
-        return np.where(m < l, 2*l - m, np.where(m > u, 2*u - m, m))
+        return np.where(m < l, 2 * l - m, np.where(m > u, 2 * u - m, m))
 
     def wrapping(m, l, u):
         return np.where(m < l, u + (m - l), np.where(m > u, l + (m - u), m))
@@ -681,13 +707,15 @@ class BoundaryHandler(Algorithm):
     def transformation(m, l, u):
         a_lj = np.minimum((u - l) / 2, (1 + np.abs(l)) / 20)
         a_uj = np.minimum((u - l) / 2, (1 + np.abs(u)) / 20)
-        
+
         mask_l = (l - a_lj <= m) & (m < l + a_lj)
         mask_u = (u - a_uj <= m) & (m < u + a_uj)
-        
-        m_transformed = np.where(mask_l, l + ((m - (l - a_lj))**2 / (4 * a_lj)), m)
-        m_transformed = np.where(mask_u, u - ((m - (u + a_uj))**2 / (4 * a_uj)), m_transformed)
-        
+
+        m_transformed = np.where(mask_l, l + ((m - (l - a_lj)) ** 2 / (4 * a_lj)), m)
+        m_transformed = np.where(
+            mask_u, u - ((m - (u + a_uj)) ** 2 / (4 * a_uj)), m_transformed
+        )
+
         return np.where((m >= l + a_lj) & (m <= u - a_uj), m, m_transformed)
 
     def projection_to_midpoint(m, l, u):
@@ -696,7 +724,9 @@ class BoundaryHandler(Algorithm):
         return (1 - alpha) * midpoint + alpha * m
 
     def rand_base(m, l, u, o):
-        return np.where(m < l, np.random.uniform(l, o), np.where(m > u, np.random.uniform(o, u), m))
+        return np.where(
+            m < l, np.random.uniform(l, o), np.where(m > u, np.random.uniform(o, u), m)
+        )
 
     def midpoint_base(m, l, u, o):
         return np.where(m < l, (l + o) / 2, np.where(m > u, (o + u) / 2, m))
@@ -707,10 +737,9 @@ class BoundaryHandler(Algorithm):
     def projection_to_base(m, l, u, o):
         alpha = np.minimum((m - o) / (m - l), (m - o) / (u - m))
         return (1 - alpha) * o + alpha * m
-        
-    
+
     """ 2023  """
-    
+
     def andreaa_saturation(b, a, y):
         return np.clip(y, a, b)
 
@@ -719,39 +748,54 @@ class BoundaryHandler(Algorithm):
         y_mirrored = np.where(y_mirrored > b, 2 * b - y_mirrored, y_mirrored)
         return y_mirrored
 
+    def saturation(particle, lower, upper):
+        return np.clip(particle, lower, upper)
 
-    def saturation(particle, lower_bound, upper_bound):
-        return np.clip(particle, lower_bound, upper_bound)
-
-    def mirror(particle, lower_bound, upper_bound):
-        particle_mirrored = np.where(particle < lower_bound, 2 * lower_bound - particle, particle)
-        particle_mirrored = np.where(particle_mirrored > upper_bound, 2 * upper_bound - particle_mirrored, particle_mirrored)
+    def mirror(particle, lower, upper):
+        particle_mirrored = np.where(
+            particle < lower, 2 * lower - particle, particle
+        )
+        particle_mirrored = np.where(
+            particle_mirrored > upper,
+            2 * upper - particle_mirrored,
+            particle_mirrored,
+        )
         return particle_mirrored
 
-    def vector_wise_correction(particle, lower_bound, upper_bound, R):
-        alpha = np.min([
-            np.where(particle < lower_bound, (R - lower_bound) / (R - particle), 1),
-            np.where(particle > upper_bound, (upper_bound - R) / (particle - R), 1)
-        ])
+    def vector_wise_correction(particle, lower, upper, R):
+        def calculateR():
+            pass
+        
+        
+        alpha = np.min(
+            [
+                np.where(particle < lower, (R - lower) / (R - particle), 1),
+                np.where(particle > upper, (upper - R) / (particle - R), 1),
+            ]
+        )
         return alpha * particle + (1 - alpha) * R
 
     def andreaa_uniform(b, a, y):
         return np.random.uniform(a, b, size=y.shape)
-    def uniform(particle, lower_bound, upper_bound):
-        return np.random.uniform(lower_bound, upper_bound, size=particle.shape)
 
-    def beta(particle, lower_bound, upper_bound, mean, var):
-        m = (mean - lower_bound) / (upper_bound - lower_bound)
-        v = var / (upper_bound - lower_bound) ** 2
+    def uniform(particle, lower, upper):
+        return np.random.uniform(lower, upper, size=particle.shape)
+
+    def beta(particle, lower, upper, mean, var):
+        m = (mean - lower) / (upper - lower)
+        v = var / (upper - lower) ** 2
         alpha = m * ((m * (1 - m) / v) - 1)
         beta_param = alpha * ((1 - m) / m)
-        return lower_bound + np.random.beta(alpha, beta_param, size=particle.shape) * (upper_bound - lower_bound)
+        return lower + np.random.beta(alpha, beta_param, size=particle.shape) * (
+            upper - lower
+        )
 
-    def exp_confined(particle, lower_bound, upper_bound, R):
+    def exp_confined(particle, lower, upper, R):
         r = np.random.uniform(0, 1, size=particle.shape)
         particle_exp = np.where(
-            particle < lower_bound, lower_bound - np.log(1 + r * (np.exp(lower_bound - R) - 1)),
-            upper_bound + np.log(1 + (1 - r) * (np.exp(R - upper_bound) - 1))
+            particle < lower,
+            lower - np.log(1 + r * (np.exp(lower - R) - 1)),
+            upper + np.log(1 + (1 - r) * (np.exp(R - upper) - 1)),
         )
         return particle_exp
 
@@ -776,28 +820,49 @@ class BoundaryHandler(Algorithm):
         v_damped = np.where(y < a, -v * np.random.uniform(0, 1), v)
         v_damped = np.where(y_damped > b, -v_damped * np.random.uniform(0, 1), v_damped)
         return y_damped, v_damped
-    def absorbing(particle, lower_bound, upper_bound, velocity):
-        particle_absorbed = np.where(particle < lower_bound, lower_bound, particle)
-        particle_absorbed = np.where(particle_absorbed > upper_bound, upper_bound, particle_absorbed)
-        velocity_absorbed = np.where((particle < lower_bound) | (particle > upper_bound), 0, velocity)
+
+    def absorbing(particle, lower, upper, velocity):
+        particle_absorbed = np.where(particle < lower, lower, particle)
+        particle_absorbed = np.where(
+            particle_absorbed > upper, upper, particle_absorbed
+        )
+        velocity_absorbed = np.where(
+            (particle < lower) | (particle > upper), 0, velocity
+        )
         return particle_absorbed, velocity_absorbed
 
-    def reflecting(particle, lower_bound, upper_bound, velocity):
-        particle_reflected = np.where(particle < lower_bound, lower_bound, particle)
-        particle_reflected = np.where(particle_reflected > upper_bound, upper_bound, particle_reflected)
-        velocity_reflected = np.where(particle < lower_bound, -velocity, velocity)
-        velocity_reflected = np.where(particle_reflected > upper_bound, -velocity_reflected, velocity_reflected)
+    def reflecting(particle, lower, upper, velocity):
+        particle_reflected = np.where(particle < lower, lower, particle)
+        particle_reflected = np.where(
+            particle_reflected > upper, upper, particle_reflected
+        )
+        velocity_reflected = np.where(particle < lower, -velocity, velocity)
+        velocity_reflected = np.where(
+            particle_reflected > upper, -velocity_reflected, velocity_reflected
+        )
         return particle_reflected, velocity_reflected
 
-    def damping(particle, lower_bound, upper_bound, velocity):
-        particle_damped = np.where(particle < lower_bound, lower_bound, particle)
-        particle_damped = np.where(particle_damped > upper_bound, upper_bound, particle_damped)
-        velocity_damped = np.where(particle < lower_bound, -velocity * np.random.uniform(0, 1), velocity)
-        velocity_damped = np.where(particle_damped > upper_bound, -velocity_damped * np.random.uniform(0, 1), velocity_damped)
+    def damping(particle, lower, upper, velocity):
+        particle_damped = np.where(particle < lower, lower, particle)
+        particle_damped = np.where(
+            particle_damped > upper, upper, particle_damped
+        )
+        velocity_damped = np.where(
+            particle < lower, -velocity * np.random.uniform(0, 1), velocity
+        )
+        velocity_damped = np.where(
+            particle_damped > upper,
+            -velocity_damped * np.random.uniform(0, 1),
+            velocity_damped,
+        )
         return particle_damped, velocity_damped
 
-    def invisible(particle, lower_bound, upper_bound, fitness, bad_fitness_value):
-        fitness_invisible = np.where((particle < lower_bound) | (particle > upper_bound), bad_fitness_value, fitness)
+    def invisible(particle, lower, upper, fitness, bad_fitness_value):
+        fitness_invisible = np.where(
+            (particle < lower) | (particle > upper),
+            bad_fitness_value,
+            fitness,
+        )
         return particle, fitness_invisible
 
     def invisible_reflecting(y, a, b, v, fitness, bad_fitness_value):
@@ -836,3 +901,28 @@ class BoundaryHandler(Algorithm):
         factor = np.where(y > b, (b - y) / v, factor)
         y_shr = y + v * np.min(factor)
         return y_shr
+
+    @staticmethod
+    def range_guardian(upper, lower, x, feasible_set):
+
+        new_x = np.copy(x)
+
+        for i in range(len(x)):
+            # Reflexión
+            if new_x[i] < lower[i]:
+                new_x[i] = lower[i] + (lower[i] - new_x[i])
+            elif new_x[i] > upper[i]:
+                new_x[i] = upper[i] - (new_x[i] - upper[i])
+
+            # Si aún está fuera de los límites, reubicar aleatoriamente
+            if new_x[i] < lower[i] or new_x[i] > upper[i]:
+                new_x[i] = np.random.uniform(lower[i], upper[i])
+
+        # Ajuste basado en centroid para valores fuera de límites repetidamente
+        if np.any(new_x < lower) or np.any(new_x > upper):
+            centroid = np.mean(feasible_set, axis=0)
+            for i in range(len(new_x)):
+                if new_x[i] < lower[i] or new_x[i] > upper[i]:
+                    new_x[i] = centroid[i]
+
+        return new_x

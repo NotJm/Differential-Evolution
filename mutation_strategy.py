@@ -42,5 +42,32 @@ class MutationStrategies:
                   (self.population[r1] + self.population[r2] -
                    self.population[r3] - self.population[r4]))
         return bprime
+    
+    def res_rand(self, i, lower, upper):
+        NP, D = self.population.shape
+        NoRes = 0
+        valid = False
+
+        while NoRes <= 3 * D and not valid:
+            # Selección de tres índices aleatorios diferentes
+            indices = np.random.choice(np.delete(np.arange(NP), i), 3, replace=False)
+            r1, r2, r3 = indices
+
+            # Generación del vector mutante
+            mutant = self.population[r1] + self.scale * (self.population[r2] - self.population[r3])
+            
+            # Verificación de validez
+            if np.all([lower[j] <= mutant[j] <= upper[j] for j in range(D)]):
+                valid = True
+            
+            NoRes += 1
+
+        if not valid:
+            # Reparación del vector fuera de límites
+            for j in range(D):
+                if mutant[j] < lower[j] or mutant[j] > upper[j]:
+                    mutant[j] = lower[j] + np.random.rand() * (upper[j] - lower[j])
+
+        return mutant
 
 

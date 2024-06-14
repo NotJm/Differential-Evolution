@@ -1,11 +1,12 @@
-
 import pandas as pd
 import gc
 import numpy as np
+import tabulate
 from boundary_handler import BoundaryHandler
 from constraints_functions import ConstriantsFunctionsHandler
 from utils.constants import EXECUTIONS
 from differential_evolution import Differential_Evolution
+from utils.calculate_time_execution import measurement_timer_execution
 from functions.cec2020problems import *
 from functions.cec2006problems import *
 
@@ -24,8 +25,8 @@ fitness_bounds = {
 }
 
 bounds = {
-    "juarez-centroide": BoundaryHandler.juarez_centroide,
-    "adham-clamp": BoundaryHandler.adham_clamp_position,
+    "juarez-centroid": BoundaryHandler.centroid_method,
+    "adham-velocity-clamp": BoundaryHandler.adham_clamp_position,
     "adham-shink": BoundaryHandler.adham_shrink_position,
     "andreaa-saturation": BoundaryHandler.andreaa_saturation,
     "andreaa-mirror": BoundaryHandler.andreaa_mirror,
@@ -34,13 +35,12 @@ bounds = {
     "andreaa-random-within-bounds": BoundaryHandler.andreaa_random_within_bounds,
     "agarwl-reflection": BoundaryHandler.agarwl_reflect,
     "agarwl-nearest": BoundaryHandler.agarwl_nearest,
-    "wessing-wrapping": BoundaryHandler.wessing_wrapping_reapir,
-    "wessing-projection": BoundaryHandler.wessing_projection_repair,
     "shi_classical": BoundaryHandler.shi_classical_boundary_handling,
 }
 
 def run():
     all_results = []
+    precision_results = []
 
     for problem_name, problem_class in problems.items():
         problema = problem_class()
@@ -55,25 +55,11 @@ def run():
                     algorithm = Differential_Evolution(
                         problema.fitness,
                         ConstriantsFunctionsHandler.a_is_better_than_b_deb,
-                        bounds_constraints=(
-                            BoundaryHandler.mirror
-                            if key == "juarez-centroide"
-                            else boundary_function
-                        ),
+                        bounds_constraints=boundary_function,
                         bounds=(problema.superior, problema.inferior),
                         g_functions=problema.rest_g,
                         h_functions=problema.rest_h,
-                        centroide=(key == "juarez-centroide"),
-                        w_p_function=(
-                            BoundaryHandler.juarez_W_p
-                            if key == "juarez-centroide"
-                            else None
-                        ),
-                        centroide_function=(
-                            BoundaryHandler.juarez_centroide
-                            if key == "juarez-centroide"
-                            else None
-                        ),
+                        centroid=(key == "juarez-centroid")
                     )
 
                     algorithm.evolution(verbose=True)
@@ -91,20 +77,38 @@ def run():
 
         # Guardar los resultados en el formato deseado
         for key, result in results.items():
-            for fitness in result:
-                if not np.isnan(fitness):
+            valid_fitness = [fitness[0] for fitness in result if not np.isnan(fitness)]
+            if valid_fitness:
+                avg_fitness = np.mean(valid_fitness)
+                precision = np.std(valid_fitness)  # Calcula la precisión como desviación estándar
+                precision_results.append(
+                    {
+                        "Problema": problem_name,
+                        "Restriccion": key,
+                        "Precision": precision,
+                    }
+                )
+                for fitness in valid_fitness:
                     all_results.append(
                         {
                             "Problema": problem_name,
                             "Restriccion": key,
-                            "Fitness": fitness[0],
+                            "Fitness": fitness,
                         }
                     )
 
     # Crear DataFrame y guardar en CSV
     df_results = pd.DataFrame(all_results)
     df_results.to_csv("results_combined.csv", index=False)
-    print("Resultados guardados en 'results_combined.csv'")
+    print("Resultados de fitness guardados en 'results_combined.csv'")
+
+    df_precision = pd.DataFrame(precision_results)
+    df_precision.to_csv("precision_results.csv", index=False)
+    print("Resultados de precisión guardados en 'precision_results.csv'")
+
+    # Imprimir resultados de precisión en la consola
+    for result in precision_results:
+        print(f"Problema: {result['Problema']}, Restriccion: {result['Restriccion']}, Precision: {result['Precision']}")
 
 if __name__ == "__main__":
     run()
