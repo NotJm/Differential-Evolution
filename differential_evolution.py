@@ -1,11 +1,12 @@
-from typing import Callable, Tuple, List
+from typing import Callable, Tuple, List, Dict, Any
 from algorithm import Algorithm
-from contraints_functions import ConstriantsFunctionsHandler
+from constraints_functions import ConstriantsFunctionsHandler
 from utils.constants import SIZE_POPULATION, GENERATIONS
-from utils.convergencia import graficar_convergencia
+from utils.check_pause import check_for_pause
 from tqdm import tqdm
 from mutation_strategy import MutationStrategies
 import numpy as np
+
 
 class Differential_Evolution(Algorithm):
     def __init__(
@@ -18,8 +19,10 @@ class Differential_Evolution(Algorithm):
         h_functions: List[Callable] = [],
         F: float = 0.7,
         CR: float = 0.9,
-        strategy: str = 'rand1'
+        strategy: str = "rand1",
+        centroid=False
     ):
+        
 
         self.F = F
         self.CR = CR
@@ -28,14 +31,9 @@ class Differential_Evolution(Algorithm):
         self.h_functions = h_functions
         self.solutions_generate = []
 
-        self.F = F  
-        self.CR = CR  
-        self.upper, self.lower = bounds  
-        self.g_functions = g_functions  
-        self.h_functions = h_functions  
         self.strategy = strategy
-
-
+        self.centroid = centroid
+        
         self.population = self.generate(self.upper, self.lower)
         self.fitness = np.zeros(SIZE_POPULATION)
         self.violations = np.zeros(SIZE_POPULATION)
@@ -61,18 +59,20 @@ class Differential_Evolution(Algorithm):
     def _mutation_operator_(self, idx):
 
         samples = np.random.choice(SIZE_POPULATION, 5, replace=False)
-        if self.strategy == 'best1':
+        if self.strategy == "best1":
             return self.mutation_strategies._best1(samples)
-        elif self.strategy == 'rand1':
+        elif self.strategy == "rand1":
             return self.mutation_strategies._rand1(samples)
-        elif self.strategy == 'randtobest1':
+        elif self.strategy == "randtobest1":
             return self.mutation_strategies._randtobest1(samples)
-        elif self.strategy == 'currenttobest1':
+        elif self.strategy == "currenttobest1":
             return self.mutation_strategies._currenttobest1(idx, samples)
-        elif self.strategy == 'best2':
+        elif self.strategy == "best2":
             return self.mutation_strategies._best2(samples)
-        elif self.strategy == 'rand2':
+        elif self.strategy == "rand2":
             return self.mutation_strategies._rand2(samples)
+        elif self.strategy == "res&ran":
+            return self.mutation_strategies.res_rand(idx, self.lower, self.upper)
         else:
             raise ValueError(f"Unknown strategy: {self.strategy}")
 
@@ -128,8 +128,6 @@ class Differential_Evolution(Algorithm):
                 self.gbest_fitness = current_fitness
                 self.gbest_violation = current_violation
                 self.gbest_individual = self.population[idx]
-                
-                self.solutions_generate.append(self.gbest_violation)
 
     def report(self):
         print("================================")
@@ -141,23 +139,20 @@ class Differential_Evolution(Algorithm):
 
     def evolution(self, verbose: bool = True):
         for _ in tqdm(range(GENERATIONS), desc="Evolucionando"):
+
+            check_for_pause()
+
             for i in range(SIZE_POPULATION):
                 objective = self.population[i]
                 mutant = self._mutation_operator_(i)
                 trial = self._crossover_operator_(objective, mutant)
-                trial = self.bounds_constraints(self.upper, self.lower, trial)
+                if self.centroid:
+                    trial = self.bounds_constraints(trial, self.population, self.lower, self.upper, K=3)
+                else:
+                    trial = self.bounds_constraints(self.upper, self.lower, trial)
                 self._selection_operator_(i, trial)
 
             self.update_position_gbest_population()
 
-        # graficar_convergencia(
-        #     self.solutions_generate,
-        #     "report/2004 Purchia Experimentation Wrapping constraint.png",
-        #     "2004 Purcha Experimentation - Wrapping constraint",
-        # )
-
         if verbose:
             self.report()
-
-        self.best_fitness = self.gbest_fitness
-        self.best_violations = self.gbest_violation
