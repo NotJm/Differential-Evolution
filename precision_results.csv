@@ -1,0 +1,12 @@
+Problema,Restriccion,Precision
+R06,juarez-centroid,3336.832062616748
+R06,adham-velocity-clamp,3308.738707901402
+R06,adham-shink,3300.1965235295725
+R06,andreaa-saturation,3304.7324012273843
+R06,andreaa-mirror,3294.6947619182033
+R06,andreaa-uniform,2782.3000053581254
+R06,andreaa-nearest,3301.9969342949125
+R06,andreaa-random-within-bounds,2038.8981406866787
+R06,agarwl-reflection,3314.4219430526255
+R06,agarwl-nearest,3322.566869744326
+R06,shi_classical,3307.9741745996294

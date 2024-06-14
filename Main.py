@@ -79,7 +79,7 @@ def run():
             for execution in range(EXECUTIONS):
                 tasks.append((problem_name, problem_class, execution, key, boundary_function))
 
-    with Pool(3) as pool:
+    with Pool(5) as pool:
         results = pool.map(execute_experiment, tasks)
 
     results_dict = {key: [] for key in bounds.keys()}
