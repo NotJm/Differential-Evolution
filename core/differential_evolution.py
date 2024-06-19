@@ -1,4 +1,4 @@
-from typing import Callable, Tuple, List, Dict, Any
+from typing import Callable, Tuple, List
 from .algorithm import Algorithm
 from .constraints_functions import ConstriantsFunctionsHandler
 from utils.constants import SIZE_POPULATION, GENERATIONS
@@ -6,6 +6,7 @@ from utils.check_pause import check_for_pause
 from tqdm import tqdm
 from .mutation_strategy import MutationStrategies
 import numpy as np
+import time
 
 
 class Differential_Evolution(Algorithm):
@@ -20,10 +21,11 @@ class Differential_Evolution(Algorithm):
         F: float = 0.7,
         CR: float = 0.9,
         strategy: str = "rand1",
-        centroid=False,
-        beta=False
+        centroid: bool = False,
+        beta: bool = False,
+        evolutionary: bool = False,
+        res_and_rand: bool = False,
     ):
-        
 
         self.F = F
         self.CR = CR
@@ -35,7 +37,13 @@ class Differential_Evolution(Algorithm):
         self.strategy = strategy
         self.centroid = centroid
         self.beta = beta
-        
+        self.evolutionary = evolutionary
+        self.res_and_rand = res_and_rand
+
+        # Lists to store gbest values for plotting convergence
+        self.gbest_fitness_list = []
+        self.gbest_violations_list = []
+
         self.population = self.generate(self.upper, self.lower)
         self.fitness = np.zeros(SIZE_POPULATION)
         self.violations = np.zeros(SIZE_POPULATION)
@@ -59,6 +67,9 @@ class Differential_Evolution(Algorithm):
             self.violations[index] = total_de_violaciones
 
     def _mutation_operator_(self, idx):
+        
+        if self.res_and_rand:
+            return self.res_and_ran_mutation(idx)
 
         samples = np.random.choice(SIZE_POPULATION, 5, replace=False)
         if self.strategy == "best1":
@@ -77,6 +88,33 @@ class Differential_Evolution(Algorithm):
             return self.mutation_strategies.res_rand(idx, self.lower, self.upper)
         else:
             raise ValueError(f"Unknown strategy: {self.strategy}")
+        
+        
+    def res_and_ran_mutation(self, i):
+
+        F = 0.8  # Factor de escala para la mutación
+        NP = len(self.population)
+        D = len(self.population[0])
+        
+        NoRes = 0
+        valid = False
+
+        while NoRes <= 3 * D and not valid:
+            r1, r2, r3 = np.random.choice([idx for idx in range(NP) if idx != i], 3, replace=False)
+            V = self.population[r1] + F * (self.population[r2] - self.population[r3])
+            
+            # Verifica si el vector mutante está dentro de los límites
+            if np.all([self.lower[j] <= V[j] <= self.upper[j] for j in range(D)]):
+                valid = True
+            else:
+                NoRes += 1
+        
+        # Si no se obtuvo un vector válido después del máximo de remuestreos
+        if not valid:
+            V = np.array([np.random.uniform(self.lower[j], self.upper[j]) if V[j] < self.lower[j] or V[j] > self.upper[j] else V[j] for j in range(D)])
+        
+        return V
+        
 
     def _crossover_operator_(self, target, mutant):
         dimensions = len(target)
@@ -131,12 +169,34 @@ class Differential_Evolution(Algorithm):
                 self.gbest_violation = current_violation
                 self.gbest_individual = self.population[idx]
 
+                # Store gbest values for plotting
+                self.gbest_fitness_list.append(self.gbest_fitness)
+                self.gbest_violations_list.append(self.gbest_violation)
+
     def report(self):
+        start_time = time.time()
+
+        # Calcular estadísticas
+        mean_fitness = np.mean(self.gbest_fitness_list)
+        std_fitness = np.std(self.gbest_fitness_list)
+        mean_violations = np.mean(self.gbest_violations_list)
+        std_violations = np.std(self.gbest_violations_list)
+
+        end_time = time.time()
+        execution_time = end_time - start_time
+
         print("================================")
         print("Solución Óptima")
         print("Individuo:", self.gbest_individual)
         print("Aptitud (Fitness):", self.gbest_fitness)
         print("Num Violaciones:", self.gbest_violation)
+        print("================================")
+        print("Estadísticas de Convergencia")
+        print(f"Media de Fitness: {mean_fitness}")
+        print(f"Desviación Estándar de Fitness: {std_fitness}")
+        print(f"Media de Violaciones: {mean_violations}")
+        print(f"Desviación Estándar de Violaciones: {std_violations}")
+        print(f"Tiempo de Ejecución del Reporte: {execution_time} segundos")
         print("================================")
 
     def evolution(self, verbose: bool = True):
@@ -149,9 +209,19 @@ class Differential_Evolution(Algorithm):
                 mutant = self._mutation_operator_(i)
                 trial = self._crossover_operator_(objective, mutant)
                 if self.centroid:
-                    trial = self.bounds_constraints(trial, self.population, self.lower, self.upper, K=3)
+                    trial = self.bounds_constraints(
+                        trial, self.population, self.lower, self.upper, K=3
+                    )
                 elif self.beta:
-                    trial = self.bounds_constraints(trial, self.lower, self.upper, self.population)
+                    trial = self.bounds_constraints(
+                        trial, self.lower, self.upper, self.population
+                    )
+                elif self.evolutionary:
+                    trial = self.bounds_constraints(
+                        trial, self.lower, self.upper, self.gbest_individual
+                    )
+                elif self.res_and_rand:
+                    pass
                 else:
                     trial = self.bounds_constraints(self.upper, self.lower, trial)
                 self._selection_operator_(i, trial)

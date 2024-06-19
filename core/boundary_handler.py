@@ -32,7 +32,7 @@ def compare(method_1: Callable, method_2: Callable, upper: np.array, lower: np.a
     return (presicion_p1, presicion_p2)
 
 
-class BoundaryHandler(Algorithm):
+class BoundaryHandler:
     """Boundary Methods Default"""
 
     @staticmethod
@@ -304,7 +304,7 @@ class BoundaryHandler(Algorithm):
     """ 2012 Gandomi Evolutionary """
 
     @staticmethod
-    def evolutionary_boundary_handling(z, lb, ub, best_solution):
+    def gandomi_evolutionary(z, lb, ub, best_solution):
         a = np.random.rand()
         b = np.random.rand()
 
@@ -937,6 +937,95 @@ class BoundaryHandler(Algorithm):
                 new_x[i] = np.random.uniform(lower[i], upper[i])
 
         # Ajuste basado en centroid para valores fuera de límites repetidamente
+        if np.any(new_x < lower) or np.any(new_x > upper):
+            centroid = np.mean(feasible_set, axis=0)
+            for i in range(len(new_x)):
+                if new_x[i] < lower[i] or new_x[i] > upper[i]:
+                    new_x[i] = centroid[i]
+
+        return new_x
+    
+    def hybrid_shrink_uniform_nearest(upper, lower, x):
+        # Copiar el vector x
+        new_x = np.copy(x)
+
+        # Paso 1: Aplicar adham-shrink
+        new_x[new_x < lower] = lower[new_x < lower]
+        new_x[new_x > upper] = upper[new_x > upper]
+
+        # Paso 2: Aplicar andreaa-uniform para valores fuera de límites
+        out_of_bounds = (new_x < lower) | (new_x > upper)
+        new_x[out_of_bounds] = np.random.uniform(lower[out_of_bounds], upper[out_of_bounds])
+
+        # Paso 3: Aplicar agarwl-nearest para cualquier valor restante fuera de límites
+        new_x[new_x < lower] = lower[new_x < lower]
+        new_x[new_x > upper] = upper[new_x > upper]
+
+        return new_x
+
+    def probabilistic_adaptive_reflection(upper, lower, x):
+        # Copiar el vector x
+        new_x = np.copy(x)
+        
+        # Parámetro de ajuste adaptativo
+        adaptation_rate = 0.5
+        
+        # Paso 1: Ajuste probabilístico
+        for i in range(len(x)):
+            if new_x[i] < lower[i] or new_x[i] > upper[i]:
+                prob_adjustment = np.random.normal(loc=0, scale=1)  # Ajuste probabilístico
+                new_x[i] += prob_adjustment
+
+        # Paso 2: Ajuste adaptativo
+        for i in range(len(x)):
+            if new_x[i] < lower[i]:
+                violation = lower[i] - new_x[i]
+                new_x[i] += adaptation_rate * violation
+            elif new_x[i] > upper[i]:
+                violation = new_x[i] - upper[i]
+                new_x[i] -= adaptation_rate * violation
+
+        # Paso 3: Reflexión si sigue fuera de los límites
+        for i in range(len(new_x)):
+            if new_x[i] < lower[i]:
+                new_x[i] = lower[i] + (lower[i] - new_x[i])
+            elif new_x[i] > upper[i]:
+                new_x[i] = upper[i] - (new_x[i] - upper[i])
+
+        return new_x
+    
+    @staticmethod
+    def hybrid_adaptive_centroid_boundary_handling(upper, lower, x, feasible_set):
+        """
+        Método de manejo de límites híbrido adaptativo con uso del centroide.
+
+        :param upper: np.array, Limite superior
+        :param lower: np.array, Limite inferior
+        :param x: np.array, Vector de la solución actual
+        :param feasible_set: np.array, Conjunto de soluciones factibles
+
+        :return: np.array, Vector de la solución corregido
+        """
+        new_x = np.copy(x)
+        range_width = upper - lower
+
+        # Reflexión
+        for i in range(len(x)):
+            if new_x[i] < lower[i]:
+                new_x[i] = lower[i] + (lower[i] - new_x[i]) % range_width[i]
+            elif new_x[i] > upper[i]:
+                new_x[i] = upper[i] - (new_x[i] - upper[i]) % range_width[i]
+
+        # Ajuste adaptativo
+        for i in range(len(x)):
+            if new_x[i] < lower[i] or new_x[i] > upper[i]:
+                correction_factor = np.random.uniform(0, 1)
+                if new_x[i] < lower[i]:
+                    new_x[i] = lower[i] + correction_factor * (upper[i] - lower[i])
+                elif new_x[i] > upper[i]:
+                    new_x[i] = upper[i] - correction_factor * (upper[i] - lower[i])
+
+        # Uso del centroide
         if np.any(new_x < lower) or np.any(new_x > upper):
             centroid = np.mean(feasible_set, axis=0)
             for i in range(len(new_x)):
