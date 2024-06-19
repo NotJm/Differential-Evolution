@@ -1,5 +1,5 @@
 from typing import Callable
-from algorithm import Algorithm
+from .algorithm import Algorithm
 import numpy as np
 import random
 
@@ -754,32 +754,59 @@ class BoundaryHandler(Algorithm):
         )
         return particle_mirrored
 
-    def vector_wise_correction(particle, lower, upper, R):
-        def calculateR():
-            pass
+    def andreaa_vector_wise_correction(upper, lower, x, method="midpoint"):
+        if method == "midpoint":
+            R = (lower + upper) / 2
+        else:
+            raise ValueError(f"Método para calcular R no soportado: {method}")
         
         
         alpha = np.min(
             [
-                np.where(particle < lower, (R - lower) / (R - particle), 1),
-                np.where(particle > upper, (upper - R) / (particle - R), 1),
+                np.where(x < lower, (R - lower) / (R - x), 1),
+                np.where(x > upper, (upper - R) / (x - R), 1),
             ]
         )
-        return alpha * particle + (1 - alpha) * R
+        return alpha * x + (1 - alpha) * R
 
     def andreaa_uniform(b, a, y):
         return np.random.uniform(a, b, size=y.shape)
     def uniform(particle, lower_bound, upper_bound):
         return np.random.uniform(lower_bound, upper_bound, size=particle.shape)
 
-    def beta(particle, lower, upper, mean, var):
-        m = (mean - lower) / (upper - lower)
-        v = var / (upper - lower) ** 2
-        alpha = m * ((m * (1 - m) / v) - 1)
-        beta_param = alpha * ((1 - m) / m)
-        return lower + np.random.beta(alpha, beta_param, size=particle.shape) * (
-            upper - lower
-        )
+    def andreaa_beta(individual, lower_bound, upper_bound, population):
+        corrected_individual = np.copy(individual)
+        population_mean = np.mean(population, axis=0)
+        population_var = np.var(population, axis=0)
+        
+        for i in range(len(individual)):
+            m_i = (population_mean[i] - lower_bound[i]) / (upper_bound[i] - lower_bound[i])
+            v_i = population_var[i] / (upper_bound[i] - lower_bound[i])**2
+            
+            # Evitar valores de m_i en los límites
+            if m_i == 0:
+                m_i = 0.1
+            elif m_i == 1:
+                m_i = 0.9
+            
+            # Verificar que v_i no sea cero para evitar división por cero
+            if v_i == 0:
+                v_i = 1e-6
+            
+            # Calcular alpha_i y beta_i asegurando que sean positivos
+            alpha_i = m_i * ((m_i * (1 - m_i) / v_i) - 1)
+            beta_i = alpha_i * (1 - m_i) / m_i
+            
+            # Validar alpha_i y beta_i
+            if alpha_i <= 0 or beta_i <= 0:
+                alpha_i = beta_i = 1  # Asignar un valor por defecto válido
+            
+            # Generar valor corregido usando la distribución Beta
+            corrected_value = np.random.beta(alpha_i, beta_i) * (upper_bound[i] - lower_bound[i]) + lower_bound[i]
+            corrected_individual[i] = corrected_value
+        
+        return corrected_individual
+
 
     def exp_confined(particle, lower, upper, R):
         r = np.random.uniform(0, 1, size=particle.shape)
