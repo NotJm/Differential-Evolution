@@ -2,6 +2,7 @@ import gc
 import os
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 import inquirer
 from core.boundary_handler import BoundaryHandler
 from core.constraints_functions import ConstriantsFunctionsHandler
@@ -9,15 +10,14 @@ from utils.constants import EXECUTIONS
 from core.differential_evolution import Differential_Evolution
 from functions.cec2020problems import *
 from functions.cec2006problems import *
+from functions.cec2017problems import *
 
 def run():
     
     problems = {
-        "R01": CEC2020_RC01,
-        "R02": CEC2020_RC02,
-        "R03": CEC2020_RC03,
-        "R05": CEC2020_RC05,
-        "R06": CEC2020_RC06,
+        "C01": CEC2017_C01,
+        "C02": CEC2017_C02,
+        "C03": CEC2017_C03,
     }
 
     bounds = {
@@ -56,7 +56,7 @@ def run():
                     problema.fitness,
                     ConstriantsFunctionsHandler.a_is_better_than_b_deb,
                     bounds_constraints=bounds[constraint_name],
-                    bounds=(problema.superior, problema.inferior),
+                    bounds=(SUPERIOR_1, INFERIOR_1),
                     g_functions=problema.rest_g,
                     h_functions=problema.rest_h,
                     centroid=(constraint_name == "centroid"),
@@ -88,11 +88,13 @@ def run():
         return fitness_data, violations_data, convergence_violations_data, factible_fitness_data
 
     def plot_convergence_violations_all(problem_name, all_convergence_data):
-        # Grafico de convergencia de violaciones para todas las restricciones en un problema
         plt.figure(figsize=(10, 6))
-        for constraint_name, convergence_data in all_convergence_data.items():
-            for run_data in convergence_data:
-                plt.plot(run_data, alpha=0.5, label=constraint_name if run_data == convergence_data[0] else "")
+        for constraint_name in bounds:
+            if constraint_name in all_convergence_data:
+                # Calcular la media de las violaciones en cada generación
+                mean_convergence_violations = [sum(gen) / len(gen) for gen in zip(*all_convergence_data[constraint_name])]
+                plt.plot(mean_convergence_violations, label=constraint_name)
+        
         plt.title(f'Convergence Plot (Violations) for {problem_name}')
         plt.xlabel('Generations')
         plt.ylabel('Violations')
