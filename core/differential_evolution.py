@@ -224,6 +224,9 @@ class Differential_Evolution(Algorithm):
                 self.gbest_fitness_list.append(self.gbest_fitness)
                 self.gbest_violations_list.append(self.gbest_violation)
 
+                self.best_fitness = self.gbest_fitness
+                self.best_violations = self.gbest_violation
+
     def report(self):
         start_time = time.time()
 
@@ -291,7 +294,7 @@ class Differential_Evolution(Algorithm):
                 trial = self._crossover_operator_(objective, mutant)
                 if self.centroid:
                     trial = self.bounds_constraints(
-                        trial, self.population, self.lower, self.upper, K=3
+                        trial, self.population, self.lower, self.upper
                     )
                 else:
                     trial = self.bounds_constraints(self.upper, self.lower, trial)
@@ -310,5 +313,4 @@ class Differential_Evolution(Algorithm):
 
         
 
-        self.best_fitness = self.gbest_fitness
-        self.best_violations = self.gbest_violation
+       
