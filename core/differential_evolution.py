@@ -65,9 +65,53 @@ class Differential_Evolution(Algorithm):
                 self.g_functions, self.h_functions, individual
             )
             self.violations[index] = total_de_violaciones
+            
+    def mutation_operator(self, idx, generation):
+        if self.strategy in ['rand3', 'best3']:
+            samples = np.random.choice(SIZE_POPULATION, 6, replace=False)
+        elif self.strategy == 'adaptive_rand_elite':
+            return self.mutation_strategies._adaptive_rand_elite(generation)
+        else:
+            samples = np.random.choice(SIZE_POPULATION, 5, replace=False)
+            
+        if self.strategy == 'best1':
+            return self.mutation_strategies._best1(samples)
+        elif self.strategy == 'rand1':
+            return self.mutation_strategies._rand1(samples)
+        elif self.strategy == 'randtobest1':
+            return self.mutation_strategies._randtobest1(samples)
+        elif self.strategy == 'currenttobest1':
+            return self.mutation_strategies._currenttobest1(idx, samples)
+        elif self.strategy == 'best2':
+            return self.mutation_strategies._best2(samples)
+        elif self.strategy == 'rand2':
+            return self.mutation_strategies._rand2(samples)
+        elif self.strategy == 'currenttorand1': 
+            return self.mutation_strategies._currenttorand1(idx, samples)
+        elif self.strategy == 'best3':
+            return self.mutation_strategies._best3(samples)
+        elif self.strategy == 'rand3':
+            return self.mutation_strategies._rand3(samples)
+        elif self.strategy == 'randtocurrent2':
+            return self.mutation_strategies._rand_to_current2(idx, samples)
+        elif self.strategy == 'randToBestAndCurrent2':
+            return self.mutation_strategies._rand_to_best_and_current2(idx, samples)
+        elif self.strategy == 'combined_95%':
+            return self.mutation_strategies.combined_rand1_best1(0.95)
+        elif self.strategy == 'combined_90%':
+            return self.mutation_strategies.combined_rand1_best1(0.90)
+        elif self.strategy == 'combined_85%':
+            return self.mutation_strategies.combined_rand1_best1(0.85)
+        elif self.strategy == 'combined_80%':
+            return self.mutation_strategies.combined_rand1_best1(0.80)
+        elif self.strategy == 'combined_75%':
+            return self.mutation_strategies.combined_rand1_best1(0.75)
+        elif self.strategy == 'combined_70%':
+            return self.mutation_strategies.combined_rand1_best1(0.70)
+        else:
+            raise ValueError(f"Unknown strategy: {self.strategy}")
 
     def _mutation_operator_(self, idx):
-        
         if self.res_and_rand:
             return self.res_and_ran_mutation(idx)
 
@@ -230,3 +274,27 @@ class Differential_Evolution(Algorithm):
 
         if verbose:
             self.report()
+
+    
+    # def evolution(self, verbose: bool = True):
+    #     for gen in tqdm(range(GENERATIONS), desc="Evolucionando"):
+    #         for i in range(SIZE_POPULATION):
+    #             objective = self.population[i]
+    #             mutant = self.mutation_operator(i, gen)  # Pasando 'generation' aquí
+    #             trial = self.crossover_operator(objective, mutant)
+    #             trial = self.bounds_constraints(self.upper, self.lower, trial)
+    #             self.selection_operator(i, trial)
+
+    #         self.update_position_gbest_population()
+
+    #     # graficar_convergencia(
+    #     #     self.solutions_generate,
+    #     #     "reportMutation/problemar02.png",
+    #     #     " -DE/rand1/1 - ",
+    #     # )
+
+    #     if verbose:
+    #         self.report()
+
+    #     self.best_fitness = self.gbest_fitness
+    #     self.best_violations = self.gbest_violation
