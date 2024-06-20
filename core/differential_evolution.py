@@ -2,7 +2,7 @@ from typing import Callable, Tuple, List
 from .algorithm import Algorithm
 from .constraints_functions import ConstriantsFunctionsHandler
 from utils.constants import SIZE_POPULATION, GENERATIONS
-from utils.check_pause import check_for_pause
+""" from utils.check_pause import check_for_pause """
 from tqdm import tqdm
 from .mutation_strategy import MutationStrategies
 import numpy as np
@@ -54,7 +54,7 @@ class Differential_Evolution(Algorithm):
 
         self._get_gbest_pobulation_zero_()
 
-        self.mutation_strategies = MutationStrategies(self.population, self.F)
+        self.mutation_strategies = MutationStrategies(self.population, self.F, self.objective_function)
 
     def _compute_fitness_and_violations_(self):
         for index, individual in enumerate(self.population):
@@ -96,6 +96,8 @@ class Differential_Evolution(Algorithm):
             return self.mutation_strategies._rand_to_current2(idx, samples)
         elif self.strategy == 'randToBestAndCurrent2':
             return self.mutation_strategies._rand_to_best_and_current2(idx, samples)
+        elif self.strategy == 'combined_100%':
+            return self.mutation_strategies.combined_rand1_best1(0.100)
         elif self.strategy == 'combined_95%':
             return self.mutation_strategies.combined_rand1_best1(0.95)
         elif self.strategy == 'combined_90%':
@@ -108,31 +110,36 @@ class Differential_Evolution(Algorithm):
             return self.mutation_strategies.combined_rand1_best1(0.75)
         elif self.strategy == 'combined_70%':
             return self.mutation_strategies.combined_rand1_best1(0.70)
+        elif self.strategy == 'combined_65%':
+            return self.mutation_strategies.combined_rand1_best1(0.65)
+        elif self.strategy == 'combined_60%':
+            return self.mutation_strategies.combined_rand1_best1(0.60)
+        elif self.strategy == 'combined_55%':
+            return self.mutation_strategies.combined_rand1_best1(0.55)
+        elif self.strategy == 'combined_50%':
+            return self.mutation_strategies.combined_rand1_best1(0.50)
+        elif self.strategy == 'combined_45%':
+            return self.mutation_strategies.combined_rand1_best1(0.45)
+        elif self.strategy == 'combined_40%':
+            return self.mutation_strategies.combined_rand1_best1(0.40)
+        elif self.strategy == 'combined_35%':
+            return self.mutation_strategies.combined_rand1_best1(0.35)
+        elif self.strategy == 'combined_30%':
+            return self.mutation_strategies.combined_rand1_best1(0.30)
+        elif self.strategy == 'combined_25%':
+            return self.mutation_strategies.combined_rand1_best1(0.25)
+        elif self.strategy == 'combined_20%':
+            return self.mutation_strategies.combined_rand1_best1(0.20)
+        elif self.strategy == 'combined_15%':
+            return self.mutation_strategies.combined_rand1_best1(0.15)
+        elif self.strategy == 'combined_10%':
+            return self.mutation_strategies.combined_rand1_best1(0.10)
+        elif self.strategy == 'combined_05%':
+            return self.mutation_strategies.combined_rand1_best1(0.05)
+        elif self.strategy == 'combined_0%':
+            return self.mutation_strategies.combined_rand1_best1(0.0)
         else:
             raise ValueError(f"Unknown strategy: {self.strategy}")
-
-    def _mutation_operator_(self, idx):
-        if self.res_and_rand:
-            return self.res_and_ran_mutation(idx)
-
-        samples = np.random.choice(SIZE_POPULATION, 5, replace=False)
-        if self.strategy == "best1":
-            return self.mutation_strategies._best1(samples)
-        elif self.strategy == "rand1":
-            return self.mutation_strategies._rand1(samples)
-        elif self.strategy == "randtobest1":
-            return self.mutation_strategies._randtobest1(samples)
-        elif self.strategy == "currenttobest1":
-            return self.mutation_strategies._currenttobest1(idx, samples)
-        elif self.strategy == "best2":
-            return self.mutation_strategies._best2(samples)
-        elif self.strategy == "rand2":
-            return self.mutation_strategies._rand2(samples)
-        elif self.strategy == "res&ran":
-            return self.mutation_strategies.res_rand(idx, self.lower, self.upper)
-        else:
-            raise ValueError(f"Unknown strategy: {self.strategy}")
-        
         
     def res_and_ran_mutation(self, i):
 
@@ -243,58 +250,65 @@ class Differential_Evolution(Algorithm):
         print(f"Tiempo de Ejecución del Reporte: {execution_time} segundos")
         print("================================")
 
+    # def evolution(self, verbose: bool = True):
+    #     for _ in tqdm(range(GENERATIONS), desc="Evolucionando"):
+
+    #         check_for_pause(self.report)
+
+    #         for i in range(SIZE_POPULATION):
+    #             objective = self.population[i]
+    #             mutant = self._mutation_operator_(i)
+    #             trial = self._crossover_operator_(objective, mutant)
+    #             if self.centroid:
+    #                 trial = self.bounds_constraints(
+    #                     trial, self.population, self.lower, self.upper, K=3
+    #                 )
+    #             elif self.beta:
+    #                 trial = self.bounds_constraints(
+    #                     trial, self.lower, self.upper, self.population
+    #                 )
+    #             elif self.evolutionary:
+    #                 trial = self.bounds_constraints(
+    #                     trial, self.lower, self.upper, self.gbest_individual
+    #                 )
+    #             elif self.res_and_rand:
+    #                 pass
+    #             else:
+    #                 trial = self.bounds_constraints(self.upper, self.lower, trial)
+    #             self._selection_operator_(i, trial)
+
+    #         self.update_position_gbest_population()
+
+    #     if verbose:
+    #         self.report()
+
+    
     def evolution(self, verbose: bool = True):
-        for _ in tqdm(range(GENERATIONS), desc="Evolucionando"):
-
-            check_for_pause(self.report)
-
-            for i in range(SIZE_POPULATION):
+        for gen in tqdm(range(GENERATIONS), desc="Evolucionando"):
+           for i in range(SIZE_POPULATION):
                 objective = self.population[i]
-                mutant = self._mutation_operator_(i)
+                mutant = self.mutation_operator(i, gen)  # Pasando 'generation' aquí
                 trial = self._crossover_operator_(objective, mutant)
                 if self.centroid:
                     trial = self.bounds_constraints(
                         trial, self.population, self.lower, self.upper, K=3
                     )
-                elif self.beta:
-                    trial = self.bounds_constraints(
-                        trial, self.lower, self.upper, self.population
-                    )
-                elif self.evolutionary:
-                    trial = self.bounds_constraints(
-                        trial, self.lower, self.upper, self.gbest_individual
-                    )
-                elif self.res_and_rand:
-                    pass
                 else:
                     trial = self.bounds_constraints(self.upper, self.lower, trial)
                 self._selection_operator_(i, trial)
 
-            self.update_position_gbest_population()
+        self.update_position_gbest_population()
 
-        if verbose:
-            self.report()
-
-    
-    # def evolution(self, verbose: bool = True):
-    #     for gen in tqdm(range(GENERATIONS), desc="Evolucionando"):
-    #         for i in range(SIZE_POPULATION):
-    #             objective = self.population[i]
-    #             mutant = self.mutation_operator(i, gen)  # Pasando 'generation' aquí
-    #             trial = self.crossover_operator(objective, mutant)
-    #             trial = self.bounds_constraints(self.upper, self.lower, trial)
-    #             self.selection_operator(i, trial)
-
-    #         self.update_position_gbest_population()
-
-    #     # graficar_convergencia(
+       # graficar_convergencia(
     #     #     self.solutions_generate,
     #     #     "reportMutation/problemar02.png",
     #     #     " -DE/rand1/1 - ",
     #     # )
 
-    #     if verbose:
-    #         self.report()
+        if verbose:
+            self.report()
 
-    #     self.best_fitness = self.gbest_fitness
-    #     self.best_violations = self.gbest_violation
+        
+
+        self.best_fitness = self.gbest_fitness
+        self.best_violations = self.gbest_violation

@@ -2,7 +2,7 @@ import numpy as np
 from utils.constants import GENERATIONS, SIZE_POPULATION
 
 class MutationStrategies:
-    def _init_(self, population, scale, objective_function):
+    def __init__(self, population, scale, objective_function):
         self.population = population
         self.scale = scale
         self.objective_function = objective_function

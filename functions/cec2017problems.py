@@ -1,5 +1,5 @@
 import numpy as np
-from Problem import Problem, ProblemType
+from .Problem import Problem, ProblemType
 from scipy.stats import ortho_group
 
 D = 5
