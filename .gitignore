@@ -4,7 +4,7 @@ __pycache__/
 *$py.class
 
 # report
-report/*
+report/
 
 # Distribution / packaging
 .Python
