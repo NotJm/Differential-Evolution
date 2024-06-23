@@ -656,16 +656,17 @@ class BoundaryHandler:
 
     #     return Xc
 
-    def centroid_method(X, population, lower, upper, K=1):
+    """ 2019 Efren Juarez Centroid """
+    def centroid_method(X, population, lower, upper, K=3):
         """
-        Implementación optimizada del método Centroid para manejo de límites usando numpy.
+        Implementación del método Centroid para manejo de límites usando numpy.
 
         Parámetros:
         X (numpy.ndarray): El vector que se encuentra fuera de los límites.
         population (numpy.ndarray): Población actual de soluciones.
         lower (numpy.ndarray): Límites inferiores para cada dimensión.
         upper (numpy.ndarray): Límites superiores para cada dimensión.
-        K (int): Cantidad de vectores aleatorios. Default es 1.
+        K (int): Cantidad de vectores aleatorios. Default es 3.
 
         Retorna:
         numpy.ndarray: Vector corregido.
@@ -673,21 +674,28 @@ class BoundaryHandler:
         NP, D = population.shape
         
         # Soluciones Factibles (SFS) y Soluciones No Factibles (SIS)
-        within_bounds = np.all((population >= lower) & (population <= upper), axis=1)
-        SFS = population[within_bounds]
-        SIS = population[~within_bounds]
+        SFS = population[np.all((population >= lower) & (population <= upper), axis=1)]
+        SIS = population[np.any((population < lower) | (population > upper), axis=1)]
         AFS = len(SFS)
 
         if AFS > 0 and np.random.rand() > 0.5:
             Wp = SFS[np.random.randint(AFS)]
         else:
             if len(SIS) > 0:
-                Wp = SIS[np.argmin(np.sum(np.maximum(0, lower - SIS) + np.maximum(0, SIS - upper), axis=1))]
+                violations = np.sum(np.maximum(0, lower - SIS) + np.maximum(0, SIS - upper), axis=1)
+                Wp = SIS[np.argmin(violations)]
             else:
+                # Si SIS está vacío, seleccionamos aleatoriamente un vector de la población
                 Wp = population[np.random.randint(NP)]
 
-        Wr = np.tile(X, (K, 1))
-        Wr = np.where((Wr < lower) | (Wr > upper), lower + np.random.rand(K, D) * (upper - lower), Wr)
+        Wr = np.empty((K, D))
+        for i in range(K):
+            Wi = np.copy(X)
+            mask_lower = Wi < lower
+            mask_upper = Wi > upper
+            Wi[mask_lower] = lower[mask_lower] + np.random.rand(np.sum(mask_lower)) * (upper[mask_lower] - lower[mask_lower])
+            Wi[mask_upper] = lower[mask_upper] + np.random.rand(np.sum(mask_upper)) * (upper[mask_upper] - lower[mask_upper])
+            Wr[i] = Wi
         
         Xc = (Wp + Wr.sum(axis=0)) / (K + 1)
 
