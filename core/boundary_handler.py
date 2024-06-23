@@ -613,6 +613,49 @@ class BoundaryHandler:
         
     
 
+    # """ 2019 Efren Juarez Centroid """
+    # def centroid_method(X, population, lower, upper, K=3):
+    #     """
+    #     Implementación del método Centroid para manejo de límites usando numpy.
+
+    #     Parámetros:
+    #     X (numpy.ndarray): El vector que se encuentra fuera de los límites.
+    #     population (numpy.ndarray): Población actual de soluciones.
+    #     lower (numpy.ndarray): Límites inferiores para cada dimensión.
+    #     upper (numpy.ndarray): Límites superiores para cada dimensión.
+    #     K (int): Cantidad de vectores aleatorios. Default es 3.
+
+    #     Retorna:
+    #     numpy.ndarray: Vector corregido.
+    #     """
+    #     NP, D = population.shape
+        
+    #     # Soluciones Factibles (SFS) y Soluciones No Factibles (SIS)
+    #     SFS = np.array([ind for ind in population if np.all(lower <= ind) and np.all(ind <= upper)])
+    #     SIS = np.array([ind for ind in population if ind not in SFS])
+    #     AFS = len(SFS)
+
+    #     if AFS > 0 and np.random.rand() > 0.5:
+    #         Wp = SFS[np.random.randint(AFS)]
+    #     else:
+    #         if len(SIS) > 0:
+    #             Wp = SIS[np.argmin([np.sum(np.maximum(0, lower - ind) + np.maximum(0, ind - upper)) for ind in SIS])]
+    #         else:
+    #             # Si SIS está vacío, seleccionamos aleatoriamente un vector de la población
+    #             Wp = population[np.random.randint(NP)]
+
+    #     Wr = np.empty((K, D))
+    #     for i in range(K):
+    #         Wi = np.copy(X)
+    #         for j in range(D):
+    #             if Wi[j] < lower[j] or Wi[j] > upper[j]:
+    #                 Wi[j] = lower[j] + np.random.rand() * (upper[j] - lower[j])
+    #         Wr[i] = Wi
+        
+    #     Xc = (Wp + Wr.sum(axis=0)) / (K + 1)
+
+    #     return Xc
+
     """ 2019 Efren Juarez Centroid """
     def centroid_method(X, population, lower, upper, K=3):
         """
@@ -658,6 +701,32 @@ class BoundaryHandler:
 
         return Xc
     
+
+    def centroid(target_vector_index, population, lower, upper,  K=1):
+        D = len(lower)
+        NP = len(population)
+        def is_valid(lower, upper, vector):
+            return np.all(vector >= lower) and np.all(vector <= upper)
+        
+        # Seleccionar el vector de la población
+        if is_valid(population[target_vector_index]):
+            selected_vector = population[target_vector_index]
+        else:
+            selected_vector = min(population, key=lambda x: np.sum(np.maximum(0, np.maximum(lower - x, x - upper))))
+        
+        # Crear vectores aleatorios dentro de los límites
+        random_vectors = np.array([lower + np.random.rand(D) * (upper - lower) for _ in range(K)])
+        
+        # Calcular el centroide
+        centroid_vector = np.mean(np.vstack([selected_vector, random_vectors]), axis=0)
+        
+        # Aplicar los límites
+        centroid_vector = np.clip(centroid_vector, lower, upper)
+        
+        return centroid_vector
+
+   
+
     #example:
     #max resamples
     #3 * len(lower_bounds)

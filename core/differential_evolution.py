@@ -2,7 +2,7 @@ from typing import Callable, Tuple, List
 from .algorithm import Algorithm
 from .constraints_functions import ConstriantsFunctionsHandler
 from utils.constants import SIZE_POPULATION, GENERATIONS
-from utils.check_pause import check_for_pause
+""" from utils.check_pause import check_for_pause """
 from tqdm import tqdm
 from .mutation_strategy import MutationStrategies
 import numpy as np
@@ -54,7 +54,7 @@ class Differential_Evolution(Algorithm):
 
         self._get_gbest_pobulation_zero_()
 
-        self.mutation_strategies = MutationStrategies(self.population, self.F)
+        self.mutation_strategies = MutationStrategies(self.population, self.F, self.objective_function)
 
     def _compute_fitness_and_violations_(self):
         for index, individual in enumerate(self.population):
@@ -232,6 +232,9 @@ class Differential_Evolution(Algorithm):
                 self.best_fitness = self.gbest_fitness
                 self.best_violations = self.gbest_violation
 
+                self.best_fitness = self.gbest_fitness
+                self.best_violations = self.gbest_violation
+
     def report(self):
         start_time = time.time()
 
@@ -258,34 +261,54 @@ class Differential_Evolution(Algorithm):
         print(f"Tiempo de Ejecución del Reporte: {execution_time} segundos")
         print("================================")
 
+    # def evolution(self, verbose: bool = True):
+    #     for _ in tqdm(range(GENERATIONS), desc="Evolucionando"):
+
+    #         check_for_pause(self.report)
+
+    #         for i in range(SIZE_POPULATION):
+    #             objective = self.population[i]
+    #             mutant = self._mutation_operator_(i)
+    #             trial = self._crossover_operator_(objective, mutant)
+    #             if self.centroid:
+    #                 trial = self.bounds_constraints(
+    #                     trial, self.population, self.lower, self.upper, K=3
+    #                 )
+    #             elif self.beta:
+    #                 trial = self.bounds_constraints(
+    #                     trial, self.lower, self.upper, self.population
+    #                 )
+    #             elif self.evolutionary:
+    #                 trial = self.bounds_constraints(
+    #                     trial, self.lower, self.upper, self.gbest_individual
+    #                 )
+    #             elif self.res_and_rand:
+    #                 pass
+    #             else:
+    #                 trial = self.bounds_constraints(self.upper, self.lower, trial)
+    #             self._selection_operator_(i, trial)
+
+    #         self.update_position_gbest_population()
+
+    #     if verbose:
+    #         self.report()
+
+    
     def evolution(self, verbose: bool = True):
-        for _ in tqdm(range(GENERATIONS), desc="Evolucionando"):
-
-            check_for_pause(self.report)
-
-            for i in range(SIZE_POPULATION):
+        for gen in tqdm(range(GENERATIONS), desc="Evolucionando"):
+           for i in range(SIZE_POPULATION):
                 objective = self.population[i]
-                mutant = self._mutation_operator_(i)
+                mutant = self.mutation_operator(i, gen)  # Pasando 'generation' aquí
                 trial = self._crossover_operator_(objective, mutant)
                 if self.centroid:
                     trial = self.bounds_constraints(
-                        trial, self.population, self.lower, self.upper, K=3
+                        trial, self.population, self.lower, self.upper
                     )
-                elif self.beta:
-                    trial = self.bounds_constraints(
-                        trial, self.lower, self.upper, self.population
-                    )
-                elif self.evolutionary:
-                    trial = self.bounds_constraints(
-                        trial, self.lower, self.upper, self.gbest_individual
-                    )
-                elif self.res_and_rand:
-                    pass
                 else:
                     trial = self.bounds_constraints(self.upper, self.lower, trial)
                 self._selection_operator_(i, trial)
 
-            self.update_position_gbest_population()
+        self.update_position_gbest_population()
 
         if verbose:
             self.report()
@@ -314,3 +337,7 @@ class Differential_Evolution(Algorithm):
 
         # if verbose:
         #     self.report()
+
+        
+
+       
