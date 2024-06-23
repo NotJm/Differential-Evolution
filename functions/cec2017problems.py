@@ -1,8 +1,8 @@
 import numpy as np
-from Problem import Problem, ProblemType
+from .Problem import Problem, ProblemType
 from scipy.stats import ortho_group
 
-D = 5
+D = 10
 
 SUPERIOR_1 = np.array([100] * D)
 INFERIOR_1 = np.array([-100] * D)

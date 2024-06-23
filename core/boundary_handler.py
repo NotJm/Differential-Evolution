@@ -631,15 +631,16 @@ class BoundaryHandler:
         NP, D = population.shape
         
         # Soluciones Factibles (SFS) y Soluciones No Factibles (SIS)
-        SFS = np.array([ind for ind in population if np.all(lower <= ind) and np.all(ind <= upper)])
-        SIS = np.array([ind for ind in population if ind not in SFS])
+        SFS = population[np.all((population >= lower) & (population <= upper), axis=1)]
+        SIS = population[np.any((population < lower) | (population > upper), axis=1)]
         AFS = len(SFS)
 
         if AFS > 0 and np.random.rand() > 0.5:
             Wp = SFS[np.random.randint(AFS)]
         else:
             if len(SIS) > 0:
-                Wp = SIS[np.argmin([np.sum(np.maximum(0, lower - ind) + np.maximum(0, ind - upper)) for ind in SIS])]
+                violations = np.sum(np.maximum(0, lower - SIS) + np.maximum(0, SIS - upper), axis=1)
+                Wp = SIS[np.argmin(violations)]
             else:
                 # Si SIS está vacío, seleccionamos aleatoriamente un vector de la población
                 Wp = population[np.random.randint(NP)]
@@ -647,15 +648,16 @@ class BoundaryHandler:
         Wr = np.empty((K, D))
         for i in range(K):
             Wi = np.copy(X)
-            for j in range(D):
-                if Wi[j] < lower[j] or Wi[j] > upper[j]:
-                    Wi[j] = lower[j] + np.random.rand() * (upper[j] - lower[j])
+            mask_lower = Wi < lower
+            mask_upper = Wi > upper
+            Wi[mask_lower] = lower[mask_lower] + np.random.rand(np.sum(mask_lower)) * (upper[mask_lower] - lower[mask_lower])
+            Wi[mask_upper] = lower[mask_upper] + np.random.rand(np.sum(mask_upper)) * (upper[mask_upper] - lower[mask_upper])
             Wr[i] = Wi
         
         Xc = (Wp + Wr.sum(axis=0)) / (K + 1)
 
         return Xc
-
+    
     #example:
     #max resamples
     #3 * len(lower_bounds)

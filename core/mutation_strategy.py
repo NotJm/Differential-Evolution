@@ -2,7 +2,7 @@ import numpy as np
 from utils.constants import GENERATIONS, SIZE_POPULATION
 
 class MutationStrategies:
-    def _init_(self, population, scale, objective_function):
+    def __init__(self, population, scale, objective_function=None):
         self.population = population
         self.scale = scale
         self.objective_function = objective_function
@@ -84,11 +84,6 @@ class MutationStrategies:
             return self._best1(samples[:2])
 
     
-
-
-
-
-
     def _adaptive_rand_elite(self, generation):
         # Definir parámetros
         F_min = 0.5
