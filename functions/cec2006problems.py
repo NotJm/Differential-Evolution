@@ -77,8 +77,7 @@ class CEC2006_G02(Problem):
 
     def __init__(self):
         rest_g = [
-            self.cec2006_g02_g1,
-            self.cec2006_g02_g2,
+            self.cec2006_g02_g1,self.cec2006_g02_g2,
         ]
         super().__init__(
             ProblemType.CONSTRAINED, #TIPO DE PROBLEMA
@@ -151,12 +150,8 @@ class CEC2006_G04(Problem):
 
     def __init__(self):
         rest_g = [
-            self.cec2006_g04_g2,
-            self.cec2006_g04_g1,
-            self.cec2006_g04_g3,
-            self.cec2006_g04_g4,
-            self.cec2006_g04_g5,
-            self.cec2006_g04_g6
+            self.cec2006_g04_g2,self.cec2006_g04_g1,self.cec2006_g04_g3,
+            self.cec2006_g04_g4,self.cec2006_g04_g5,self.cec2006_g04_g6
         ]
         super().__init__(
             ProblemType.CONSTRAINED, #TIPO DE PROBLEMA
@@ -210,13 +205,10 @@ class CEC2006_G05(Problem):
 
     def __init__(self):
         rest_g = [
-            self.cec2006_g05_g1,
-            self.cec2006_g05_g2,
+            self.cec2006_g05_g1,self.cec2006_g05_g2,
         ]
         rest_h = [
-            self.cec2006_g05_h1,
-            self.cec2006_g05_h2,
-            self.cec2006_g05_h3
+            self.cec2006_g05_h1,self.cec2006_g05_h2,self.cec2006_g05_h3
         ]
         super().__init__(
             ProblemType.CONSTRAINED, #TIPO DE PROBLEMA
@@ -263,8 +255,7 @@ class CEC2006_G06:
 
     def __init__(self):
         rest_g = [
-            self.cec2006_g06_g1,
-            self.cec2006_g06_g2,
+            self.cec2006_g06_g1,self.cec2006_g06_g2,
         ]
         super().__init__(
             ProblemType.CONSTRAINED, #TIPO DE PROBLEMA
@@ -289,47 +280,67 @@ class CEC2006_G06:
 
 #Problem 07
 
-class CEC2006_G07:
+import numpy as np
 
-    @staticmethod
-    def cec2006_g07_aptitud(individuo:np.array): 
-        f_x = (individuo[0]**2 + individuo[1]**2 + individuo[0]*individuo[0] - 14*individuo - 16*individuo[1] + (individuo[2] - 10)**2 + 
-                4*(individuo[3] - 5)**2 + (individuo[4] - 3)**2 + 2*(individuo[5] - 1)**2 + 5*individuo[6]**2 + 
-                7*(individuo[7] - 11)**2 + 2*(individuo[8] - 10)**2 + (individuo[9] - 7)**2 + 45)
+class CEC2006_G07(Problem):
+    SUPERIOR = np.array([10] * 10)
+    INFERIOR = np.array([-10] * 10)
+
+    def __init__(self):
+        rest_g = [
+            self.cec2006_g07_g1,self.cec2006_g07_g2,self.cec2006_g07_g3,self.cec2006_g07_g4,
+            self.cec2006_g07_g5,self.cec2006_g07_g6,self.cec2006_g07_g7,self.cec2006_g07_g8,
+        ]
+        super().__init__(
+            ProblemType.CONSTRAINED, #TIPO DE PROBLEMA
+            self.SUPERIOR, self.INFERIOR, #LÍMITES
+            rest_g, [] #RESTRICCIONES
+        )
+
+    def fitness(self, individuo: np.array) -> float:
+        x = individuo
+        f_x = x[0]**2 + x[1]**2 + x[0]*x[1] - 14*x[0] - 16*x[1] + (x[2] - 10)**2 + 4*(x[3] - 5)**2 + (x[4] - 3)**2 + 2*(x[5] - 1)**2 + 5*x[6]**2 + 7*(x[7] - 11)**2 + 2*(x[8] - 10)**2 + (x[9] - 7)**2 + 45
         return f_x
 
     @staticmethod
-    def cec2006_g07_g1(x): # restriccion 1 de desigualdad <= 0
-        return -105 + 4 * x[0] + 5 * x[1] - 3 * x[6] + 9 * x[7]
-    
-    @staticmethod
-    def cec2006_g07_g2(x): # restriccion 2 de desigualdad <= 0
-        return 10 * x[0] - 8 * x[1] - 17 * x[6] + 2 * x[7]
-    
-    @staticmethod
-    def cec2006_g07_g3(x): # restriccion 3 de desigualdad <= 0
-        return -8 * x[0] + 2 * x[1] + 5 * x[8] - 2 * x[9] - 12
-    
-    @staticmethod
-    def cec2006_g07_g4(x): # restriccion 4 de desigualdad <= 0
-        return 3 * (x[0] - 2)**2 + 4 * (x[1] - 3)**2 + 2 * x[2]**2 - 7 * x[3] - 120
+    def cec2006_g07_g1(x):  # restriccion 1 de desigualdad <= 0
+        result = -105 + 4*x[0] + 5*x[1] - 3*x[6] + 9*x[7]
+        return result
 
     @staticmethod
-    def cec2006_g07_g5(x): # restriccion 5 de desigualdad <= 0
-        return 5 * x[0]**2 + 8 * x[1] + (x[2] - 6)**2 - 2 * x[3] - 40
+    def cec2006_g07_g2(x):  # restriccion 2 de desigualdad <= 0
+        result = 10*x[0] - 8*x[1] - 17*x[6] + 2*x[7]
+        return result
 
     @staticmethod
-    def cec2006_g07_g6(x): # restriccion 6 de desigualdad <= 0
-        return x[0]**2 + 2 * (x[1] - 2)**2 - 2 * x[0] * x[1] + 14 * x[4] - 6 * x[5]
+    def cec2006_g07_g3(x):  # restriccion 3 de desigualdad <= 0
+        result = -8*x[0] + 2*x[1] + 5*x[8] - 2*x[9] - 12
+        return result
 
     @staticmethod
-    def cec2006_g07_g7(x): # restriccion 7 de desigualdad <= 0
-        return 0.5 * (x[0] - 8)**2 + 2 * (x[1] - 4)**2 + 3 * x[4]**2 - x[5] - 30
+    def cec2006_g07_g4(x):  # restriccion 4 de desigualdad <= 0
+        result = 3*(x[0] - 2)**2 + 4*(x[1] - 3)**2 + 2*x[2]**2 - 7*x[3] - 120
+        return result
 
     @staticmethod
-    def cec2006_g07_g8(x): # restriccion 8 de desigualdad <= 0
-        return -3 * x[0] + 6 * x[1] + 12 * (x[8] - 8)**2 - 7 * x[9]
+    def cec2006_g07_g5(x):  # restriccion 5 de desigualdad <= 0
+        result = 5*x[0]**2 + 8*x[1] + (x[2] - 6)**2 - 2*x[3] - 40
+        return result
 
+    @staticmethod
+    def cec2006_g07_g6(x):  # restriccion 6 de desigualdad <= 0
+        result = x[0]**2 + 2*(x[1] - 2)**2 - 2*x[0]*x[1] + 14*x[4] - 6*x[5]
+        return result
+
+    @staticmethod
+    def cec2006_g07_g7(x):  # restriccion 7 de desigualdad <= 0
+        result = 0.5*(x[0] - 8)**2 + 2*(x[1] - 4)**2 + 3*x[4]**2 - x[5] - 30
+        return result
+
+    @staticmethod
+    def cec2006_g07_g8(x):  # restriccion 8 de desigualdad <= 0
+        result = -3*x[0] + 6*x[1] + 12*(x[8] - 8)**2 - 7*x[9]
+        return result
     
     #Notas: donde −10 ≤ xi ≤ 10(i = 1,...,10)
     
@@ -337,50 +348,74 @@ class CEC2006_G07:
 
 #Problem 08
 
-class CEC2006_G08:
-    
-    @staticmethod
-    def cec2006_g08_aptitud(individuo:np.array): 
-        num = (np.sin(2 * np.pi * individuo[0]) ** 3) * np.sin(2 * np.pi * individuo[1])
-        den = individuo[0]**3 * (individuo[0] + individuo[1])
-        return - (num / den)
-    
-    @staticmethod
-    def cec2006_g08_g1(x): # restriccion 1 de desigualdad <= 0
-        return x[0] ** 2 - x[1] + 1 
-    
-    @staticmethod
-    def cec2006_g08_g2(x): # restriccion 2 de desigualdad <= 0
-        return 1 - x[0] + (x[1] - 4) ** 2
+class CEC2006_G08(Problem):
+    SUPERIOR = np.array([10, 10])
+    INFERIOR = np.array([0, 0])
 
-    #245, 278
-    
+    def __init__(self):
+        rest_g = [
+            self.cec2006_g08_g1,self.cec2006_g08_g2,
+        ]
+        super().__init__(
+            ProblemType.CONSTRAINED, #TIPO DE PROBLEMA
+            self.SUPERIOR, self.INFERIOR, #LÍMITES
+            rest_g, [] #RESTRICCIONES
+        )
+
+    def fitness(self, individuo: np.array) -> float:
+        x = individuo
+        f_x = - (np.sin(2 * np.pi * x[0])**3 * np.sin(2 * np.pi * x[1])) / (x[0]**3 * (x[0] + x[1]))
+        return f_x
+
+    @staticmethod
+    def cec2006_g08_g1(x):  # restriccion 1 de desigualdad <= 0
+        result = x[0]**2 - x[1] + 1
+        return result
+
+    @staticmethod
+    def cec2006_g08_g2(x):  # restriccion 2 de desigualdad <= 0
+        result = 1 - x[0] + (x[1] - 4)**2
+        return result
     
 #********************************************************************************************************************************
 
 #Problem 9
 
 class CEC2006_G09:
-    
-    @staticmethod
-    def cec2006_g09_aptitud(individuo:np.array): 
-        f_x = ((individuo[0] - 10)**2 + 5 * (individuo[1] - 12)**2 + individuo[2]**4 + 3 * (individuo[3] - 11)**2
-           + 10 * individuo[4]**6 + 7 * individuo[5]**2 + individuo[6]**4 - 4 * individuo[5] * individuo[6]
-           - 10 * individuo[5] - 8 * individuo[6])
+    SUPERIOR = np.array([10] * 7)
+    INFERIOR = np.array([-10] * 7)
+
+    def __init__(self):
+        rest_g = [
+            self.cec2006_g09_g1,self.cec2006_g09_g2,self.cec2006_g09_g3,self.cec2006_g09_g4,
+        ]
+        super().__init__(
+            ProblemType.CONSTRAINED, #TIPO DE PROBLEMA
+            self.SUPERIOR, self.INFERIOR, #LÍMITES
+            rest_g, [] #RESTRICCIONES
+        )
+
+    def fitness(self, individuo: np.array) -> float:
+        x = individuo
+        f_x = (x[0] - 10)**2 + 5*(x[1] - 12)**2 + x[2]**4 + 3*(x[3] - 11)**2 + 10*x[4]**6 + 7*x[5]**2 + x[6]**4 - 4*x[5]*x[6] - 10*x[5] - 8*x[6]
         return f_x
-    
+
     @staticmethod
-    def cec2006_g09_g1(x): # restriccion 1 de desigualdad <= 0
-        return -127 + 2 * x[0]**2 + 3 * x[1]**4 + x[2] + 4 * x[3]**2 + 5 * x[4]
-    
+    def cec2006_g09_g1(x):  # restriccion 1 de desigualdad <= 0
+        result = -127 + 2*x[0]**2 + 3*x[1]**4 + x[2] + 4*x[3]**2 + 5*x[4]
+        return result
+
     @staticmethod
-    def cec2006_g09_g2(x): # restriccion 2 de desigualdad <= 0
-        return -282 + 7 * x[0] + 3 * x[1] + 10 * x[2]**2 + x[3] - x[4]
-    
+    def cec2006_g09_g2(x):  # restriccion 2 de desigualdad <= 0
+        result = -282 + 7*x[0] + 3*x[1] + 10*x[2]**2 + x[3] - x[4]
+        return result
+
     @staticmethod
-    def cec2006_g09_g3(x): # restriccion 3 de desigualdad <= 0
-        return -196 + 23 * x[0] + x[1]**2 + 6 * x[5]**2 - 8 * x[6]
-    
+    def cec2006_g09_g3(x):  # restriccion 3 de desigualdad <= 0
+        result = -196 + 23*x[0] + x[1]**2 + 6*x[5]**2 - 8*x[6]
+        return result
+
     @staticmethod
-    def cec2006_g09_g4(x): # restriccion 4 de desigualdad <= 0
-        return 4 * x[1]**2 + x[2]**2 - 3 * x[0] * x[1] + 2 * x[3]**2 + 5 * x[5] - 11 * x[6]    
+    def cec2006_g09_g4(x):  # restriccion 4 de desigualdad <= 0
+        result = 4*x[0]**2 + x[1]**2 - 3*x[0]*x[1] + 2*x[2]**2 + 5*x[5] - 11*x[6]
+        return result
