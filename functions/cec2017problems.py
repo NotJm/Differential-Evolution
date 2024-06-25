@@ -4,25 +4,18 @@ from scipy.stats import ortho_group
 
 D = 10
 
-SUPERIOR_1 = np.array([100] * D)
-INFERIOR_1 = np.array([-100] * D)
-
-SUPERIOR_2 = np.array([10] * D)
-INFERIOR_2 = np.array([-10] * D)
-
-SUPERIOR_3 = np.array([20] * D)
-INFERIOR_3 = np.array([-20] * D)
-
-SUPERIOR_4 = np.array([50] * D)
-INFERIOR_4 = np.array([-50] * D)
-
 o = np.zeros(D)
 
 class CEC2017_C01(Problem):
+    
+    SUPERIOR = np.array([100] * D)
+    INFERIOR = np.array([-100] * D)
+    
     def __init__(self):
+        
         rest_h = []
         rest_g = [self.CEC2017_C01_g1]
-        super().__init__(ProblemType.CONSTRAINED, SUPERIOR_1, INFERIOR_1, rest_g, rest_h)
+        super().__init__(ProblemType.CONSTRAINED, self.SUPERIOR, self.INFERIOR, rest_g, rest_h)
 
     def fitness(self, x: np.array) -> float:
         z = x - o
@@ -38,10 +31,13 @@ class CEC2017_C02(Problem):
     
     M = ortho_group.rvs(D)
     
+    SUPERIOR = np.array([100] * D)
+    INFERIOR = np.array([-100] * D)
+    
     def __init__(self):
         rest_h = []
         rest_g = [self.CEC2017_C02_g1]
-        super().__init__(ProblemType.CONSTRAINED, SUPERIOR_1, INFERIOR_1, rest_g, rest_h)
+        super().__init__(ProblemType.CONSTRAINED, self.SUPERIOR, self.INFERIOR, rest_g, rest_h)
 
     def fitness(self, x: np.array) -> float:
         z = x - o
@@ -55,10 +51,14 @@ class CEC2017_C02(Problem):
         return np.sum(y**2 - 5000 * np.cos(0.1 * np.pi * y) - 4000)
 
 class CEC2017_C03(Problem):
+    
+    SUPERIOR = np.array([100] * D)
+    INFERIOR = np.array([-100] * D)
+    
     def __init__(self):
         rest_h = [self.CEC2017_C03_h1]
         rest_g = [self.CEC2017_C03_g1]
-        super().__init__(ProblemType.CONSTRAINED, SUPERIOR_1, INFERIOR_1, rest_g, rest_h)
+        super().__init__(ProblemType.CONSTRAINED, self.SUPERIOR, self.INFERIOR, rest_g, rest_h)
 
     def fitness(self, x: np.array) -> float:
         z = x - o
@@ -76,10 +76,14 @@ class CEC2017_C03(Problem):
         return np.sum(z * np.sin(0.1 * np.pi * z))
 
 class CEC2017_C04(Problem):
+    
+    SUPERIOR = np.array([10] * D)
+    INFERIOR = np.array([-10] * D)
+    
     def __init__(self):
         rest_h = []
         rest_g = [self.CEC2017_C04_g1, self.CEC2017_C04_g2]
-        super().__init__(ProblemType.CONSTRAINED, SUPERIOR_2, INFERIOR_2, rest_g, rest_h)
+        super().__init__(ProblemType.CONSTRAINED, self.SUPERIOR, self.INFERIOR, rest_g, rest_h)
 
     def fitness(self, x: np.array) -> float:
         z = x - o
@@ -97,13 +101,17 @@ class CEC2017_C04(Problem):
         return np.sum(z * np.sin(z))
 
 class CEC2017_C05(Problem):
+    
     M1 = ortho_group.rvs(D)
     M2 = ortho_group.rvs(D)
+    
+    SUPERIOR = np.array([10] * D)
+    INFERIOR = np.array([-10] * D)
     
     def __init__(self):
         rest_h = []
         rest_g = [self.CEC2017_C05_g1, self.CEC2017_C05_g2]
-        super().__init__(ProblemType.CONSTRAINED, SUPERIOR_2, INFERIOR_2, rest_g, rest_h)
+        super().__init__(ProblemType.CONSTRAINED, self.SUPERIOR, self.INFERIOR, rest_g, rest_h)
 
     def fitness(self, x: np.array) -> float:
         z = x - o
@@ -123,6 +131,10 @@ class CEC2017_C05(Problem):
         return np.sum(w**2 - 50 * np.cos(2 * np.pi * w) - 40)
     
 class CEC2017_C06(Problem):
+    
+    SUPERIOR = np.array([20] * D)
+    INFERIOR = np.array([-20] * D)
+    
     def __init__(self):
         rest_h = [
             self.CEC2017_C06_h1, self.CEC2017_C06_h2, 
@@ -130,7 +142,7 @@ class CEC2017_C06(Problem):
             self.CEC2017_C06_h5, self.CEC2017_C06_h6
         ]
         rest_g = []
-        super().__init__(ProblemType.CONSTRAINED, SUPERIOR_3, INFERIOR_3, rest_g, rest_h)
+        super().__init__(ProblemType.CONSTRAINED, self.SUPERIOR, self.INFERIOR, rest_g, rest_h)
 
     def fitness(self, x: np.array) -> float:
         z = x - o
@@ -168,10 +180,14 @@ class CEC2017_C06(Problem):
         return - np.sum(z * np.sin(2 * np.sqrt(np.abs(z))))
     
 class CEC2017_C07(Problem):
+    
+    SUPERIOR = np.array([50] * D)
+    INFERIOR = np.array([-50] * D)
+    
     def __init__(self):
         rest_h = [self.CEC2017_C07_h1, self.CEC2017_C07_h2]
         rest_g = []
-        super().__init__(ProblemType.CONSTRAINED, SUPERIOR_4, INFERIOR_4, rest_g, rest_h)
+        super().__init__(ProblemType.CONSTRAINED, self.SUPERIOR, self.INFERIOR, rest_g, rest_h)
 
     def fitness(self, x: np.array) -> float:
         z = x - o
@@ -189,10 +205,14 @@ class CEC2017_C07(Problem):
         return - np.sum(z - 100 * np.cos(0.5 * z) + 100)
     
 class CEC2017_C08(Problem):
+    
+    SUPERIOR = np.array([100] * D)
+    INFERIOR = np.array([-100] * D)
+    
     def __init__(self):
         rest_h = [self.CEC2017_C08_h1, self.CEC2017_C08_h2]
         rest_g = []
-        super().__init__(ProblemType.CONSTRAINED, SUPERIOR_1, INFERIOR_1, rest_g, rest_h)
+        super().__init__(ProblemType.CONSTRAINED, self.SUPERIOR, self.INFERIOR, rest_g, rest_h)
 
     def fitness(self, x: np.array) -> float:
         z = x - o
@@ -212,10 +232,14 @@ class CEC2017_C08(Problem):
         return np.sum([(np.sum(w[:i+1]))**2 for i in range(len(w))])
     
 class CEC2017_C09(Problem):
+    
+    SUPERIOR = np.array([10] * D)
+    INFERIOR = np.array([-10] * D)
+    
     def __init__(self):
         rest_h = [self.CEC2017_C09_h1]
         rest_g = [self.CEC2017_C09_g1]
-        super().__init__(ProblemType.CONSTRAINED, SUPERIOR_2, INFERIOR_2, rest_g, rest_h)
+        super().__init__(ProblemType.CONSTRAINED, self.SUPERIOR, self.INFERIOR, rest_g, rest_h)
 
     def fitness(self, x: np.array) -> float:
         z = x - o
@@ -235,10 +259,14 @@ class CEC2017_C09(Problem):
         return np.sum([(y[i]**2 - y[i+1]**2)**2 for i in range(len(y)-1)])
 
 class CEC2017_C10(Problem):
+    
+    SUPERIOR = np.array([100] * D)
+    INFERIOR = np.array([-100] * D)
+    
     def __init__(self):
         rest_h = [self.CEC2017_C10_h1, self.CEC2017_C10_h2]
         rest_g = []
-        super().__init__(ProblemType.CONSTRAINED, SUPERIOR_1, INFERIOR_1, rest_g, rest_h)
+        super().__init__(ProblemType.CONSTRAINED, self.SUPERIOR, self.INFERIOR, rest_g, rest_h)
 
     def fitness(self, x: np.array) -> float:
         z = x - o
@@ -256,10 +284,14 @@ class CEC2017_C10(Problem):
         return np.sum([(z[i] - z[i+1])**2 for i in range(D-1)])
     
 class CEC2017_C11(Problem):
+    
+    SUPERIOR = np.array([100] * D)
+    INFERIOR = np.array([-100] * D)
+    
     def __init__(self):
         rest_h = [self.CEC2017_C11_h1]
         rest_g = [self.CEC2017_C11_g1]
-        super().__init__(ProblemType.CONSTRAINED, SUPERIOR_1, INFERIOR_1, rest_g, rest_h)
+        super().__init__(ProblemType.CONSTRAINED, self.SUPERIOR, self.INFERIOR, rest_g, rest_h)
 
     def fitness(self, x: np.array) -> float:
         z = x - o
@@ -277,12 +309,14 @@ class CEC2017_C11(Problem):
         return np.sum([(z[i] - z[i+1])**2 for i in range(D-1)])
     
 class CEC2017_C12(Problem):
+    
+    SUPERIOR = np.array([100] * D)
+    INFERIOR = np.array([-100] * D)
+    
     def __init__(self):
         rest_h = [self.CEC2017_C12_h1]
         rest_g = [self.CEC2017_C12_g1]
-        SUPERIOR_1 = np.array([100] * D)
-        INFERIOR_1 = np.array([-100] * D)
-        super().__init__(ProblemType.CONSTRAINED, SUPERIOR_1, INFERIOR_1, rest_g, rest_h)
+        super().__init__(ProblemType.CONSTRAINED, self.SUPERIOR, self.INFERIOR, rest_g, rest_h)
 
     def fitness(self, x: np.array) -> float:
         y = x - o
@@ -300,12 +334,14 @@ class CEC2017_C12(Problem):
         return np.sum(y**2) - 4
     
 class CEC2017_C13(Problem):
+    
+    SUPERIOR = np.array([100] * D)
+    INFERIOR = np.array([-100] * D)
+    
     def __init__(self):
         rest_h = []
         rest_g = [self.CEC2017_C13_g1, self.CEC2017_C13_g2, self.CEC2017_C13_g3]
-        SUPERIOR_1 = np.array([100] * D)
-        INFERIOR_1 = np.array([-100] * D)
-        super().__init__(ProblemType.CONSTRAINED, SUPERIOR_1, INFERIOR_1, rest_g, rest_h)
+        super().__init__(ProblemType.CONSTRAINED, self.SUPERIOR, self.INFERIOR, rest_g, rest_h)
 
     def fitness(self, x: np.array) -> float:
         y = x - o
@@ -328,12 +364,14 @@ class CEC2017_C13(Problem):
         return 5 - np.sum(y)
 
 class CEC2017_C14(Problem):
+    
+    SUPERIOR = np.array([100] * D)
+    INFERIOR = np.array([-100] * D)
+    
     def __init__(self):
         rest_h = [self.CEC2017_C14_h]
         rest_g = [self.CEC2017_C14_g]
-        SUPERIOR_1 = np.array([100] * D)
-        INFERIOR_1 = np.array([-100] * D)
-        super().__init__(ProblemType.CONSTRAINED, SUPERIOR_1, INFERIOR_1, rest_g, rest_h)
+        super().__init__(ProblemType.CONSTRAINED, self.SUPERIOR, self.INFERIOR, rest_g, rest_h)
 
     def fitness(self, x: np.array) -> float:
         y = x - o
@@ -353,12 +391,14 @@ class CEC2017_C14(Problem):
         return np.sum(y**2) - 4
 
 class CEC2017_C15(Problem):
+    
+    SUPERIOR = np.array([100] * D)
+    INFERIOR = np.array([-100] * D)
+    
     def __init__(self):
         rest_h = [self.CEC2017_C15_h]
         rest_g = [self.CEC2017_C15_g]
-        SUPERIOR_1 = np.array([100] * D)
-        INFERIOR_1 = np.array([-100] * D)
-        super().__init__(ProblemType.CONSTRAINED, SUPERIOR_1, INFERIOR_1, rest_g, rest_h)
+        super().__init__(ProblemType.CONSTRAINED, self.SUPERIOR, self.INFERIOR, rest_g, rest_h)
 
     def fitness(self, x: np.array) -> float:
         y = x - o
@@ -377,10 +417,14 @@ class CEC2017_C15(Problem):
         return np.cos(f_x) + np.sin(f_x)
 
 class CEC2017_C16(Problem):
+    
+    SUPERIOR = np.array([100] * D)
+    INFERIOR = np.array([-100] * D)
+    
     def __init__(self):
         rest_h = [self.CEC2017_C16_h]
         rest_g = [self.CEC2017_C16_g]
-        super().__init__(ProblemType.CONSTRAINED, SUPERIOR_1, INFERIOR_1, rest_g, rest_h)
+        super().__init__(ProblemType.CONSTRAINED, self.SUPERIOR, self.INFERIOR, rest_g, rest_h)
 
     def fitness(self, x: np.array) -> float:
         y = x - o
@@ -399,10 +443,14 @@ class CEC2017_C16(Problem):
         return (np.cos(f_x) + np.sin(f_x))**2 - np.exp(np.cos(f_x) + np.sin(f_x)) - 1 + np.exp(1)
 
 class CEC2017_C17(Problem):
+    
+    SUPERIOR = np.array([100] * D)
+    INFERIOR = np.array([-100] * D)
+    
     def __init__(self):
         rest_h = [self.CEC2017_C17_h]
         rest_g = [self.CEC2017_C17_g]
-        super().__init__(ProblemType.CONSTRAINED, SUPERIOR_1, INFERIOR_1, rest_g, rest_h)
+        super().__init__(ProblemType.CONSTRAINED, self.SUPERIOR, self.INFERIOR, rest_g, rest_h)
 
     def fitness(self, x: np.array) -> float:
         y = x - o
@@ -423,10 +471,14 @@ class CEC2017_C17(Problem):
         return np.sum(y**2) - 4 * D
 
 class CEC2017_C18(Problem):
+    
+    SUPERIOR = np.array([100] * D)
+    INFERIOR = np.array([-100] * D)
+    
     def __init__(self):
         rest_h = [self.CEC2017_C18_h]
         rest_g = [self.CEC2017_C18_g1, self.CEC2017_C18_g2]
-        super().__init__(ProblemType.CONSTRAINED, SUPERIOR_1, INFERIOR_1, rest_g, rest_h)
+        super().__init__(ProblemType.CONSTRAINED, self.SUPERIOR, self.INFERIOR, rest_g, rest_h)
 
     def fitness(self, x: np.array) -> float:
         y = x - o
