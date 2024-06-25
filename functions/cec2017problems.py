@@ -275,3 +275,178 @@ class CEC2017_C11(Problem):
     def CEC2017_C11_h1(x):
         z = x - o
         return np.sum([(z[i] - z[i+1])**2 for i in range(D-1)])
+    
+class CEC2017_C12(Problem):
+    def __init__(self):
+        rest_h = [self.CEC2017_C12_h1]
+        rest_g = [self.CEC2017_C12_g1]
+        SUPERIOR_1 = np.array([100] * D)
+        INFERIOR_1 = np.array([-100] * D)
+        super().__init__(ProblemType.CONSTRAINED, SUPERIOR_1, INFERIOR_1, rest_g, rest_h)
+
+    def fitness(self, x: np.array) -> float:
+        y = x - o
+        f_x = np.sum(y**2 - 10 * np.cos(2 * np.pi * y) + 10)
+        return f_x
+    
+    @staticmethod
+    def CEC2017_C12_g1(x):
+        y = x - o
+        return 4 - np.sum(np.abs(y))
+    
+    @staticmethod
+    def CEC2017_C12_h1(x):
+        y = x - o
+        return np.sum(y**2) - 4
+    
+class CEC2017_C13(Problem):
+    def __init__(self):
+        rest_h = []
+        rest_g = [self.CEC2017_C13_g1, self.CEC2017_C13_g2, self.CEC2017_C13_g3]
+        SUPERIOR_1 = np.array([100] * D)
+        INFERIOR_1 = np.array([-100] * D)
+        super().__init__(ProblemType.CONSTRAINED, SUPERIOR_1, INFERIOR_1, rest_g, rest_h)
+
+    def fitness(self, x: np.array) -> float:
+        y = x - o
+        f_x = np.sum([100 * (y[i]**2 - y[i+1]**2)**2 + (y[i] - 1)**2 for i in range(D-1)])
+        return f_x
+    
+    @staticmethod
+    def CEC2017_C13_g1(x):
+        y = x - o
+        return np.sum(y**2 - 10 * np.cos(2 * np.pi * y) + 10) - 100
+    
+    @staticmethod
+    def CEC2017_C13_g2(x):
+        y = x - o
+        return np.sum(y) - 2 * D
+    
+    @staticmethod
+    def CEC2017_C13_g3(x):
+        y = x - o
+        return 5 - np.sum(y)
+
+class CEC2017_C14(Problem):
+    def __init__(self):
+        rest_h = [self.CEC2017_C14_h]
+        rest_g = [self.CEC2017_C14_g]
+        SUPERIOR_1 = np.array([100] * D)
+        INFERIOR_1 = np.array([-100] * D)
+        super().__init__(ProblemType.CONSTRAINED, SUPERIOR_1, INFERIOR_1, rest_g, rest_h)
+
+    def fitness(self, x: np.array) -> float:
+        y = x - o
+        term1 = -20 * np.exp(-0.2 * np.sqrt(np.sum(y**2) / D))
+        term2 = 20 - np.exp(np.sum(np.cos(2 * np.pi * y)) / D)
+        f_x = term1 + term2 + np.e
+        return f_x
+    
+    @staticmethod
+    def CEC2017_C14_g(x):
+        y = x - o
+        return np.sum(y[1:]**2) + 1 - np.abs(y[0])
+    
+    @staticmethod
+    def CEC2017_C14_h(x):
+        y = x - o
+        return np.sum(y**2) - 4
+
+class CEC2017_C15(Problem):
+    def __init__(self):
+        rest_h = [self.CEC2017_C15_h]
+        rest_g = [self.CEC2017_C15_g]
+        SUPERIOR_1 = np.array([100] * D)
+        INFERIOR_1 = np.array([-100] * D)
+        super().__init__(ProblemType.CONSTRAINED, SUPERIOR_1, INFERIOR_1, rest_g, rest_h)
+
+    def fitness(self, x: np.array) -> float:
+        y = x - o
+        f_x = np.max(np.abs(y))
+        return f_x
+    
+    @staticmethod
+    def CEC2017_C15_g(x):
+        y = x - o
+        return np.sum(y**2) - 100 * D
+    
+    @staticmethod
+    def CEC2017_C15_h(x):
+        y = x - o
+        f_x = np.max(np.abs(y))
+        return np.cos(f_x) + np.sin(f_x)
+
+class CEC2017_C16(Problem):
+    def __init__(self):
+        rest_h = [self.CEC2017_C16_h]
+        rest_g = [self.CEC2017_C16_g]
+        super().__init__(ProblemType.CONSTRAINED, SUPERIOR_1, INFERIOR_1, rest_g, rest_h)
+
+    def fitness(self, x: np.array) -> float:
+        y = x - o
+        f_x = np.sum(np.abs(y))
+        return f_x
+    
+    @staticmethod
+    def CEC2017_C16_g(x):
+        y = x - o
+        return np.sum(y**2) - 100 * D
+    
+    @staticmethod
+    def CEC2017_C16_h(x):
+        y = x - o
+        f_x = np.sum(np.abs(y))
+        return (np.cos(f_x) + np.sin(f_x))**2 - np.exp(np.cos(f_x) + np.sin(f_x)) - 1 + np.exp(1)
+
+class CEC2017_C17(Problem):
+    def __init__(self):
+        rest_h = [self.CEC2017_C17_h]
+        rest_g = [self.CEC2017_C17_g]
+        super().__init__(ProblemType.CONSTRAINED, SUPERIOR_1, INFERIOR_1, rest_g, rest_h)
+
+    def fitness(self, x: np.array) -> float:
+        y = x - o
+        f_x = 1/4000 * np.sum(y**2) + 1 - np.prod(np.cos(y / np.sqrt(np.arange(1, D+1))))
+        return f_x
+    
+    @staticmethod
+    def CEC2017_C17_g(x):
+        y = x - o
+        g = 1 - np.sum(np.sign(np.abs(y)))
+        for i in range(D):
+            g -= np.sum(y**2) - 1
+        return g
+    
+    @staticmethod
+    def CEC2017_C17_h(x):
+        y = x - o
+        return np.sum(y**2) - 4 * D
+
+class CEC2017_C18(Problem):
+    def __init__(self):
+        rest_h = [self.CEC2017_C18_h]
+        rest_g = [self.CEC2017_C18_g1, self.CEC2017_C18_g2]
+        super().__init__(ProblemType.CONSTRAINED, SUPERIOR_1, INFERIOR_1, rest_g, rest_h)
+
+    def fitness(self, x: np.array) -> float:
+        y = x - o
+        z = np.where(np.abs(y) < 0.5, y, 0.5 * np.round(2 * y))
+        f_x = np.sum(z**2 - 10 * np.cos(2 * np.pi * z) + 10)
+        return f_x
+    
+    @staticmethod
+    def CEC2017_C18_g1(x):
+        y = x - o
+        return 1 - np.sum(np.abs(y))
+    
+    @staticmethod
+    def CEC2017_C18_g2(x):
+        y = x - o
+        return np.sum(y**2) - 100 * D
+    
+    @staticmethod
+    def CEC2017_C18_h(x):
+        y = x - o
+        h1 = np.sum([100 * (y[i] - y[i+1])**2 for i in range(D-1)])
+        h2 = np.prod([np.sin(np.pi * (y[i] - 1))**2 for i in range(D)])
+        return h1 + h2
