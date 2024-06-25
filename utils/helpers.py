@@ -9,6 +9,9 @@ from core.constraints_functions import ConstriantsFunctionsHandler
 from utils.constants import EXECUTIONS
 from functions.cec2017problems import *
 
+DIRECTORY = "report/cec2006"
+PROBLEM = "CEC2006"
+
 def execute_algorithm(problem_name, problem_class, constraint_name, bounds):
     problema = problem_class()
     fitness_data = []
@@ -23,7 +26,7 @@ def execute_algorithm(problem_name, problem_class, constraint_name, bounds):
                 problema.fitness,
                 ConstriantsFunctionsHandler.a_is_better_than_b_deb,
                 bounds_constraints=bounds[constraint_name],
-                bounds=(SUPERIOR_2, INFERIOR_2),
+                bounds=(problema.SUPERIOR, problema.INFERIOR),
                 g_functions=problema.rest_g,
                 h_functions=problema.rest_h,
                 centroid=(constraint_name == "centroid"),
@@ -60,7 +63,7 @@ def execute_algorithm(problem_name, problem_class, constraint_name, bounds):
     return fitness_data, violations_data, convergence_violations_data, factible_fitness_data
 
 def save_results_to_csv_constraint(problem_name, constraint_name, fitness_data, violations_data):
-    directory = f'report/cec2017/{constraint_name}'
+    directory = f'{DIRECTORY}/{constraint_name}'
     if not os.path.exists(directory):
         os.makedirs(directory)
     df = pd.DataFrame({
@@ -79,8 +82,8 @@ def plot_convergence_fitness(problem_name, constraint_name, convergence_fitness_
     plt.ylabel('Fitness')
     plt.legend()
     plt.grid(True)
-    directory = f'report/cec2017/{constraint_name}'
-    filename = f'{directory}/CEC2017_convergence_fitness_{problem_name}_{constraint_name}.png'
+    directory = f'{DIRECTORY}/{constraint_name}'
+    filename = f'{directory}/{PROBLEM}_convergence_fitness_{problem_name}_{constraint_name}.png'
     plt.savefig(filename)
     plt.close()
 
@@ -92,8 +95,8 @@ def plot_fitness_boxplot(problem_name, constraint_name, factible_fitness_data):
     plt.ylabel('Fitness')
     plt.xticks(rotation=45)
     plt.grid(True)
-    directory = f'report/cec2017/{constraint_name}'
-    filename = f'{directory}/CEC2017_fitness_boxplot_{problem_name}_{constraint_name}.png'
+    directory = f'{DIRECTORY}/{constraint_name}'
+    filename = f'{directory}/{PROBLEM}_fitness_boxplot_{problem_name}_{constraint_name}.png'
     plt.savefig(filename)
     plt.close()
 
@@ -106,7 +109,7 @@ def save_violations_summary(problem_name, constraint_name, violations_data):
     constraint_name (str): Nombre de la restricción.
     violations_data (list): Lista de datos de violaciones.
     """
-    directory = f'report/cec2017/{constraint_name}'
+    directory = f'{DIRECTORY}/{constraint_name}'
     if not os.path.exists(directory):
         os.makedirs(directory)
     
@@ -115,7 +118,7 @@ def save_violations_summary(problem_name, constraint_name, violations_data):
         'Constraint': [constraint_name],
         'Mean Violations': [mean_violations]
     })
-    filename = f'{directory}/CEC2017_violations_summary_{problem_name}.csv'
+    filename = f'{directory}/{PROBLEM}_violations_summary_{problem_name}.csv'
     df.to_csv(filename, index=False, mode='a' if os.path.exists(filename) else 'w')
 
 def plot_convergence_violations_all(problem_name, all_convergence_data, bounds, log_scale=True, y_lim=None):
@@ -147,10 +150,10 @@ def plot_convergence_violations_all(problem_name, all_convergence_data, bounds, 
     if y_lim is not None:
         plt.ylim(y_lim)
 
-    directory = 'report/cec2017'
+    directory = DIRECTORY
     if not os.path.exists(directory):
         os.makedirs(directory)
-    filename = f'{directory}/CEC2017_convergence_violations_{problem_name}.png'
+    filename = f'{directory}/{PROBLEM}_convergence_violations_{problem_name}.png'
     plt.savefig(filename)
     plt.close()
 
@@ -180,8 +183,8 @@ def plot_fitness_boxplot_all(problem_name, all_fitness_data, bounds):
     plt.ylabel('Fitness')
     plt.xticks(rotation=45)
     plt.grid(True)
-    directory = 'report/cec2017'
-    filename = f'{directory}/CEC2017_fitness_boxplot_{problem_name}.png'
+    directory = DIRECTORY
+    filename = f'{directory}/{PROBLEM}_fitness_boxplot_{problem_name}.png'
     plt.savefig(filename)
     plt.close()
 
@@ -198,7 +201,7 @@ def save_results_to_csv(results, filename):
     results (list): Lista de resultados a guardar.
     filename (str): Nombre del archivo CSV (sin extensión).
     """
-    directory = 'report/cec2017'
+    directory = DIRECTORY
     if not os.path.exists(directory):
         os.makedirs(directory)
     df = pd.DataFrame(results)
@@ -243,7 +246,7 @@ def plot_fitness_boxplot_from_csvs(directory, problem_name, exclude=[]):
     plt.ylabel('Fitness')
     plt.xticks(rotation=45)
     plt.grid(True)
-    plt.savefig(f'{directory}/CEC2017_fitness_boxplot_{problem_name}_{generate_random_filename()}.png')
+    plt.savefig(f'{directory}/{PROBLEM}_fitness_boxplot_{problem_name}_{generate_random_filename()}.png')
     plt.close()
 
 def plot_violations_boxplot_from_csvs(directory, problem_name, exclude=[]):
@@ -283,5 +286,6 @@ def plot_violations_boxplot_from_csvs(directory, problem_name, exclude=[]):
     plt.ylabel('Violations')
     plt.xticks(rotation=45)
     plt.grid(True)
-    plt.savefig(f'{directory}/CEC2017_violations_boxplot_{problem_name}_{generate_random_filename()}.png')
+    plt.savefig(f'{directory}/{PROBLEM}_violations_boxplot_{problem_name}_{generate_random_filename()}.png')
     plt.close()
+    

@@ -11,15 +11,21 @@ from utils.helpers import (
     save_results_to_csv,
     plot_fitness_boxplot_all,
     generate_random_filename,
-    plot_fitness_boxplot_from_csvs,
-    plot_violations_boxplot_from_csvs
+    plot_fitness_boxplot_from_csvs
 )
 
 
 def run():
     problems = {
-        "C04": CEC2017_C04,
-        "C05": CEC2017_C05,
+        "G01": CEC2006_G01,
+        "G02": CEC2006_G02,
+        "G03": CEC2006_G03,
+        "G04": CEC2006_G04,
+        "G05": CEC2006_G05,
+        "G06": CEC2006_G06,
+        "G07": CEC2006_G07,
+        "G08": CEC2006_G08,
+        "G09": CEC2006_G09  
     }
 
     bounds = {
@@ -150,4 +156,4 @@ def run():
 
 
 if __name__ == "__main__":
-    plot_violations_boxplot_from_csvs("report/cec2017", "C03")
+    run()
