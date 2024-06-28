@@ -9,8 +9,8 @@ from core.constraints_functions import ConstriantsFunctionsHandler
 from utils.constants import EXECUTIONS
 from functions.cec2017problems import *
 
-DIRECTORY = "report/cec2006"
-PROBLEM = "CEC2006"
+DIRECTORY = "report/cec2017"
+PROBLEM = "CEC2017"
 
 def execute_algorithm(problem_name, problem_class, constraint_name, bounds):
     problema = problem_class()
@@ -33,6 +33,7 @@ def execute_algorithm(problem_name, problem_class, constraint_name, bounds):
                 beta=(constraint_name == "beta"),
                 evolutionary=(constraint_name == "evolutionary"),
                 res_and_rand=(constraint_name == "res_and_rand"),
+                dynamic_correction=(constraint_name == "dynamic_correction")
             )
             algorithm.evolution(verbose=True)
             fitness_data.append(algorithm.gbest_fitness)
@@ -70,7 +71,7 @@ def save_results_to_csv_constraint(problem_name, constraint_name, fitness_data, 
         'Fitness': fitness_data,
         'Violations': violations_data
     })
-    filename = f'{directory}/CEC2017_{problem_name}_{constraint_name}.csv'
+    filename = f'{directory}/{PROBLEM}_{problem_name}_{constraint_name}.csv'
     df.to_csv(filename, index=False)
 
 def plot_convergence_fitness(problem_name, constraint_name, convergence_fitness_data):
@@ -168,8 +169,8 @@ def plot_results_all(problem_name, all_violations_data, bounds):
     plt.ylabel('Violations')
     plt.xticks(rotation=45)
     plt.grid(True)
-    directory = 'report/cec2017'
-    filename = f'{directory}/CEC2017_boxplot_violations_{problem_name}.png'
+    directory = DIRECTORY
+    filename = f'{directory}/{PROBLEM}_boxplot_violations_{problem_name}.png'
     plt.savefig(filename)
     plt.close()
     

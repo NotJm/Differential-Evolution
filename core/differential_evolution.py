@@ -25,6 +25,7 @@ class Differential_Evolution(Algorithm):
         beta: bool = False,
         evolutionary: bool = False,
         res_and_rand: bool = False,
+        dynamic_correction: bool = False,
     ):
 
         self.F = F
@@ -39,6 +40,7 @@ class Differential_Evolution(Algorithm):
         self.beta = beta
         self.evolutionary = evolutionary
         self.res_and_rand = res_and_rand
+        self.dynamic_correction = dynamic_correction
 
         # Lists to store gbest values for plotting convergence
         self.gbest_fitness_list = []
@@ -264,7 +266,7 @@ class Differential_Evolution(Algorithm):
     def evolution(self, verbose: bool = True):
         for _ in tqdm(range(GENERATIONS), desc="Evolucionando"):
 
-            check_for_pause(self.report)
+            # check_for_pause(self.report)
 
             for i in range(SIZE_POPULATION):
                 objective = self.population[i]
@@ -284,6 +286,8 @@ class Differential_Evolution(Algorithm):
                     )
                 elif self.res_and_rand:
                     pass
+                elif self.dynamic_correction:
+                    trial = self.bounds_constraints(trial, self.population, self.lower, self.upper)
                 else:
                     trial = self.bounds_constraints(self.upper, self.lower, trial)
                 self._selection_operator_(i, trial)

@@ -4,6 +4,7 @@ from core.boundary_handler import BoundaryHandler
 from functions.cec2020problems import *
 from functions.cec2006problems import *
 from functions.cec2017problems import *
+from functions.cec2006problems import *
 from utils.helpers import (
     execute_algorithm,
     plot_convergence_violations_all,
@@ -11,21 +12,67 @@ from utils.helpers import (
     save_results_to_csv,
     plot_fitness_boxplot_all,
     generate_random_filename,
-    plot_fitness_boxplot_from_csvs
+    plot_fitness_boxplot_from_csvs,
+    plot_violations_boxplot_from_csvs,
 )
+
+# problems = {
+#     # "G01": CEC2006_G01,
+#     # "G02": CEC2006_G02,
+#     # "G03": CEC2006_G03,
+#     # "G04": CEC2006_G04,
+#     # "G05": CEC2006_G05,
+#     # "G06": CEC2006_G06,
+#     # "G07": CEC2006_G07,
+#     # "G08": CEC2006_G08,
+#     # "G09": CEC2006_G09,
+#     "G10": CEC2006_G10,
+#     "G11": CEC2006_G11,
+#     "G12": CEC2006_G12,
+#     "G13": CEC2006_G13,
+#     "G14": CEC2006_G14,
+#     "G15": CEC2006_G15,
+#     # "G17": CEC2006_G17,
+#     # "G18": CEC2006_G18,
+#     # "G19": CEC2006_G19,
+#     # "G20": CEC2006_G20,
+#     # "G21": CEC2006_G21,
+#     # "G22": CEC2006_G22,
+#     # "G23": CEC2006_G23,
+#     # "G24": CEC2006_G24,
+# }
 
 
 def run():
+
     problems = {
-        "G01": CEC2006_G01,
-        "G02": CEC2006_G02,
-        "G03": CEC2006_G03,
-        "G04": CEC2006_G04,
-        "G05": CEC2006_G05,
-        "G06": CEC2006_G06,
-        "G07": CEC2006_G07,
-        "G08": CEC2006_G08,
-        "G09": CEC2006_G09  
+        # "C01": CEC2017_C01,
+        # "C02": CEC2017_C02,
+        # "C03": CEC2017_C03,
+        # "C04": CEC2017_C04,
+        # "C05": CEC2017_C05,
+        # "C06": CEC2017_C06,
+        # "C07": CEC2017_C07,
+        # "C08": CEC2017_C08,
+        # "C09": CEC2017_C09,
+        "C10": CEC2017_C10,
+        # "C11": CEC2017_C11,
+        # "C12": CEC2017_C12,
+        # "C13": CEC2017_C13,
+        # "C14": CEC2017_C14,
+        # "C15": CEC2017_C15,
+        # "C16": CEC2017_C16,
+        # "C17": CEC2017_C17,
+        # "C18": CEC2017_C18,
+        # "C19": CEC2017_C19,
+        # "C20": CEC2017_C20,
+        # "C21": CEC2017_C21,
+        # "C22": CEC2017_C22,
+        # "C23": CEC2017_C23,
+        # "C24": CEC2017_C24,
+        # "C25": CEC2017_C25,
+        # "C26": CEC2017_C26,
+        # "C28": CEC2017_C28,
     }
 
     bounds = {
@@ -37,6 +84,7 @@ def run():
         "evolutionary": BoundaryHandler.gandomi_evolutionary,
         "wrapping": BoundaryHandler.qin_wrapping,
         "centroid": BoundaryHandler.centroid_method,
+        "dynamic_correction": BoundaryHandler.dynamic_correction,
         "res_and_rand": None,
     }
 
@@ -153,6 +201,22 @@ def run():
     )
 
     save_results_to_csv(results_df, generate_random_filename())
+
+
+import os
+
+
+def rename_files(directory):
+    for filename in os.listdir(directory):
+        if "CEC2017" in filename:
+            new_filename = filename.replace("CEC2017", "CEC2006")
+            os.rename(
+                os.path.join(directory, filename), os.path.join(directory, new_filename)
+            )
+            print(f"Renamed: {filename} -> {new_filename}")
+
+
+# Reemplaza 'your_directory_path' con la ruta al directorio donde están tus archivos
 
 
 if __name__ == "__main__":

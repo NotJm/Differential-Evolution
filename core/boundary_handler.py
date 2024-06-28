@@ -1104,3 +1104,141 @@ class BoundaryHandler:
                     new_x[i] = centroid[i]
 
         return new_x
+    
+    @staticmethod
+    def haal_correction(x, population, lower, upper, feasible_set, K=3, history=None):
+        """
+        Método híbrido adaptativo con aprendizaje histórico para el manejo de límites.
+
+        :param x: np.ndarray, Vector de la solución actual
+        :param population: np.ndarray, Población actual de soluciones
+        :param lower: np.ndarray, Límites inferiores para cada dimensión
+        :param upper: np.ndarray, Límites superiores para cada dimensión
+        :param feasible_set: np.ndarray, Conjunto de soluciones factibles
+        :param K: int, Cantidad de vectores aleatorios para calcular el centroide. Default es 3.
+        :param history: np.ndarray, Historia de soluciones anteriores
+
+        :return: np.ndarray, Vector de la solución corregido
+        """
+        D = len(lower)
+        NP = len(population)
+        adaptation_factor = np.random.uniform(0.1, 0.5)
+
+        # Función para validar si un vector está dentro de los límites
+        def is_valid(vector):
+            return np.all(vector >= lower) and np.all(vector <= upper)
+
+        # Historial para aprendizaje adaptativo
+        if history is None:
+            history = []
+
+        # Seleccionar el vector de la población basado en soluciones factibles
+        SFS = population[np.all((population >= lower) & (population <= upper), axis=1)]
+        SIS = population[np.any((population < lower) | (population > upper), axis=1)]
+        AFS = len(SFS)
+
+        if AFS > 0 and np.random.rand() > 0.5:
+            Wp = SFS[np.random.randint(AFS)]
+        else:
+            if len(SIS) > 0:
+                violations = np.sum(np.maximum(0, lower - SIS) + np.maximum(0, SIS - upper), axis=1)
+                Wp = SIS[np.argmin(violations)]
+            else:
+                # Si SIS está vacío, seleccionamos aleatoriamente un vector de la población
+                Wp = population[np.random.randint(NP)]
+
+        # Crear vectores aleatorios dentro de los límites
+        Wr = np.empty((K, D))
+        for i in range(K):
+            Wi = np.copy(x)
+            mask_lower = Wi < lower
+            mask_upper = Wi > upper
+            Wi[mask_lower] = lower[mask_lower] + np.random.rand(np.sum(mask_lower)) * (upper[mask_lower] - lower[mask_lower])
+            Wi[mask_upper] = lower[mask_upper] + np.random.rand(np.sum(mask_upper)) * (upper[mask_upper] - lower[mask_upper])
+            Wr[i] = Wi
+
+        # Calcular el centroide
+        centroid = (Wp + Wr.sum(axis=0)) / (K + 1)
+
+        # Aplicar corrección vectorial basada en el centroide
+        for i in range(D):
+            if x[i] < lower[i] or x[i] > upper[i]:
+                x[i] = centroid[i]
+
+        # Corrección vectorial adaptativa con dinamismo
+        R = (lower + upper) / 2
+        alpha = np.min(
+            [
+                np.where(x < lower, (R - lower) / (R - x), 1),
+                np.where(x > upper, (upper - R) / (x - R), 1),
+            ]
+        )
+        x = alpha * x + (1 - alpha) * R
+
+        # Aplicar un mecanismo dinámico adicional para asegurar la corrección
+        for i in range(D):
+            if x[i] < lower[i]:
+                x[i] += adaptation_factor * (lower[i] - x[i])
+            elif x[i] > upper[i]:
+                x[i] -= adaptation_factor * (x[i] - upper[i])
+
+        # Aplicar reflexiones adaptativas
+        for i in range(D):
+            if x[i] < lower[i]:
+                x[i] = lower[i] + (lower[i] - x[i]) % (upper[i] - lower[i])
+            elif x[i] > upper[i]:
+                x[i] = upper[i] - (x[i] - upper[i]) % (upper[i] - lower[i])
+
+        # Utilizar la media de las soluciones factibles como ajuste final
+        if np.any(x < lower) or np.any(x > upper):
+            feasible_mean = np.mean(feasible_set, axis=0)
+            for i in range(D):
+                if x[i] < lower[i] or x[i] > upper[i]:
+                    x[i] = feasible_mean[i]
+
+        # Aprendizaje histórico
+        history.append(x)
+        if len(history) > 10:
+            history.pop(0)
+        
+        historical_mean = np.mean(history, axis=0)
+        for i in range(D):
+            if x[i] < lower[i] or x[i] > upper[i]:
+                x[i] = historical_mean[i]
+
+        return x
+
+    @staticmethod
+    def dynamic_correction(x, population, lower, upper):
+        """
+        Método dinámico de corrección de límites que utiliza información de la población y ajuste adaptativo.
+
+        :param x: np.ndarray, Vector de la solución actual
+        :param population: np.ndarray, Población actual de soluciones
+        :param lower: np.ndarray, Límites inferiores para cada dimensión
+        :param upper: np.ndarray, Límites superiores para cada dimensión
+
+        :return: np.ndarray, Vector de la solución corregido
+        """
+        D = len(lower)
+        NP = len(population)
+
+        # Función para calcular el valor adaptativo basado en la población
+        def adaptive_value(vector, lower, upper):
+            mean_population = np.mean(population, axis=0)
+            deviation = (vector - mean_population) / (upper - lower)
+            return mean_population + deviation * (upper - lower)
+
+        # Aplicar corrección adaptativa
+        for i in range(D):
+            if x[i] < lower[i] or x[i] > upper[i]:
+                x[i] = adaptive_value(x, lower[i], upper[i])[i]
+
+        # Aplicar reflexión si sigue fuera de los límites
+        for i in range(D):
+            if x[i] < lower[i]:
+                x[i] = lower[i] + (lower[i] - x[i]) % (upper[i] - lower[i])
+            elif x[i] > upper[i]:
+                x[i] = upper[i] - (x[i] - upper[i]) % (upper[i] - lower[i])
+
+        return x
