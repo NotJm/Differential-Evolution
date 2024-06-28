@@ -9,8 +9,8 @@ from core.constraints_functions import ConstriantsFunctionsHandler
 from utils.constants import EXECUTIONS
 from functions.cec2017problems import *
 
-DIRECTORY = "report/cec2017"
-PROBLEM = "CEC2017"
+DIRECTORY = "report/cec2006"
+PROBLEM = "CEC2006"
 
 def execute_algorithm(problem_name, problem_class, constraint_name, bounds):
     problema = problem_class()
@@ -32,7 +32,7 @@ def execute_algorithm(problem_name, problem_class, constraint_name, bounds):
                 centroid=(constraint_name == "centroid"),
                 beta=(constraint_name == "beta"),
                 evolutionary=(constraint_name == "evolutionary"),
-                res_and_rand=(constraint_name == "res_and_rand"),
+                res_and_rand=(constraint_name == "res&rand"),
                 dynamic_correction=(constraint_name == "dynamic_correction")
             )
             algorithm.evolution(verbose=True)

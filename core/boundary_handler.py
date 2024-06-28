@@ -1220,25 +1220,17 @@ class BoundaryHandler:
 
         :return: np.ndarray, Vector de la solución corregido
         """
-        D = len(lower)
-        NP = len(population)
-
-        # Función para calcular el valor adaptativo basado en la población
-        def adaptive_value(vector, lower, upper):
-            mean_population = np.mean(population, axis=0)
-            deviation = (vector - mean_population) / (upper - lower)
-            return mean_population + deviation * (upper - lower)
-
+        mean_population = np.mean(population, axis=0)
+        
+        # Calcular la desviación normalizada y el valor de ajuste
+        deviations = (x - mean_population) / np.abs(x - mean_population)
+        adjustments = deviations * np.minimum(np.abs(upper - mean_population), np.abs(lower - mean_population))
+        
         # Aplicar corrección adaptativa
-        for i in range(D):
-            if x[i] < lower[i] or x[i] > upper[i]:
-                x[i] = adaptive_value(x, lower[i], upper[i])[i]
-
+        x_corrected = mean_population + adjustments
+        
         # Aplicar reflexión si sigue fuera de los límites
-        for i in range(D):
-            if x[i] < lower[i]:
-                x[i] = lower[i] + (lower[i] - x[i]) % (upper[i] - lower[i])
-            elif x[i] > upper[i]:
-                x[i] = upper[i] - (x[i] - upper[i]) % (upper[i] - lower[i])
-
-        return x
+        x_corrected = np.where(x_corrected < lower, lower + (lower - x_corrected) % (upper - lower), x_corrected)
+        x_corrected = np.where(x_corrected > upper, upper - (x_corrected - upper) % (upper - lower), x_corrected)
+        
+        return x_corrected

@@ -69,6 +69,10 @@ class Differential_Evolution(Algorithm):
             self.violations[index] = total_de_violaciones
     
     def _mutation_operator_(self, idx, generation=0):
+        
+        if self.res_and_rand:
+            self.res_and_ran_mutation(idx)
+        
         if self.strategy in ['rand3', 'best3']:
             samples = np.random.choice(SIZE_POPULATION, 6, replace=False)
         elif self.strategy == 'adaptive_rand_elite':
@@ -140,34 +144,31 @@ class Differential_Evolution(Algorithm):
             return self.mutation_strategies.combined_rand1_best1(0.05)
         elif self.strategy == 'combined_0%':
             return self.mutation_strategies.combined_rand1_best1(0.0)
-        elif self.strategy == "res&ran":
-            return self.mutation_strategies.res_rand(idx, self.lower, self.upper)
         else:
             raise ValueError(f"Unknown strategy: {self.strategy}")
-            
-
+             
     def res_and_ran_mutation(self, i):
-
         F = 0.8  # Factor de escala para la mutación
-        NP = len(self.population)
-        D = len(self.population[0])
+        NP, D = self.population.shape
         
         NoRes = 0
         valid = False
 
         while NoRes <= 3 * D and not valid:
-            r1, r2, r3 = np.random.choice([idx for idx in range(NP) if idx != i], 3, replace=False)
-            V = self.population[r1] + F * (self.population[r2] - self.population[r3])
+            indices = np.random.choice(np.delete(np.arange(NP), i), 3, replace=False)
+            r1, r2, r3 = self.population[indices]
+            V = r1 + F * (r2 - r3)
             
             # Verifica si el vector mutante está dentro de los límites
-            if np.all([self.lower[j] <= V[j] <= self.upper[j] for j in range(D)]):
+            if np.all((self.lower <= V) & (V <= self.upper)):
                 valid = True
             else:
                 NoRes += 1
         
         # Si no se obtuvo un vector válido después del máximo de remuestreos
         if not valid:
-            V = np.array([np.random.uniform(self.lower[j], self.upper[j]) if V[j] < self.lower[j] or V[j] > self.upper[j] else V[j] for j in range(D)])
+            V = np.where((V < self.lower) | (V > self.upper), 
+                         np.random.uniform(self.lower, self.upper), V)
         
         return V
         
@@ -284,8 +285,6 @@ class Differential_Evolution(Algorithm):
                     trial = self.bounds_constraints(
                         trial, self.lower, self.upper, self.gbest_individual
                     )
-                elif self.res_and_rand:
-                    pass
                 elif self.dynamic_correction:
                     trial = self.bounds_constraints(trial, self.population, self.lower, self.upper)
                 else:
