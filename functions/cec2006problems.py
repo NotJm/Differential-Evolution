@@ -245,7 +245,7 @@ class CEC2006_G05(Problem):
 #********************************************************************************************************************************
 
 #Problem 06
-class CEC2006_G06(Problem):
+class CEC2006_G06:
     
     # WITH BOUNDS:
     # 13 ≤ x1 ≤ 100 y 0 ≤ x2 ≤ 100
@@ -381,7 +381,7 @@ class CEC2006_G08(Problem):
 
 #Problem 9
 
-class CEC2006_G09(Problem):
+class CEC2006_G09:
     SUPERIOR = np.array([10] * 7)
     INFERIOR = np.array([-10] * 7)
 
@@ -419,15 +419,17 @@ class CEC2006_G09(Problem):
     def cec2006_g09_g4(x):  # restriccion 4 de desigualdad <= 0
         result = 4*x[0]**2 + x[1]**2 - 3*x[0]*x[1] + 2*x[2]**2 + 5*x[5] - 11*x[6]
         return result
-
+    
 class CEC2006_G10(Problem):
     
     SUPERIOR = np.array([10000, 10000, 10000, 1000, 1000, 1000, 1000, 1000])
     INFERIOR = np.array([100, 1000, 1000, 10, 10, 10, 10, 10])
 
     def __init__(self):
-        rest_g = [self.cec2006_g10_g1, self.cec2006_g10_g2, self.cec2006_g10_g3,
-                  self.cec2006_g10_g4, self.cec2006_g10_g5, self.cec2006_g10_g6]
+        rest_g = [
+            self.cec2006_g10_g1, self.cec2006_g10_g2, self.cec2006_g10_g3,
+            self.cec2006_g10_g4, self.cec2006_g10_g5, self.cec2006_g10_g6
+        ]
         super().__init__(
             ProblemType.CONSTRAINED,
             self.SUPERIOR, self.INFERIOR,
@@ -462,7 +464,6 @@ class CEC2006_G10(Problem):
     def cec2006_g10_g6(x):
         return -x[2] * x[7] + 1250000 + x[2] * x[4] - 2500 * x[4]
 
-
 class CEC2006_G11(Problem):
     
     SUPERIOR = np.array([1, 1])
@@ -477,16 +478,15 @@ class CEC2006_G11(Problem):
         )
     
     def fitness(self, individuo: np.array) -> float:
-        f_x = individuo[0] ** 2 + (individuo[1] - 1) ** 2
+        x = individuo
+        f_x = x[0] ** 2 + (x[1] - 1) ** 2
         return f_x
 
     @staticmethod
     def cec2006_g11_h1(x):
         return x[1] - x[0] ** 2
-
-
-class CEC2006_G12(Problem):
     
+class CEC2006_G12(Problem):
     SUPERIOR = np.array([10, 10, 10])
     INFERIOR = np.array([0, 0, 0])
 
@@ -499,14 +499,18 @@ class CEC2006_G12(Problem):
         )
     
     def fitness(self, individuo: np.array) -> float:
-        f_x = -(100 - (individuo[0] - 5) ** 2 - (individuo[1] - 5) ** 2 - (individuo[2] - 5) ** 2) / 100
+        x = individuo
+        f_x = -(100 - (x[0] - 5) ** 2 - (x[1] - 5) ** 2 - (x[2] - 5) ** 2) / 100
         return f_x
 
     @staticmethod
     def cec2006_g12_g1(x):
-        p, q, r = 1, 2, 3  # Example values, adjust according to the specific case
-        return (x[0] - p) ** 2 + (x[1] - q) ** 2 + (x[2] - r) ** 2 - 0.0625
-
+        for p in range(1, 10):
+            for q in range(1, 10):
+                for r in range(1, 10):
+                    if (x[0] - p) ** 2 + (x[1] - q) ** 2 + (x[2] - r) ** 2 - 0.0625 <= 0:
+                        return 0  # Satisface la restricción
+        return 1  # No satisface ninguna combinación de p, q, r
 
 class CEC2006_G13(Problem):
     
@@ -536,8 +540,7 @@ class CEC2006_G13(Problem):
     @staticmethod
     def cec2006_g13_h3(x):
         return x[0] ** 3 + x[1] ** 3 + 1
-
-
+    
 class CEC2006_G14(Problem):
     
     SUPERIOR = np.array([10] * 10)
@@ -552,8 +555,9 @@ class CEC2006_G14(Problem):
         )
     
     def fitness(self, individuo: np.array) -> float:
-        ci = np.array([-6.089, -17.164, -34.054, -5.914, -24.721, -14.986, -24.1, -10.708, -26.662, -22.179])
-        f_x = np.sum(individuo * (ci + np.log(individuo / np.sum(individuo))))
+        x = individuo
+        c = np.array([-6.089, -17.164, -34.054, -5.914, -24.721, -14.986, -24.1, -10.708, -26.662, -22.179])
+        f_x = np.sum(x * (c + np.log(x / np.sum(x))))
         return f_x
 
     @staticmethod
@@ -567,8 +571,7 @@ class CEC2006_G14(Problem):
     @staticmethod
     def cec2006_g14_h3(x):
         return x[2] + x[6] + x[7] + 2 * x[8] + x[9] - 1
-
-
+    
 class CEC2006_G15(Problem):
     
     SUPERIOR = np.array([10, 10, 10])
@@ -583,7 +586,8 @@ class CEC2006_G15(Problem):
         )
     
     def fitness(self, individuo: np.array) -> float:
-        f_x = 1000 - individuo[0] ** 2 - 2 * individuo[1] ** 2 - individuo[2] ** 2 - individuo[0] * individuo[1] - individuo[0] * individuo[2]
+        x = individuo
+        f_x = 1000 - x[0] ** 2 - 2 * x[1] ** 2 - x[2] ** 2 - x[0] * x[1] - x[0] * x[2]
         return f_x
 
     @staticmethod
@@ -594,8 +598,9 @@ class CEC2006_G15(Problem):
     def cec2006_g15_h2(x):
         return 8 * x[0] + 14 * x[1] + 7 * x[2] - 56
 
+import numpy as np
+
 class CEC2006_G16(Problem):
-    
     SUPERIOR = np.array([906.3855, 288.88, 134.75, 287.0966, 84.1988])
     INFERIOR = np.array([704.4148, 68.6, 0, 193, 25])
 
@@ -620,189 +625,243 @@ class CEC2006_G16(Problem):
             self.SUPERIOR, self.INFERIOR,
             rest_g, []
         )
+
+    def compute_c_y(self, x):
+        c = np.zeros(18)
+        y = np.zeros(18)
+        
+        y[0] = x[1] + x[2] + 41.6
+        c[0] = 0.024 * x[3] - 4.62
+        y[1] = 12.5 / c[0] + 12
+        c[1] = 0.0003535 * x[0]**2 + 0.5311 * x[0] + 0.08705 * y[1] * x[0]
+        c[2] = 0.052 * x[0] + 78 + 0.002377 * y[1] * x[0]
+        y[2] = c[1] / c[2]
+        y[3] = 19 * y[2]
+        c[3] = 0.04782 * (x[0] - y[2]) + 0.1956 * (x[0] - y[2])**2
+        c[4] = 100 * x[1]
+        c[5] = x[0] - y[2] - y[3]
+        c[6] = 0.950 - c[3] / c[4]
+        y[4] = c[5] * c[6]
+        y[5] = x[0] - y[4] - y[3] - y[2]
+        c[7] = (y[4] + y[3]) * 0.995
+        y[6] = c[7] / y[0]
+        y[7] = c[7] / 3798
+        c[8] = y[6] - 0.0663 * y[6] / y[7] - 0.3153
+        y[8] = 96.82 / c[8] + 0.321 * y[0]
+        y[9] = 1.29 * y[4] + 1.258 * y[3] + 2.29 * y[2] + 1.71 * y[5]
+        y[10] = 1.71 * x[0] - 0.452 * y[3] + 0.580 * y[2]
+        c[9] = 12.3 / 752.3
+        c[10] = (1.75 * y[1]) * (0.995 * x[0])
+        c[11] = 0.995 * y[9] + 1998
+        y[11] = c[9] * x[0] + c[10] / c[11]
+        y[12] = c[11] - 1.75 * y[1]
+        y[13] = 3623 + 64.4 * x[1] + 58.4 * x[2] + 146312 / y[8] + x[4]
+        c[12] = 0.995 * y[9] + 60.8 * x[1] + 48 * x[3] - 0.1121 * y[13] - 5095
+        y[14] = y[12] / c[12]
+        y[15] = 148000 - 331000 * y[14] + 40 * y[12] - 61 * y[14] * y[12]
+        c[13] = 2324 * y[9] - 28740000 * y[1]
+        y[16] = 14130000 - 1328 * y[9] - 531 * y[10] + c[13] / c[11]
+        c[14] = y[12] / y[14] - y[12] / 0.52
+        c[15] = 1.104 - 0.72 * y[14]
+        c[16] = y[8] + x[4]
+        
+        return c, y
     
     def fitness(self, individuo: np.array) -> float:
-        y = self.compute_y(individuo)
-        f_x = (
-            0.000117 * y[13] + 0.1365 + 0.00002358 * y[12] + 0.000001502 * y[15] + 0.0321 * y[11]
-            + 0.004324 * y[4] + 0.0001 * y[14] + 37.48 * y[1] - 0.0000005843 * y[16]
-        )
+        c, y = self.compute_c_y(individuo)
+        f_x = (0.000117 * y[13] + 0.1365 + 0.00002358 * y[12] + 0.000001502 * y[15] + 0.0321 * y[11] +
+               0.004324 * y[4] + 0.0001 * c[14] / c[15] + 37.48 * y[1] / c[11] - 0.0000005843 * y[16])
         return f_x
-
-    @staticmethod
-    def compute_y(x):
-        y = np.zeros(17)
-        y[0] = x[1] + x[2] + 41.6
-        y[1] = 0.024 * x[3] - 4.62
-        y[2] = 12.5 / y[1] + 12
-        y[3] = 0.0003535 * (x[0] ** 2) + 0.5311 * x[0] + 0.08705 * y[2] * x[0]
-        y[4] = 0.052 * x[0] + 78 + 0.002377 * y[2] * x[0]
-        y[5] = y[3] / y[4]
-        y[6] = 19 * y[5]
-        y[7] = 0.04782 * (x[0] - y[5]) + 0.1956 * ((x[0] - y[5]) ** 2) / x[1] + 0.6376 * y[6] + 1.594 * y[5]
-        y[8] = 100 * x[1]
-        y[9] = x[0] - y[5] - y[6]
-        y[10] = 0.950 - y[7] / y[8]
-        y[11] = y[9] * y[10]
-        y[12] = x[0] - y[11] - y[6] - y[5]
-        y[13] = (y[11] + y[6]) * 0.995
-        y[14] = y[13] / y[0]
-        y[15] = y[13] / 3798
-        y[16] = y[14] - 0.0663 * y[14] / y[15] - 0.3153
-        return y
-
+    
     @staticmethod
     def cec2006_g16_g1(x):
-        return 0.28 * x[4] - 0.72 * x[3]
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return 0.28 / 0.72 * y[4] - y[4]
+    
     @staticmethod
     def cec2006_g16_g2(x):
         return x[2] - 1.5 * x[1]
-
+    
     @staticmethod
     def cec2006_g16_g3(x):
-        return 3496 * x[1] - 21
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return 3496 / y[1] - 21
+    
     @staticmethod
     def cec2006_g16_g4(x):
-        return 110.6 + x[0] - 62212 * x[2]
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        c17 = y[0] + x[4]
+        return 110.6 + y[0] - 62212 / c17
+    
     @staticmethod
     def cec2006_g16_g5(x):
-        return 213.1 - x[0]
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return 213.1 - y[0]
+    
     @staticmethod
     def cec2006_g16_g6(x):
-        return x[0] - 405.23
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return y[0] - 405.23
+    
     @staticmethod
     def cec2006_g16_g7(x):
-        return 17.505 - x[1]
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return 17.505 - y[1]
+    
     @staticmethod
     def cec2006_g16_g8(x):
-        return x[1] - 1053.6667
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return y[1] - 1053.6667
+    
     @staticmethod
     def cec2006_g16_g9(x):
-        return 11.275 - x[2]
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return 11.275 - y[2]
+    
     @staticmethod
     def cec2006_g16_g10(x):
-        return x[2] - 35.03
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return y[2] - 35.03
+    
     @staticmethod
     def cec2006_g16_g11(x):
-        return 214.228 - x[3]
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return 214.228 - y[3]
+    
     @staticmethod
     def cec2006_g16_g12(x):
-        return x[3] - 665.585
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return y[3] - 665.585
+    
     @staticmethod
     def cec2006_g16_g13(x):
-        return 7.458 - x[4]
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return 7.458 - y[4]
+    
     @staticmethod
     def cec2006_g16_g14(x):
-        return x[4] - 584.463
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return y[4] - 584.463
+    
     @staticmethod
     def cec2006_g16_g15(x):
-        return 0.961 - x[5]
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return 0.961 - y[5]
+    
     @staticmethod
     def cec2006_g16_g16(x):
-        return x[5] - 265.916
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return y[5] - 265.916
+    
     @staticmethod
     def cec2006_g16_g17(x):
-        return 1.612 - x[6]
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return 1.612 - y[6]
+    
     @staticmethod
     def cec2006_g16_g18(x):
-        return x[6] - 7.046
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return y[6] - 7.046
+    
     @staticmethod
     def cec2006_g16_g19(x):
-        return 0.146 - x[7]
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return 0.146 - y[7]
+    
     @staticmethod
     def cec2006_g16_g20(x):
-        return x[7] - 0.222
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return y[7] - 0.222
+    
     @staticmethod
     def cec2006_g16_g21(x):
-        return 107.99 - x[8]
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return 107.99 - y[8]
+    
     @staticmethod
     def cec2006_g16_g22(x):
-        return x[8] - 273.366
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return y[8] - 273.366
+    
     @staticmethod
     def cec2006_g16_g23(x):
-        return 922.693 - x[9]
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return 922.693 - y[9]
+    
     @staticmethod
     def cec2006_g16_g24(x):
-        return x[9] - 1286.105
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return y[9] - 1286.105
+    
     @staticmethod
     def cec2006_g16_g25(x):
-        return 926.832 - x[10]
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return 926.832 - y[10]
+    
     @staticmethod
     def cec2006_g16_g26(x):
-        return x[10] - 1444.046
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return y[10] - 1444.046
+    
     @staticmethod
     def cec2006_g16_g27(x):
-        return 18.766 - x[11]
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return 18.766 - y[11]
+    
     @staticmethod
     def cec2006_g16_g28(x):
-        return x[11] - 537.141
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return y[11] - 537.141
+    
     @staticmethod
     def cec2006_g16_g29(x):
-        return 1072.163 - x[12]
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return 1072.163 - y[12]
+    
     @staticmethod
     def cec2006_g16_g30(x):
-        return x[12] - 3247.039
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return y[12] - 3247.039
+    
     @staticmethod
     def cec2006_g16_g31(x):
-        return 8961.448 - x[13]
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return 8961.448 - y[13]
+    
     @staticmethod
     def cec2006_g16_g32(x):
-        return x[13] - 26844.086
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return y[13] - 26844.086
+    
     @staticmethod
     def cec2006_g16_g33(x):
-        return 0.063 - x[14]
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return 0.063 - y[14]
+    
     @staticmethod
     def cec2006_g16_g34(x):
-        return x[14] - 0.386
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return y[14] - 0.386
+    
     @staticmethod
     def cec2006_g16_g35(x):
-        return 71084.33 - x[15]
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return 71084.33 - y[15]
+    
     @staticmethod
     def cec2006_g16_g36(x):
-        return -140000 + x[15]
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return y[15] - 140000
+    
     @staticmethod
     def cec2006_g16_g37(x):
-        return 2802713 - x[16]
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return 2802713 - y[16]
+    
     @staticmethod
     def cec2006_g16_g38(x):
-        return x[16] - 12146108
-
+        c, y = CEC2006_G16.compute_c_y(None, x)
+        return y[16] - 3500000
 
 class CEC2006_G17(Problem):
     
@@ -821,7 +880,8 @@ class CEC2006_G17(Problem):
         )
     
     def fitness(self, individuo: np.array) -> float:
-        f_x = self.f1(individuo[0]) + self.f2(individuo[1])
+        x = individuo
+        f_x = self.f1(x[0]) + self.f2(x[1])
         return f_x
 
     @staticmethod
@@ -855,8 +915,7 @@ class CEC2006_G17(Problem):
     @staticmethod
     def cec2006_g17_h4(x):
         return 200 - x[2] * x[3] / 131.078 * np.sin(1.48477 - x[5]) + 0.90798 * x[2] ** 2 / 131.078 * np.sin(1.47588)
-
-
+    
 class CEC2006_G18(Problem):
     
     SUPERIOR = np.array([10, 10, 10, 10, 10, 10, 10, 10, 20])
@@ -877,7 +936,8 @@ class CEC2006_G18(Problem):
         )
     
     def fitness(self, individuo: np.array) -> float:
-        f_x = -0.5 * (individuo[0] * individuo[3] - individuo[1] * individuo[2] + individuo[2] * individuo[8] - individuo[4] * individuo[8] + individuo[4] * individuo[7] - individuo[5] * individuo[6])
+        x = individuo
+        f_x = -0.5 * (x[0] * x[3] - x[1] * x[2] + x[2] * x[8] - x[4] * x[8] + x[4] * x[7] - x[5] * x[6])
         return f_x
 
     @staticmethod
@@ -932,14 +992,39 @@ class CEC2006_G18(Problem):
     def cec2006_g18_g13(x):
         return x[5] * x[6] - x[4] * x[7]
 
-
 class CEC2006_G19(Problem):
     
     SUPERIOR = np.array([10] * 15)
     INFERIOR = np.array([0] * 15)
+    
+    e = np.array([-15, -27, -36, -18, -12])
+    c = np.array([
+        [30, -20, -10, 32, -10],
+        [-20, 39, -6, -31, 32],
+        [-10, -6, 10, -6, -10],
+        [32, -31, -6, 39, -20],
+        [-10, 32, -10, -20, 30]
+    ])
+    d = np.array([4, 8, 10, 6, 2])
+    b = np.array([-40, -2, -0.25, -4, -4, -1, -40, -60, 5, 1])
+    a = np.array([
+        [-16, 2, 0, 1, 0],
+        [0, -2, 0, 0.4, 2],
+        [-3.5, 0, 2, 0, 0],
+        [0, -2, 0, -4, 0],
+        [0, -9, 2, 1, -2.8],
+        [2, 0, -4, 0, 0],
+        [0, -2, 0, -4, 0],
+        [-1, -1, -1, -1, -1],
+        [2, 2, 2, 2, 2],
+        [1, 1, 1, 1, 1]
+    ])
 
     def __init__(self):
-        rest_g = [self.cec2006_g19_g1, self.cec2006_g19_g2, self.cec2006_g19_g3, self.cec2006_g19_g4, self.cec2006_g19_g5]
+        rest_g = [
+            self.cec2006_g19_g1, self.cec2006_g19_g2, self.cec2006_g19_g3,
+            self.cec2006_g19_g4, self.cec2006_g19_g5
+        ]
         super().__init__(
             ProblemType.CONSTRAINED,
             self.SUPERIOR, self.INFERIOR,
@@ -947,52 +1032,54 @@ class CEC2006_G19(Problem):
         )
     
     def fitness(self, individuo: np.array) -> float:
-        c = np.array([
-            [30, -20, -10, 32, -10],
-            [-20, 39, -6, -31, 32],
-            [-10, -6, 10, -6, -10],
-            [32, -31, -6, 39, -20],
-            [-10, 32, -10, -20, 30]
-        ])
-        d = np.array([4, 8, 10, 6, 2])
-        b = np.array([-40, -2, -0.25, -4, -4, -1, -40, -60, 5, 1])
-        sum_c = np.sum([c[i][j] * individuo[10+i] * individuo[10+j] for i in range(5) for j in range(5)])
-        sum_d = np.sum([d[j] * (individuo[10+j] ** 3) for j in range(5)])
-        f_x = sum_c + 2 * sum_d - np.sum(b * individuo[:10])
+        x = individuo
+        sum_c = np.sum(self.c * np.outer(x[10:15], x[10:15]))
+        sum_d = np.sum(self.d * (x[10:15] ** 3))
+        f_x = sum_c + 2 * sum_d - np.sum(self.b * x[:10])
         return f_x
-
+    
+    def calculate_g(self, j, x):
+        g = -2 * np.sum(self.c[:, j] * x[10:15]) - 3 * self.d[j] * (x[10+j] ** 2) - self.e[j] + np.sum(self.a[:, j] * x[:10])
+        return g
+    
     @staticmethod
     def cec2006_g19_g1(x):
-        return -2 * np.sum([30 * x[10+i] for i in range(5)]) - 3 * 4 * (x[10+0] ** 2) - 15 + 10 * x[0]
+        return CEC2006_G19.calculate_g(0, x)
 
     @staticmethod
     def cec2006_g19_g2(x):
-        return -2 * np.sum([39 * x[10+i] for i in range(5)]) - 3 * 8 * (x[10+1] ** 2) - 27 + 2 * x[1]
+        return CEC2006_G19.calculate_g(1, x)
 
     @staticmethod
     def cec2006_g19_g3(x):
-        return -2 * np.sum([10 * x[10+i] for i in range(5)]) - 3 * 10 * (x[10+2] ** 2) - 36 + 2 * x[2]
+        return CEC2006_G19.calculate_g(2, x)
 
     @staticmethod
     def cec2006_g19_g4(x):
-        return -2 * np.sum([31 * x[10+i] for i in range(5)]) - 3 * 6 * (x[10+3] ** 2) - 18 + 0.4 * x[3]
+        return CEC2006_G19.calculate_g(3, x)
 
     @staticmethod
     def cec2006_g19_g5(x):
-        return -2 * np.sum([32 * x[10+i] for i in range(5)]) - 3 * 2 * (x[10+4] ** 2) - 12 + 2 * x[4]
+        return CEC2006_G19.calculate_g(4, x)
 
 
 class CEC2006_G20(Problem):
     
     SUPERIOR = np.array([10] * 24)
     INFERIOR = np.array([0] * 24)
-
+    
+    a = np.array([0.0693, 0.0577, 0.05, 0.12, 0.55, 0.15, 0.1, 0.12, 0.15, 0.05, 0.1, 0.01, 0.0693, 0.0577, 0.05, 0.12, 0.55, 0.15, 0.1, 0.12, 0.18, 0.05, 0.1, 0.09])
+    b = np.array([44.094, 58.12, 58.12, 137.44, 170.97, 62.501, 84.94, 133.245, 120.7, 270.417, 46.07, 60.097, 44.094, 58.12, 58.12, 137.44, 170.97, 62.501, 84.94, 133.245, 82.507, 46.07, 60.097, 60.097])
+    c = np.array([123.7, 31.7, 36.12, 14.7, 7.7, 49.76, 7.1, 2.1, 17, 1.84, 8.6, 0.4, 123.7, 31.7, 36.12, 14.7, 7.7, 49.76, 7.1, 2.1, 8.8, 8.6, 8.6, 8.6])
+    d = np.array([31.244, 36.12, 34.784, 92.7, 91.6, 56.708, 82.7, 80.8, 64.517, 47.417, 49.1, 49.1, 31.244, 36.12, 34.784, 92.7, 91.6, 56.708, 82.7, 80.8, 80.8, 49.1, 49.1, 49.1])
+    e = np.array([0.1, 0.3, 0.4, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.1, 0.3, 0.4, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3])
+    
+    k = 0.7302 * (530/147.4)
+    
     def __init__(self):
         rest_g = [
             self.cec2006_g20_g1, self.cec2006_g20_g2, self.cec2006_g20_g3,
-            self.cec2006_g20_g4, self.cec2006_g20_g5, self.cec2006_g20_g6
-        ]
-        rest_h = [
+            self.cec2006_g20_g4, self.cec2006_g20_g5, self.cec2006_g20_g6,
             self.cec2006_g20_h1, self.cec2006_g20_h2, self.cec2006_g20_h3,
             self.cec2006_g20_h4, self.cec2006_g20_h5, self.cec2006_g20_h6,
             self.cec2006_g20_h7, self.cec2006_g20_h8, self.cec2006_g20_h9,
@@ -1002,118 +1089,105 @@ class CEC2006_G20(Problem):
         super().__init__(
             ProblemType.CONSTRAINED,
             self.SUPERIOR, self.INFERIOR,
-            rest_g, rest_h
+            rest_g, []
         )
     
     def fitness(self, individuo: np.array) -> float:
-        a = np.array([
-            0.0693, 0.0577, 0.05, 0.2, 0.26, 0.55, 0.06, 0.1, 0.12, 0.18, 0.1, 0.09,
-            0.0693, 0.0577, 0.05, 0.2, 0.26, 0.55, 0.06, 0.1, 0.12, 0.18, 0.1, 0.09
-        ])
-        f_x = np.sum(a * individuo)
+        x = individuo
+        f_x = np.sum(self.a * x)
         return f_x
 
     @staticmethod
+    def calculate_g(i, x):
+        if 1 <= i <= 3:
+            return (x[i-1] + x[i+11]) / np.sum(x) + CEC2006_G20.e[i-1] - 1
+        elif 4 <= i <= 6:
+            return (x[i+2] + x[i+14]) / np.sum(x) + CEC2006_G20.e[i-1] - 1
+    
+    @staticmethod
+    def calculate_h(i, x):
+        if 1 <= i <= 12:
+            return (x[i-1] / (CEC2006_G20.b[i-1] + CEC2006_G20.b[i+11])) - (CEC2006_G20.c[i-1] * x[i-1]) / (40 * CEC2006_G20.b[i-1]) + (CEC2006_G20.c[i+11] * x[i+11]) / (40 * CEC2006_G20.b[i+11])
+    
+    @staticmethod
     def cec2006_g20_g1(x):
-        return (x[0] + x[12]) / np.sum(x) + 0.1
+        return CEC2006_G20.calculate_g(1, x)
 
     @staticmethod
     def cec2006_g20_g2(x):
-        return (x[1] + x[13]) / np.sum(x) + 0.3
+        return CEC2006_G20.calculate_g(2, x)
 
     @staticmethod
     def cec2006_g20_g3(x):
-        return (x[2] + x[14]) / np.sum(x) + 0.4
+        return CEC2006_G20.calculate_g(3, x)
 
     @staticmethod
     def cec2006_g20_g4(x):
-        return (x[3] + x[15]) / np.sum(x) + 0.3
+        return CEC2006_G20.calculate_g(4, x)
 
     @staticmethod
     def cec2006_g20_g5(x):
-        return (x[4] + x[16]) / np.sum(x) + 0.6
+        return CEC2006_G20.calculate_g(5, x)
 
     @staticmethod
     def cec2006_g20_g6(x):
-        return (x[5] + x[17]) / np.sum(x) + 0.3
+        return CEC2006_G20.calculate_g(6, x)
 
     @staticmethod
     def cec2006_g20_h1(x):
-        return (x[12] / 44.094 + x[13] / 58.12 + x[14] / 58.12 + x[15] / 137.4 + x[16] / 120.9 + x[17] / 170.9
-                + x[18] / 62.501 + x[19] / 84.94 + x[20] / 133.425 + x[21] / 82.507 + x[22] / 46.07 + x[23] / 60.097
-                - x[0] / 0.0693 - x[1] / 0.0577 - x[2] / 0.05 - x[3] / 0.2 - x[4] / 0.26 - x[5] / 0.55
-                - x[6] / 0.06 - x[7] / 0.1 - x[8] / 0.12 - x[9] / 0.18 - x[10] / 0.1 - x[11] / 0.09)
+        return CEC2006_G20.calculate_h(1, x)
 
     @staticmethod
     def cec2006_g20_h2(x):
-        return np.sum(x) - 1
+        return CEC2006_G20.calculate_h(2, x)
 
     @staticmethod
     def cec2006_g20_h3(x):
-        return (x[12] / 44.094 + x[13] / 58.12 + x[14] / 58.12 + x[15] / 137.4 + x[16] / 120.9 + x[17] / 170.9
-                + x[18] / 62.501 + x[19] / 84.94 + x[20] / 133.425 + x[21] / 82.507 + x[22] / 46.07 + x[23] / 60.097
-                - x[0] / 0.0693 - x[1] / 0.0577 - x[2] / 0.05 - x[3] / 0.2 - x[4] / 0.26 - x[5] / 0.55
-                - x[6] / 0.06 - x[7] / 0.1 - x[8] / 0.12 - x[9] / 0.18 - x[10] / 0.1 - x[11] / 0.09)
+        return CEC2006_G20.calculate_h(3, x)
 
     @staticmethod
     def cec2006_g20_h4(x):
-        return np.sum(x) - 1.671
+        return CEC2006_G20.calculate_h(4, x)
 
     @staticmethod
     def cec2006_g20_h5(x):
-        return (x[12] / 44.094 + x[13] / 58.12 + x[14] / 58.12 + x[15] / 137.4 + x[16] / 120.9 + x[17] / 170.9
-                + x[18] / 62.501 + x[19] / 84.94 + x[20] / 133.425 + x[21] / 82.507 + x[22] / 46.07 + x[23] / 60.097
-                - x[0] / 0.0693 - x[1] / 0.0577 - x[2] / 0.05 - x[3] / 0.2 - x[4] / 0.26 - x[5] / 0.55
-                - x[6] / 0.06 - x[7] / 0.1 - x[8] / 0.12 - x[9] / 0.18 - x[10] / 0.1 - x[11] / 0.09)
+        return CEC2006_G20.calculate_h(5, x)
 
     @staticmethod
     def cec2006_g20_h6(x):
-        return np.sum(x) - 1
+        return CEC2006_G20.calculate_h(6, x)
 
     @staticmethod
     def cec2006_g20_h7(x):
-        return (x[12] / 44.094 + x[13] / 58.12 + x[14] / 58.12 + x[15] / 137.4 + x[16] / 120.9 + x[17] / 170.9
-                + x[18] / 62.501 + x[19] / 84.94 + x[20] / 133.425 + x[21] / 82.507 + x[22] / 46.07 + x[23] / 60.097
-                - x[0] / 0.0693 - x[1] / 0.0577 - x[2] / 0.05 - x[3] / 0.2 - x[4] / 0.26 - x[5] / 0.55
-                - x[6] / 0.06 - x[7] / 0.1 - x[8] / 0.12 - x[9] / 0.18 - x[10] / 0.1 - x[11] / 0.09)
+        return CEC2006_G20.calculate_h(7, x)
 
     @staticmethod
     def cec2006_g20_h8(x):
-        return np.sum(x) - 1
+        return CEC2006_G20.calculate_h(8, x)
 
     @staticmethod
     def cec2006_g20_h9(x):
-        return (x[12] / 44.094 + x[13] / 58.12 + x[14] / 58.12 + x[15] / 137.4 + x[16] / 120.9 + x[17] / 170.9
-                + x[18] / 62.501 + x[19] / 84.94 + x[20] / 133.425 + x[21] / 82.507 + x[22] / 46.07 + x[23] / 60.097
-                - x[0] / 0.0693 - x[1] / 0.0577 - x[2] / 0.05 - x[3] / 0.2 - x[4] / 0.26 - x[5] / 0.55
-                - x[6] / 0.06 - x[7] / 0.1 - x[8] / 0.12 - x[9] / 0.18 - x[10] / 0.1 - x[11] / 0.09)
+        return CEC2006_G20.calculate_h(9, x)
 
     @staticmethod
     def cec2006_g20_h10(x):
-        return np.sum(x) - 1
+        return CEC2006_G20.calculate_h(10, x)
 
     @staticmethod
     def cec2006_g20_h11(x):
-        return (x[12] / 44.094 + x[13] / 58.12 + x[14] / 58.12 + x[15] / 137.4 + x[16] / 120.9 + x[17] / 170.9
-                + x[18] / 62.501 + x[19] / 84.94 + x[20] / 133.425 + x[21] / 82.507 + x[22] / 46.07 + x[23] / 60.097
-                - x[0] / 0.0693 - x[1] / 0.0577 - x[2] / 0.05 - x[3] / 0.2 - x[4] / 0.26 - x[5] / 0.55
-                - x[6] / 0.06 - x[7] / 0.1 - x[8] / 0.12 - x[9] / 0.18 - x[10] / 0.1 - x[11] / 0.09)
+        return CEC2006_G20.calculate_h(11, x)
 
     @staticmethod
     def cec2006_g20_h12(x):
-        return np.sum(x) - 1
+        return CEC2006_G20.calculate_h(12, x)
 
     @staticmethod
     def cec2006_g20_h13(x):
-        return (x[12] / 44.094 + x[13] / 58.12 + x[14] / 58.12 + x[15] / 137.4 + x[16] / 120.9 + x[17] / 170.9
-                + x[18] / 62.501 + x[19] / 84.94 + x[20] / 133.425 + x[21] / 82.507 + x[22] / 46.07 + x[23] / 60.097
-                - x[0] / 0.0693 - x[1] / 0.0577 - x[2] / 0.05 - x[3] / 0.2 - x[4] / 0.26 - x[5] / 0.55
-                - x[6] / 0.06 - x[7] / 0.1 - x[8] / 0.12 - x[9] / 0.18 - x[10] / 0.1 - x[11] / 0.09)
+        return np.sum(x) - 1
 
     @staticmethod
     def cec2006_g20_h14(x):
-        return np.sum(x) - 1.671
-
+        return np.sum(x[:12] / CEC2006_G20.d[:12]) + CEC2006_G20.k * np.sum(x[12:] / CEC2006_G20.b[12:]) - 1.671
 
 class CEC2006_G21(Problem):
     
@@ -1160,11 +1234,17 @@ class CEC2006_G21(Problem):
     def cec2006_g21_h5(x):
         return -x[6] + np.log(-2 * x[3] + 700)
 
-
 class CEC2006_G22(Problem):
     
-    SUPERIOR = np.array([20000, 1e6, 1e6, 1e6, 4e7, 4e7, 4e7, 299.99, 399.99, 300, 400, 600, 500, 500, 500, 300, 400, 6.25, 6.25, 6.25, 6.25, 6.25])
-    INFERIOR = np.array([0, 0, 0, 0, 0, 0, 0, 100, 100, 100.01, 100, 100, 0, 0, 0, 0.01, 0.01, -4.7, -4.7, -4.7, -4.7, -4.7])
+    SUPERIOR = np.array([
+        20000, 1000000, 1000000, 1000000, 40000000, 40000000, 40000000, 
+        299.99, 399.99, 300, 400, 600, 500, 500, 500, 300, 400, 6.25, 
+        6.25, 6.25, 6.25, 6.25
+    ])
+    INFERIOR = np.array([
+        0, 0, 0, 0, 0, 0, 0, 100, 100, 100.01, 100, 100, 0, 0, 0, 
+        0.01, 0.01, -4.7, -4.7, -4.7, -4.7, -4.7
+    ])
 
     def __init__(self):
         rest_g = [self.cec2006_g22_g1]
@@ -1193,188 +1273,152 @@ class CEC2006_G22(Problem):
 
     @staticmethod
     def cec2006_g22_h1(x):
-        return x[8] - 300 - 100 * x[11] + x[12]
+        return x[7] + x[12] - 100000 * x[11]
 
     @staticmethod
     def cec2006_g22_h2(x):
-        return x[9] - 400 - 100 * x[10] + x[13]
+        return x[8] + x[13] - 100000 * x[10]
 
     @staticmethod
     def cec2006_g22_h3(x):
-        return -x[14] - x[11] + 600
+        return x[9] + x[14] - 100000 * x[15]
 
     @staticmethod
     def cec2006_g22_h4(x):
-        return -x[15] - x[10] + 300
+        return x[10] + x[15] - 5 * x[16]
 
     @staticmethod
     def cec2006_g22_h5(x):
-        return x[16] - 500 - 100 * x[10] + x[14]
+        return x[11] + x[16] - 100000 * x[17]
 
     @staticmethod
     def cec2006_g22_h6(x):
-        return x[17] - 500 - 100 * x[10] + x[14]
+        return x[12] + x[17] - 3.3 * 10**7 * x[18]
 
     @staticmethod
     def cec2006_g22_h7(x):
-        return x[18] - 500 - 100 * x[10] + x[14]
+        return x[13] + x[18] - 4.4 * 10**7 * x[19]
 
     @staticmethod
     def cec2006_g22_h8(x):
-        return x[19] - 500 - 100 * x[10] + x[14]
+        return x[14] + x[19] - 6.6 * 10**7 * x[20]
 
     @staticmethod
     def cec2006_g22_h9(x):
-        return x[20] - 500 - 100 * x[10] + x[14]
+        return x[15] - 40 * x[21]
 
     @staticmethod
     def cec2006_g22_h10(x):
-        return x[21] - 500 - 100 * x[10] + x[14]
+        return x[16] - x[22] + x[23]
 
     @staticmethod
     def cec2006_g22_h11(x):
-        return x[0] + x[6] - 600
+        return x[17] - x[23] + x[24]
 
     @staticmethod
     def cec2006_g22_h12(x):
-        return x[1] + x[7] - 600
+        return x[18] - x[24] + x[25]
 
     @staticmethod
     def cec2006_g22_h13(x):
-        return x[2] + x[4] - 600
+        return x[19] - x[25] + x[26]
 
     @staticmethod
     def cec2006_g22_h14(x):
-        return x[3] + x[5] - 600
+        return x[20] - x[26] + x[27]
 
     @staticmethod
     def cec2006_g22_h15(x):
-        return x[4] - 600 - 300 * x[5]
+        return x[21] - x[27] + x[28]
 
     @staticmethod
     def cec2006_g22_h16(x):
-        return x[5] - 600 - 300 * x[4]
+        return x[22] - x[28] + x[29]
 
     @staticmethod
     def cec2006_g22_h17(x):
-        return x[6] - 600 - 300 * x[7]
+        return x[23] - x[29] + x[30]
 
     @staticmethod
     def cec2006_g22_h18(x):
-        return x[7] - 600 - 300 * x[6]
+        return x[24] - x[30] + x[31]
 
     @staticmethod
     def cec2006_g22_h19(x):
-        return -x[4] - 600 * x[6] + x[5]
-
+        return x[25] - 4.60517 * x[29] + 100
 
 class CEC2006_G23(Problem):
     
-    SUPERIOR = np.array([300, 300, 100, 200, 100, 300, 100, 200, 100, 300])
-    INFERIOR = np.array([0] * 10)
+    SUPERIOR = np.array([300, 300, 100, 200, 100, 300, 100, 200, 0.03])
+    INFERIOR = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0.01])
 
     def __init__(self):
+        rest_g = [self.cec2006_g23_g1, self.cec2006_g23_g2]
         rest_h = [
             self.cec2006_g23_h1, self.cec2006_g23_h2, self.cec2006_g23_h3,
-            self.cec2006_g23_h4, self.cec2006_g23_h5, self.cec2006_g23_h6,
-            self.cec2006_g23_h7, self.cec2006_g23_h8
+            self.cec2006_g23_h4
         ]
         super().__init__(
             ProblemType.CONSTRAINED,
             self.SUPERIOR, self.INFERIOR,
-            [], rest_h
+            rest_g, rest_h
         )
     
     def fitness(self, individuo: np.array) -> float:
-        f_x = individuo[0]
+        x = individuo
+        f_x = -9 * x[4] - 15 * x[7] + 6 * x[1] + 16 * x[2] + 10 * (x[5] + x[5])
         return f_x
 
     @staticmethod
+    def cec2006_g23_g1(x):
+        return x[8] * x[2] + 0.02 * x[5] - 0.025 * x[4]
+
+    @staticmethod
+    def cec2006_g23_g2(x):
+        return x[8] * x[3] + 0.02 * x[6] - 0.015 * x[7]
+
+    @staticmethod
     def cec2006_g23_h1(x):
-        return -x[0] + 300 * x[1]
+        return x[0] + x[1] - x[2] - x[3]
 
     @staticmethod
     def cec2006_g23_h2(x):
-        return -x[1] + 300 * x[2]
+        return 0.03 * x[0] + 0.012 * x[1] - x[8] - (x[3] + x[4])
 
     @staticmethod
     def cec2006_g23_h3(x):
-        return -x[2] + 300 * x[3]
+        return x[2] - x[5] - x[7]
 
     @staticmethod
     def cec2006_g23_h4(x):
-        return -x[3] + 300 * x[4]
-
-    @staticmethod
-    def cec2006_g23_h5(x):
-        return -x[4] + 300 * x[5]
-
-    @staticmethod
-    def cec2006_g23_h6(x):
-        return -x[5] + 300 * x[6]
-
-    @staticmethod
-    def cec2006_g23_h7(x):
-        return -x[6] + 300 * x[7]
-
-    @staticmethod
-    def cec2006_g23_h8(x):
-        return -x[7] + 300 * x[8]
+        return x[4] + x[7] - x[6]
 
 
 class CEC2006_G24(Problem):
     
-    SUPERIOR = np.array([1, 1, 1, 1, 1, 1, 1, 1, 1])
-    INFERIOR = np.array([0] * 9)
+    SUPERIOR = np.array([3, 4])
+    INFERIOR = np.array([0, 0])
 
     def __init__(self):
-        rest_h = [
-            self.cec2006_g24_h1, self.cec2006_g24_h2, self.cec2006_g24_h3,
-            self.cec2006_g24_h4, self.cec2006_g24_h5, self.cec2006_g24_h6,
-            self.cec2006_g24_h7, self.cec2006_g24_h8, self.cec2006_g24_h9
+        rest_h = []
+        rest_g = [
+            self.cec2006_g24_g1, self.cec2006_g24_g2
         ]
         super().__init__(
             ProblemType.CONSTRAINED,
             self.SUPERIOR, self.INFERIOR,
-            [], rest_h
+            rest_g, rest_h
         )
     
     def fitness(self, individuo: np.array) -> float:
-        f_x = -np.sum(individuo)
+        x = individuo
+        f_x = -x[0] - x[1]
         return f_x
 
     @staticmethod
-    def cec2006_g24_h1(x):
-        return -x[0] + x[1] - x[2] + x[3] - x[4] + x[5] - x[6] + x[7] - x[8] + 9
+    def cec2006_g24_g1(x):
+        return -2 * x[0]**4 + 8 * x[0]**3 - 8 * x[0]**2 + x[1] - 2
 
     @staticmethod
-    def cec2006_g24_h2(x):
-        return x[0] - x[1] - x[2] + x[3] + x[4] - x[5] + x[6] - x[7] + x[8]
-
-    @staticmethod
-    def cec2006_g24_h3(x):
-        return -x[0] - x[1] + x[2] + x[3] + x[4] + x[5] - x[6] + x[7] + x[8]
-
-    @staticmethod
-    def cec2006_g24_h4(x):
-        return x[0] + x[1] + x[2] + x[3] - x[4] - x[5] + x[6] - x[7] + x[8]
-
-    @staticmethod
-    def cec2006_g24_h5(x):
-        return x[0] - x[1] + x[2] - x[3] + x[4] - x[5] - x[6] + x[7] + x[8]
-
-    @staticmethod
-    def cec2006_g24_h6(x):
-        return x[0] - x[1] + x[2] - x[3] + x[4] - x[5] + x[6] - x[7] - x[8]
-
-    @staticmethod
-    def cec2006_g24_h7(x):
-        return -x[0] + x[1] + x[2] + x[3] - x[4] + x[5] - x[6] + x[7] - x[8]
-
-    @staticmethod
-    def cec2006_g24_h8(x):
-        return x[0] + x[1] - x[2] - x[3] + x[4] - x[5] + x[6] + x[7] - x[8]
-
-    @staticmethod
-    def cec2006_g24_h9(x):
-        return x[0] - x[1] - x[2] + x[3] - x[4] + x[5] - x[6] + x[7] + x[8]
+    def cec2006_g24_g2(x):
+        return -4 * x[0]**4 + 32 * x[0]**3 - 88 * x[0]**2 + 96 * x[0] + x[1] - 36
