@@ -7,10 +7,9 @@ import random
 from core.differential_evolution import Differential_Evolution
 from core.constraints_functions import ConstriantsFunctionsHandler
 from utils.constants import EXECUTIONS
-from functions.cec2017problems import *
 
-DIRECTORY = "report/cec2006"
-PROBLEM = "CEC2006"
+DIRECTORY = "report/cec2010"
+PROBLEM = "CEC2010"
 
 def execute_algorithm(problem_name, problem_class, constraint_name, bounds):
     problema = problem_class()
@@ -21,6 +20,7 @@ def execute_algorithm(problem_name, problem_class, constraint_name, bounds):
 
     for _ in range(EXECUTIONS):
         print(f"Ejecucion {_ + 1} para problema {problem_name} con el metodo {constraint_name}:")
+        algorithm = None
         try:
             algorithm = Differential_Evolution(
                 problema.fitness,
@@ -35,15 +35,17 @@ def execute_algorithm(problem_name, problem_class, constraint_name, bounds):
                 res_and_rand=(constraint_name == "res&rand"),
                 dynamic_correction=(constraint_name == "dynamic_correction")
             )
-            algorithm.evolution(verbose=True)
+            algorithm.evolution(verbose=False)
             fitness_data.append(algorithm.gbest_fitness)
             violations_data.append(algorithm.gbest_violation)
             convergence_fitness_data.append(algorithm.gbest_fitness_list)
             convergence_violations_data.append(algorithm.gbest_violations_list)
         except Exception as e:
             print(f"Error en el metodo {constraint_name} en ejecución {_ + 1}: {e}")
-        del algorithm
-        gc.collect()
+        finally:
+            if algorithm is not None:
+                del algorithm
+            gc.collect()
 
     factible_indices = [i for i, v in enumerate(violations_data) if v == 0]
     factible_fitness_data = [fitness_data[i] for i in factible_indices]

@@ -47,6 +47,7 @@ class Differential_Evolution(Algorithm):
         self.gbest_violations_list = []
 
         self.population = self.generate(self.upper, self.lower)
+        self.NP, self.D = self.population.shape
         self.fitness = np.zeros(SIZE_POPULATION)
         self.violations = np.zeros(SIZE_POPULATION)
         self.objective_function = objective_function
@@ -149,28 +150,26 @@ class Differential_Evolution(Algorithm):
              
     def res_and_ran_mutation(self, i):
         F = 0.8  # Factor de escala para la mutación
-        NP, D = self.population.shape
+        attempts = 3 * self.D  # Máximo de intentos de remuestreo
         
-        NoRes = 0
-        valid = False
+        indices_pool = np.delete(np.arange(self.NP), i)
+        valid_V = None
 
-        while NoRes <= 3 * D and not valid:
-            indices = np.random.choice(np.delete(np.arange(NP), i), 3, replace=False)
+        for _ in range(attempts):
+            indices = np.random.choice(indices_pool, 3, replace=False)
             r1, r2, r3 = self.population[indices]
             V = r1 + F * (r2 - r3)
-            
-            # Verifica si el vector mutante está dentro de los límites
+
+            # Verificar si el vector mutante está dentro de los límites
             if np.all((self.lower <= V) & (V <= self.upper)):
-                valid = True
-            else:
-                NoRes += 1
-        
+                valid_V = V
+                break
+
         # Si no se obtuvo un vector válido después del máximo de remuestreos
-        if not valid:
-            V = np.where((V < self.lower) | (V > self.upper), 
-                         np.random.uniform(self.lower, self.upper), V)
-        
-        return V
+        if valid_V is None:
+            valid_V = np.random.uniform(self.lower, self.upper, self.D)
+
+        return valid_V
         
 
     def _crossover_operator_(self, target, mutant):
@@ -285,6 +284,8 @@ class Differential_Evolution(Algorithm):
                     trial = self.bounds_constraints(
                         trial, self.lower, self.upper, self.gbest_individual
                     )
+                elif self.res_and_rand:
+                    pass
                 elif self.dynamic_correction:
                     trial = self.bounds_constraints(trial, self.population, self.lower, self.upper)
                 else:

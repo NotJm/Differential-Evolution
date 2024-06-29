@@ -1223,7 +1223,7 @@ class BoundaryHandler:
         mean_population = np.mean(population, axis=0)
         
         # Calcular la desviación normalizada y el valor de ajuste
-        deviations = (x - mean_population) / np.abs(x - mean_population)
+        deviations = (x - mean_population) / np.where(np.abs(x - mean_population) == 0, 1, np.abs(x - mean_population))
         adjustments = deviations * np.minimum(np.abs(upper - mean_population), np.abs(lower - mean_population))
         
         # Aplicar corrección adaptativa
