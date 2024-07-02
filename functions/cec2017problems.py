@@ -48,6 +48,7 @@ class CEC2017_C02(Problem):
     def CEC2017_C02_g1(x):
         z = x - o
         y = CEC2017_C02.M @ z
+        y = np.clip(y, CEC2017_C02.INFERIOR, CEC2017_C02.SUPERIOR)
         return np.sum(y**2 - 5000 * np.cos(0.1 * np.pi * y) - 4000)
 
 class CEC2017_C03(Problem):
@@ -122,12 +123,14 @@ class CEC2017_C05(Problem):
     def CEC2017_C05_g1(x):
         z = x - o
         y = CEC2017_C05.M1 @ z
+        y = np.clip(y, CEC2017_C05.INFERIOR, CEC2017_C05.SUPERIOR)
         return np.sum(y**2 - 50 * np.cos(2 * np.pi * y) - 40)
     
     @staticmethod
     def CEC2017_C05_g2(x):
         z = x - o
         w = CEC2017_C05.M2 @ z
+        w = np.clip(w, CEC2017_C05.INFERIOR, CEC2017_C05.SUPERIOR)
         return np.sum(w**2 - 50 * np.cos(2 * np.pi * w) - 40)
     
 class CEC2017_C06(Problem):
@@ -556,7 +559,6 @@ class CEC2017_C20(Problem):
         g2 = np.exp(np.cos(np.sum(y))) - np.exp(0.25)
         return g2
 
-
 class CEC2017_C21(Problem):
     
     SUPERIOR = np.array([100] * D)
@@ -578,12 +580,14 @@ class CEC2017_C21(Problem):
     def CEC2017_C21_g1(x):
         y = x - o
         z = CEC2017_C21.M @ y
+        z = np.clip(z, CEC2017_C21.INFERIOR, CEC2017_C21.SUPERIOR)
         return 4 - np.sum(np.abs(z))
     
     @staticmethod
     def CEC2017_C21_g2(x):
         y = x - o
         z = CEC2017_C21.M @ y
+        z = np.clip(z, CEC2017_C21.INFERIOR, CEC2017_C21.SUPERIOR)
         return np.sum(z**2) - 4
 
 class CEC2017_C22(Problem):
@@ -600,6 +604,7 @@ class CEC2017_C22(Problem):
     def fitness(self, x: np.array) -> float:
         y = x - o
         z = self.M @ y
+        z = np.clip(z, self.INFERIOR, self.SUPERIOR)
         f_x = np.sum([100 * (z[i]**2 - z[i+1])**2 + (z[i] - 1)**2 for i in range(D-1)])
         return f_x
     
@@ -607,18 +612,21 @@ class CEC2017_C22(Problem):
     def CEC2017_C22_g1(x):
         y = x - o
         z = CEC2017_C22.M @ y
+        z = np.clip(z, CEC2017_C22.INFERIOR, CEC2017_C22.SUPERIOR)
         return np.sum(z**2 - 10 * np.cos(2 * np.pi * z) + 10) - 100
     
     @staticmethod
     def CEC2017_C22_g2(x):
         y = x - o
         z = CEC2017_C22.M @ y
+        z = np.clip(z, CEC2017_C22.INFERIOR, CEC2017_C22.SUPERIOR)
         return np.sum(z) - 2 * D
     
     @staticmethod
     def CEC2017_C22_g3(x):
         y = x - o
         z = CEC2017_C22.M @ y
+        z = np.clip(z, CEC2017_C22.INFERIOR, CEC2017_C22.SUPERIOR)
         return 5 - np.sum(z)
 
 class CEC2017_C23(Problem):
@@ -635,6 +643,7 @@ class CEC2017_C23(Problem):
     def fitness(self, x: np.array) -> float:
         y = x - o
         z = self.M @ y
+        z = np.clip(z, CEC2017_C23.INFERIOR, CEC2017_C23.SUPERIOR)
         term1 = -20 * np.exp(-0.2 * np.sqrt(np.sum(z**2) / D))
         term2 = 20 - np.exp(np.sum(np.cos(2 * np.pi * z) / D))
         f_x = term1 + term2 + np.e
@@ -644,12 +653,14 @@ class CEC2017_C23(Problem):
     def CEC2017_C23_g1(x):
         y = x - o
         z = CEC2017_C23.M @ y
+        z = np.clip(z, CEC2017_C23.INFERIOR, CEC2017_C23.SUPERIOR)
         return np.sum(z[1:]**2) + 1 - np.abs(z[0])
     
     @staticmethod
     def CEC2017_C23_h1(x):
         y = x - o
         z = CEC2017_C23.M @ y
+        z = np.clip(z, CEC2017_C23.INFERIOR, CEC2017_C23.SUPERIOR)
         return np.sum(z**2) - 4
     
 class CEC2017_C24(Problem):
@@ -666,6 +677,7 @@ class CEC2017_C24(Problem):
     def fitness(self, x: np.array) -> float:
         y = x - o
         z = self.M @ y
+        z = np.clip(z, self.INFERIOR, self.SUPERIOR)
         f_x = np.max(np.abs(z))
         return f_x
     
@@ -673,12 +685,14 @@ class CEC2017_C24(Problem):
     def CEC2017_C24_g1(x):
         y = x - o
         z = CEC2017_C24.M @ y
+        z = np.clip(z, CEC2017_C24.INFERIOR, CEC2017_C24.SUPERIOR)
         return np.sum(z**2) - 100 * D
     
     @staticmethod
     def CEC2017_C24_h1(x):
         y = x - o
         z = CEC2017_C24.M @ y
+        z = np.clip(z, CEC2017_C24.INFERIOR, CEC2017_C24.SUPERIOR)
         f_x = np.max(np.abs(z))
         return np.cos(f_x) + np.sin(f_x)
 
@@ -696,6 +710,7 @@ class CEC2017_C25(Problem):
     def fitness(self, x: np.array) -> float:
         y = x - o
         z = self.M @ y
+        z = np.clip(z, self.INFERIOR, self.SUPERIOR)
         f_x = np.sum(np.abs(z))
         return f_x
     
@@ -703,12 +718,14 @@ class CEC2017_C25(Problem):
     def CEC2017_C25_g1(x):
         y = x - o
         z = CEC2017_C25.M @ y
+        z = np.clip(z, CEC2017_C25.INFERIOR, CEC2017_C25.SUPERIOR)
         return np.sum(z**2) - 100 * D
     
     @staticmethod
     def CEC2017_C25_h1(x):
         y = x - o
         z = CEC2017_C25.M @ y
+        z = np.clip(z, CEC2017_C25.INFERIOR, CEC2017_C25.SUPERIOR)
         f_x = np.sum(np.abs(z))
         return (np.cos(f_x) + np.sin(f_x))**2 - np.exp(np.cos(f_x) + np.sin(f_x)) - 1 + np.exp(1)
 
@@ -726,6 +743,7 @@ class CEC2017_C26(Problem):
     def fitness(self, x: np.array) -> float:
         y = x - o
         z = self.M @ y
+        z = np.clip(z, self.INFERIOR, self.SUPERIOR)
         term1 = 1 / 4000 * np.sum(z**2)
         term2 = 1 - np.prod(np.cos(z / np.sqrt(np.arange(1, D + 1))))
         f_x = term1 + term2
@@ -735,12 +753,14 @@ class CEC2017_C26(Problem):
     def CEC2017_C26_g1(x):
         y = x - o
         z = CEC2017_C26.M @ y
+        z = np.clip(z, CEC2017_C26.INFERIOR, CEC2017_C26.SUPERIOR)
         return 1 - np.sum(np.sign(np.abs(z)) - np.sum(z**2) - 1)
     
     @staticmethod
     def CEC2017_C26_h1(x):
         y = x - o
         z = CEC2017_C26.M @ y
+        z = np.clip(z, CEC2017_C26.INFERIOR, CEC2017_C26.SUPERIOR)
         return np.sum(z**2) - 4 * D
 
 class CEC2017_C27(Problem):
@@ -757,6 +777,7 @@ class CEC2017_C27(Problem):
     def fitness(self, x: np.array) -> float:
         y = x - o
         z = self.M @ y
+        z = np.clip(z, self.INFERIOR, self.SUPERIOR)
         z = np.where(np.abs(y) < 0.5, y, 0.5 * np.round(2 * y))
         f_x = np.sum(z**2 - 10 * np.cos(2 * np.pi * z) + 10)
         return f_x
@@ -765,18 +786,21 @@ class CEC2017_C27(Problem):
     def CEC2017_C27_g1(x):
         y = x - o
         z = CEC2017_C27.M @ y
+        z = np.clip(z, CEC2017_C27.INFERIOR, CEC2017_C27.SUPERIOR)
         return 1 - np.sum(np.abs(z))
     
     @staticmethod
     def CEC2017_C27_g2(x):
         y = x - o
         z = CEC2017_C27.M @ y
+        z = np.clip(z, CEC2017_C27.INFERIOR, CEC2017_C27.SUPERIOR)
         return np.sum(z**2) - 100 * D
     
     @staticmethod
     def CEC2017_C27_h1(x):
         y = x - o
         z = CEC2017_C27.M @ y
+        z = np.clip(z, CEC2017_C27.INFERIOR, CEC2017_C27.SUPERIOR)
         return np.sum(100 * (z[:-1]**2 - z[1:]) + (np.sin(z) - 1))
 
 class CEC2017_C28(Problem):
@@ -793,6 +817,7 @@ class CEC2017_C28(Problem):
     def fitness(self, x: np.array) -> float:
         y = x - o
         z = self.M @ y
+        z = np.clip(z, self.INFERIOR, self.SUPERIOR)
         f_x = np.sum(np.abs(z)**0.5 + 2 * np.sin(z**3))
         return f_x
     
@@ -800,10 +825,12 @@ class CEC2017_C28(Problem):
     def CEC2017_C28_g1(x):
         y = x - o
         z = CEC2017_C28.M @ y
+        z = np.clip(z, CEC2017_C28.INFERIOR, CEC2017_C28.SUPERIOR)
         return np.sum(-10 * np.exp(-0.2 * np.sqrt(z[:-1]**2 + z[1:]**2))) + (D - 1) * 10 / np.exp(5)
     
     @staticmethod
     def CEC2017_C28_g2(x):
         y = x - o
         z = CEC2017_C28.M @ y
+        z = np.clip(z, CEC2017_C28.INFERIOR, CEC2017_C28.SUPERIOR)
         return np.sum(np.sin(2 * z)**2) - 0.5 * D

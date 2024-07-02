@@ -312,7 +312,7 @@ class CEC2010_C11(Problem):
     
     def fitness(self, individuo: np.array) -> float:
         z = (individuo - o) @ self.M
-        y = np.clip(y, CEC2010_C11.INFERIOR, CEC2010_C11.SUPERIOR)
+        z = np.clip(z, self.INFERIOR, self.SUPERIOR)
         f_x = (1/D) * np.sum(-z * np.cos(2 * np.sqrt(np.abs(z))))
         return f_x
 
