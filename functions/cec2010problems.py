@@ -162,6 +162,7 @@ class CEC2010_C05(Problem):
 
 class CEC2010_C06(Problem):
     
+    D = 10
     SUPERIOR = np.array([600] * D)
     INFERIOR = np.array([-600] * D)
     
@@ -183,12 +184,14 @@ class CEC2010_C06(Problem):
     @staticmethod
     def cec2010_c06_h1(x):
         y = (x + 483.6106156535 - o) @ CEC2010_C06.M - 483.6106156535
-        return (1/D) * np.sum(-y * np.sin(np.sqrt(np.abs(y))))  # restriccion de igualdad = 0
+        y = np.clip(y, CEC2010_C06.INFERIOR, CEC2010_C06.SUPERIOR)
+        return (1/CEC2010_C06.D) * np.sum(-y * np.sin(np.sqrt(np.abs(y))))  # restricción de igualdad = 0
     
     @staticmethod
     def cec2010_c06_h2(x):
         y = (x + 483.6106156535 - o) @ CEC2010_C06.M - 483.6106156535
-        return (1/D) * np.sum(-y * np.cos(0.5 * np.sqrt(np.abs(y))))  # restriccion de igualdad = 0
+        y = np.clip(y, CEC2010_C06.INFERIOR, CEC2010_C06.SUPERIOR)
+        return (1/CEC2010_C06.D) * np.sum(-y * np.cos(0.5 * np.sqrt(np.abs(y))))  # restricción de igualdad = 0
 
 class CEC2010_C07(Problem):
     
@@ -237,6 +240,7 @@ class CEC2010_C08(Problem):
     @staticmethod
     def cec2010_c08_g1(x):
         y = (x - o) @ CEC2010_C08.M
+        y = np.clip(y, CEC2010_C08.INFERIOR, CEC2010_C08.SUPERIOR)
         return 0.5 - np.exp(-0.1 * np.sqrt((1/D) * np.sum(y**2))) - 3 * np.exp((1/D) * np.sum(np.cos(0.1 * y))) + np.exp(1)  # restriccion de desigualdad <= 0
 
 class CEC2010_C09(Problem):
@@ -286,6 +290,7 @@ class CEC2010_C10(Problem):
     @staticmethod
     def cec2010_c10_h1(x):
         y = (x - o) @ CEC2010_C10.M
+        y = np.clip(y, CEC2010_C10.INFERIOR, CEC2010_C10.SUPERIOR)
         return np.sum(y * np.sin(np.sqrt(np.abs(y)))) # restriccion de igualdad = 0
 
 
@@ -307,6 +312,7 @@ class CEC2010_C11(Problem):
     
     def fitness(self, individuo: np.array) -> float:
         z = (individuo - o) @ self.M
+        y = np.clip(y, CEC2010_C11.INFERIOR, CEC2010_C11.SUPERIOR)
         f_x = (1/D) * np.sum(-z * np.cos(2 * np.sqrt(np.abs(z))))
         return f_x
 
@@ -438,16 +444,19 @@ class CEC2010_C15(Problem):
     @staticmethod
     def cec2010_c15_g1(x):
         y = (x - o) @ CEC2010_C15.M
+        y = np.clip(y, CEC2010_C15.INFERIOR, CEC2010_C15.SUPERIOR)
         return np.sum(-y * np.cos(np.sqrt(np.abs(y)))) - D  # restriccion de desigualdad <= 0
     
     @staticmethod
     def cec2010_c15_g2(x):
         y = (x - o) @ CEC2010_C15.M
+        y = np.clip(y, CEC2010_C15.INFERIOR, CEC2010_C15.SUPERIOR)
         return np.sum(y * np.cos(np.sqrt(np.abs(y)))) - D  # restriccion de desigualdad <= 0
     
     @staticmethod
     def cec2010_c15_g3(x):
         y = (x - o) @ CEC2010_C15.M
+        y = np.clip(y, CEC2010_C15.INFERIOR, CEC2010_C15.SUPERIOR)
         return np.sum(y * np.sin(np.sqrt(np.abs(y)))) - 10 * D  # restriccion de desigualdad <= 0
 
 class CEC2010_C16(Problem):

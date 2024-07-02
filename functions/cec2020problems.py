@@ -15,14 +15,9 @@ class CEC2020_RC01(Problem):
 
     def __init__(self):
         rest_h = [
-            self.CEC2020_RC01_h1,
-            self.CEC2020_RC01_h2,
-            self.CEC2020_RC01_h3,
-            self.CEC2020_RC01_h4,
-            self.CEC2020_RC01_h5,
-            self.CEC2020_RC01_h6,
-            self.CEC2020_RC01_h7,
-            self.CEC2020_RC01_h8,
+            self.CEC2020_RC01_h1, self.CEC2020_RC01_h2, self.CEC2020_RC01_h3,
+            self.CEC2020_RC01_h4, self.CEC2020_RC01_h5, self.CEC2020_RC01_h6,
+            self.CEC2020_RC01_h7, self.CEC2020_RC01_h8,
         ]
         super().__init__(ProblemType.CONSTRAINED, self.SUPERIOR, self.INFERIOR, [],  rest_h)
     
