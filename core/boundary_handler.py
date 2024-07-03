@@ -51,7 +51,7 @@ class BoundaryHandler:
 
     @staticmethod
     # Metodo de reflex para manejar restricciones  de limites dentro de los valores de un individuo
-    def mirror(upper, lower, x) -> np.ndarray:
+    def reflection(upper, lower, x) -> np.ndarray:
         range_width = upper - lower
         new_x = np.copy(x)
 
@@ -657,36 +657,7 @@ class BoundaryHandler:
 
     #     return Xc
 
-    """ 2019 Efren Juarez Centroid """
-    def centroid_method(X, population, lower, upper, violations, K=1):
-        NP, D = population.shape
-        
-        # Soluciones Factibles (SFS) y Soluciones No Factibles (SIS) basadas en restricciones funcionales
-        SFS = population[violations == 0]
-        SIS = population[violations > 0]
-        AFS = len(SFS)
-        
-        if AFS > 0 and np.random.rand() > 0.5:
-            Wp = SFS[np.random.randint(AFS)]
-        else:
-            if len(SIS) > 0:
-                Wp = SIS[np.argmin(violations[violations > 0])]
-            else:
-                # Si SIS está vacío, seleccionamos aleatoriamente un vector de la población
-                Wp = population[np.random.randint(NP)]
-
-        Wr = np.empty((K, D))
-        for i in range(K):
-            Wi = np.copy(X)
-            mask_lower = Wi < lower
-            mask_upper = Wi > upper
-            Wi[mask_lower] = lower[mask_lower] + np.random.rand(np.sum(mask_lower)) * (upper[mask_lower] - lower[mask_lower])
-            Wi[mask_upper] = lower[mask_upper] + np.random.rand(np.sum(mask_upper)) * (upper[mask_upper] - lower[mask_upper])
-            Wr[i] = Wi
-
-        Xc = (Wp + Wr.sum(axis=0)) / (K + 1)
-
-        return Xc
+    
     
 
     def centroid(target_vector_index, population, lower, upper,  K=1):
@@ -801,7 +772,7 @@ class BoundaryHandler:
     def saturation(particle, lower, upper):
         return np.clip(particle, lower, upper)
 
-    def mirror(particle, lower, upper):
+    def reflection(particle, lower, upper):
         particle_mirrored = np.where(
             particle < lower, 2 * lower - particle, particle
         )

@@ -14,6 +14,8 @@ from utils.plotting import (
     plot_fitness_boxplot_from_csvs
 )
 from utils.save_file import save_results_to_csv
+from core.old_differential_evolution import Differential_Evolution
+from core.constraints_functions import ConstriantsFunctionsHandler
 
 
 def main(problems, bchms, directory, problem_prefix):
@@ -75,41 +77,50 @@ def main(problems, bchms, directory, problem_prefix):
 
 if __name__ == "__main__":
     problems = {
-        # "C01": CEC2017_C01,
-        # "C02": CEC2017_C02,
-        # "C03": CEC2017_C03,
-        "C04": CEC2010_C04,
-        # "C05": CEC2010_C05,
-        # "C06": CEC2010_C06,
-        # "C07": CEC2010_C07,
-        # "C08": CEC2010_C08,
-        # "C09": CEC2010_C09,
-        # "C10": CEC2010_C10,
-        # "C11": CEC2010_C11,
-        # "C12": CEC2010_C12,
-        # "C13": CEC2010_C13,
-        # "C14": CEC2010_C14,
-        # "C15": CEC2010_C15,
-        # "C16": CEC2010_C16,
-        # "C17": CEC2010_C17,
-        # "C18": CEC2010_C18,
+        "C01": CEC2017_C01,
+        "C02": CEC2017_C02,
+        "C03": CEC2017_C03,
+        "C04": CEC2017_C04,
+        "C05": CEC2017_C05,
+        "C06": CEC2017_C06,
+        "C07": CEC2017_C07,
+        "C08": CEC2017_C08,
+        "C09": CEC2017_C09,
+        "C10": CEC2017_C10,
+        "C11": CEC2017_C11,
+        "C12": CEC2017_C12,
+        "C13": CEC2017_C13,
+        "C14": CEC2017_C14,
+        "C15": CEC2017_C15,
+        "C16": CEC2017_C16,
+        "C17": CEC2017_C17,
+        "C18": CEC2017_C18,
+        "C19": CEC2017_C19,
+        "C20": CEC2017_C20,
+        "C21": CEC2017_C21,
+        "C22": CEC2017_C22,
+        "C23": CEC2017_C23,
+        "C24": CEC2017_C24,
+        "C25": CEC2017_C25,
+        "C27": CEC2017_C27,
+        "C28": CEC2017_C28
     }
 
     bchms = {
-        "ADS": BoundaryHandler.ADS,
+        "ADS": BCHM.ADS,
         "evolutionary": BCHM.evolutionary,
-        # "centroid": BoundaryHandler.centroid_method,
-        # "reflection": BoundaryHandler.agarwl_reflect,
-        # "beta": BoundaryHandler.andreaa_beta,
-        # "boundary": BoundaryHandler.andreaa_saturation,
-        # "random": BoundaryHandler.andreaa_uniform,
-        # "vector_wise_correction": BoundaryHandler.andreaa_vector_wise_correction,
-        # "wrapping": BoundaryHandler.qin_wrapping,
-        # "res&rand": None,
+        # "centroid": BCHM.centroid,
+        "new_centroid_2024": BCHM.new_centroid_2024,
+        "reflection": BCHM.reflection,
+        "boundary": BCHM.boundary,
+        "random": BCHM.random,
+        "wrapping": BCHM.wrapping,
+        "beta": BCHM.beta,
+        "vector_wise_correction": BCHM.vector_wise_correction,
+        # "res&rand": BCHM.res_and_rand
     }
 
     DIRECTORY = "mnt/data/cec2017"
     PROBLEM_PREFIX = "CEC2017"
 
     main(problems, bchms, DIRECTORY, PROBLEM_PREFIX)
-    

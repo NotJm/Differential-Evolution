@@ -2,7 +2,7 @@ import gc
 import pandas as pd
 import os
 import glob
-from core.differential_evolution import Differential_Evolution
+from core.old_differential_evolution import Differential_Evolution
 from core.constraints_functions import ConstriantsFunctionsHandler
 from utils.constants import EXECUTIONS
 from utils.utility import generate_random_filename
@@ -40,13 +40,11 @@ def execute_algorithm(
                 bounds=(problema.SUPERIOR, problema.INFERIOR),
                 g_functions=problema.rest_g,
                 h_functions=problema.rest_h,
-                # TODO: Verificar si funciona
                 centroid_method=(constraint_name == "centroid"),
                 beta_method=(constraint_name == "beta"),
                 evolutionary_method=(constraint_name == "evolutionary"),
                 resrand_method=(constraint_name == "res&rand"),
                 ADS=(constraint_name == "ADS"),
-                interactive=True
             )
 
             # No mostrar datos
@@ -55,8 +53,6 @@ def execute_algorithm(
             # Obteniendo datos necesarios
             fitness_data.append(algorithm.gbest_fitness)
             violations_data.append(algorithm.gbest_violation)
-            # convergence_fitness_data.append(algorithm.gbest_fitness_list)
-            # convergence_violations_data.append(algorithm.gbest_violations_list)
 
         except Exception as e:
             print(
