@@ -45,7 +45,8 @@ def execute_algorithm(
                 beta_method=(constraint_name == "beta"),
                 evolutionary_method=(constraint_name == "evolutionary"),
                 resrand_method=(constraint_name == "res&rand"),
-                # interactive=True
+                ADS=(constraint_name == "ADS"),
+                interactive=True
             )
 
             # No mostrar datos

@@ -25,6 +25,7 @@ class Differential_Evolution(Algorithm):
         beta_method: bool = False,
         evolutionary_method: bool = False,
         resrand_method: bool = False,
+        ADS:bool = False,
         interactive: bool = False,
     ):
         self.F = F
@@ -37,6 +38,7 @@ class Differential_Evolution(Algorithm):
         self.beta_method = beta_method
         self.evolutionary_method = evolutionary_method
         self.resrand_method = resrand_method
+        self.ADS = ADS
         self.interactive = interactive
 
         self.population = self.generate(self.upper, self.lower)
@@ -61,7 +63,7 @@ class Differential_Evolution(Algorithm):
                 self.scatter_plot_gbest,
                 self.ax,
             ) = setup_plot((self.lower, self.upper))
-
+            
     def _compute_fitness_and_violations_(self):
         for index, individual in enumerate(self.population):
             fitness = self.objective_function(individual)
@@ -71,7 +73,7 @@ class Differential_Evolution(Algorithm):
                 self.g_functions, self.h_functions, individual
             )
             self.violations[index] = total_de_violaciones
-
+            
     def _mutation_operator_(self, idx, generation=0):
 
         samples = np.random.choice(SIZE_POPULATION, 5, replace=False)
@@ -178,14 +180,13 @@ class Differential_Evolution(Algorithm):
 
     def evolution(self, verbose: bool = True):
         for gen in tqdm(range(GENERATIONS), desc="Evolucionando"):
+                        
             for i in range(SIZE_POPULATION):
                 objective = self.population[i]
                 mutant = self._mutation_operator_(i, gen)
                 trial = self._crossover_operator_(objective, mutant)
                 if self.centroid_method:
-                    trial = self.bounds_constraints(
-                        trial, self.population, self.lower, self.upper
-                    )
+                    trial = self.bounds_constraints(trial, self.population, self.lower, self.upper, self.violations)
                 elif self.beta_method:
                     trial = self.bounds_constraints(
                         trial, self.lower, self.upper, self.population
@@ -194,6 +195,8 @@ class Differential_Evolution(Algorithm):
                     trial = self.bounds_constraints(
                         trial, self.lower, self.upper, self.gbest_individual
                     )
+                elif self.ADS:
+                    trial = self.bounds_constraints(trial, self.lower, self.upper, self.gbest_individual, gen, GENERATIONS)
                 elif self.resrand_method:
                     ...
                 else:

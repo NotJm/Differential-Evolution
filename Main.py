@@ -1,5 +1,6 @@
 import pandas as pd
 from core.boundary_handler import BoundaryHandler
+from core.bchms import BCHM
 from functions.cec2020problems import *
 from functions.cec2006problems import *
 from functions.cec2017problems import *
@@ -10,6 +11,7 @@ from utils.plotting import (
     plot_fitness_boxplot_all,
     plot_convergence_violations_all,
     plot_violations_boxplot_all,
+    plot_fitness_boxplot_from_csvs
 )
 from utils.save_file import save_results_to_csv
 
@@ -73,10 +75,10 @@ def main(problems, bchms, directory, problem_prefix):
 
 if __name__ == "__main__":
     problems = {
-        "C01": CEC2010_C01,
-        # "C02": CEC2010_C02,
-        # "C03": CEC2010_C03,
-        # "C04": CEC2010_C04,
+        # "C01": CEC2017_C01,
+        # "C02": CEC2017_C02,
+        # "C03": CEC2017_C03,
+        "C04": CEC2010_C04,
         # "C05": CEC2010_C05,
         # "C06": CEC2010_C06,
         # "C07": CEC2010_C07,
@@ -94,20 +96,20 @@ if __name__ == "__main__":
     }
 
     bchms = {
-        "resampling": BoundaryHandler.scalar_compression_method,
+        "ADS": BoundaryHandler.ADS,
+        "evolutionary": BCHM.evolutionary,
+        # "centroid": BoundaryHandler.centroid_method,
         # "reflection": BoundaryHandler.agarwl_reflect,
         # "beta": BoundaryHandler.andreaa_beta,
         # "boundary": BoundaryHandler.andreaa_saturation,
         # "random": BoundaryHandler.andreaa_uniform,
         # "vector_wise_correction": BoundaryHandler.andreaa_vector_wise_correction,
-        # "evolutionary": BoundaryHandler.gandomi_evolutionary,
         # "wrapping": BoundaryHandler.qin_wrapping,
-        # "centroid": BoundaryHandler.centroid_method,
         # "res&rand": None,
     }
 
-    DIRECTORY = "mnt/data/cec2010"
-    PROBLEM_PREFIX = "CEC2010"
+    DIRECTORY = "mnt/data/cec2017"
+    PROBLEM_PREFIX = "CEC2017"
 
     main(problems, bchms, DIRECTORY, PROBLEM_PREFIX)
     

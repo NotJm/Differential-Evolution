@@ -658,33 +658,19 @@ class BoundaryHandler:
     #     return Xc
 
     """ 2019 Efren Juarez Centroid """
-    def centroid_method(X, population, lower, upper, K=1):
-        """
-        Implementación del método Centroid para manejo de límites usando numpy.
-
-        Parámetros:
-        X (numpy.ndarray): El vector que se encuentra fuera de los límites.
-        population (numpy.ndarray): Población actual de soluciones.
-        lower (numpy.ndarray): Límites inferiores para cada dimensión.
-        upper (numpy.ndarray): Límites superiores para cada dimensión.
-        K (int): Cantidad de vectores aleatorios. Default es 3.
-
-        Retorna:
-        numpy.ndarray: Vector corregido.
-        """
+    def centroid_method(X, population, lower, upper, violations, K=1):
         NP, D = population.shape
         
-        # Soluciones Factibles (SFS) y Soluciones No Factibles (SIS)
-        SFS = population[np.all((population >= lower) & (population <= upper), axis=1)]
-        SIS = population[np.any((population < lower) | (population > upper), axis=1)]
+        # Soluciones Factibles (SFS) y Soluciones No Factibles (SIS) basadas en restricciones funcionales
+        SFS = population[violations == 0]
+        SIS = population[violations > 0]
         AFS = len(SFS)
-
+        
         if AFS > 0 and np.random.rand() > 0.5:
             Wp = SFS[np.random.randint(AFS)]
         else:
             if len(SIS) > 0:
-                violations = np.sum(np.maximum(0, lower - SIS) + np.maximum(0, SIS - upper), axis=1)
-                Wp = SIS[np.argmin(violations)]
+                Wp = SIS[np.argmin(violations[violations > 0])]
             else:
                 # Si SIS está vacío, seleccionamos aleatoriamente un vector de la población
                 Wp = population[np.random.randint(NP)]
@@ -697,7 +683,7 @@ class BoundaryHandler:
             Wi[mask_lower] = lower[mask_lower] + np.random.rand(np.sum(mask_lower)) * (upper[mask_lower] - lower[mask_lower])
             Wi[mask_upper] = lower[mask_upper] + np.random.rand(np.sum(mask_upper)) * (upper[mask_upper] - lower[mask_upper])
             Wr[i] = Wi
-        
+
         Xc = (Wp + Wr.sum(axis=0)) / (K + 1)
 
         return Xc
@@ -1505,3 +1491,6 @@ class BoundaryHandler:
                 compressed_x = x
             compressed_X.append(compressed_x)
         return compressed_X
+    
+    
+   
