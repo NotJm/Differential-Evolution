@@ -4,7 +4,8 @@ from scipy.stats import ortho_group
 
 D = 10
 
-o = np.zeros(D)
+o = np.random.rand(D)
+
 
 class CEC2010_C01(Problem):
     

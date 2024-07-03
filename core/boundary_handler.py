@@ -1,7 +1,8 @@
-from typing import Callable
-from .algorithm import Algorithm
 import numpy as np
 import random
+from typing import Callable
+from .algorithm import Algorithm
+from sklearn.cluster import KMeans
 
 # TODO: Graficar con promedio y programar centroide, leer articulos relacionados, investigar 2008
 # TODO: 2008 y 2014 no existen articulos
@@ -657,7 +658,7 @@ class BoundaryHandler:
     #     return Xc
 
     """ 2019 Efren Juarez Centroid """
-    def centroid_method(X, population, lower, upper, K=3):
+    def centroid_method(X, population, lower, upper, K=1):
         """
         Implementación del método Centroid para manejo de límites usando numpy.
 
@@ -1234,3 +1235,273 @@ class BoundaryHandler:
         x_corrected = np.where(x_corrected > upper, upper - (x_corrected - upper) % (upper - lower), x_corrected)
         
         return x_corrected
+    
+    def ad_correction(x, population, lower, upper, iteration, max_iterations):
+        """
+        Método de corrección determinístico y estocástico de límites.
+
+        :param x: np.ndarray, Vector de la solución actual
+        :param population: np.ndarray, Población actual de soluciones
+        :param lower: np.ndarray, Límites inferiores para cada dimensión
+        :param upper: np.ndarray, Límites superiores para cada dimensión
+        :param iteration: int, Número de la iteración actual
+        :param max_iterations: int, Número máximo de iteraciones
+
+        :return: np.ndarray, Vector de la solución corregido
+        """
+        mean_population = np.mean(population, axis=0)
+        std_population = np.std(population, axis=0)
+
+        # Calcular la desviación normalizada y el valor de ajuste adaptativo
+        deviations = (x - mean_population) / (np.abs(x - mean_population) + 1e-10)
+        progress_ratio = iteration / max_iterations
+        adaptive_factor = (1 - progress_ratio) * 0.5 + progress_ratio * 1.5
+        adjustments = deviations * (np.minimum(np.abs(upper - mean_population), np.abs(lower - mean_population)) * adaptive_factor)
+
+        # Aplicar corrección determinística basada en desviación estándar
+        x_corrected = mean_population + adjustments
+        x_corrected = np.where(np.abs(x_corrected - mean_population) > std_population, mean_population + deviations * std_population, x_corrected)
+
+        # Aplicar reflexión si sigue fuera de los límites
+        x_corrected = np.where(x_corrected < lower, lower + (lower - x_corrected) % (upper - lower), x_corrected)
+        x_corrected = np.where(x_corrected > upper, upper - (x_corrected - upper) % (upper - lower), x_corrected)
+
+        # Añadir componente estocástico controlado
+        stochastic_component = np.random.uniform(-0.1, 0.1, size=x_corrected.shape) * (upper - lower)
+        x_corrected = np.clip(x_corrected + stochastic_component, lower, upper)
+
+        return x_corrected
+    
+    def cdebp(x, population, lower, upper, iteration, max_iterations):
+        """
+        Corrección Determinística y Estocástica Basada en la Población (CDEBP) a nivel vector.
+
+        :param x: np.ndarray, Vector de la solución actual
+        :param population: np.ndarray, Población actual de soluciones
+        :param lower: np.ndarray, Límites inferiores para cada dimensión
+        :param upper: np.ndarray, Límites superiores para cada dimensión
+        :param iteration: int, Número de la iteración actual
+        :param max_iterations: int, Número máximo de iteraciones
+
+        :return: np.ndarray, Vector de la solución corregido
+        """
+        # Seleccionar los mejores individuos de la población
+        best_individuals = population[np.argsort(np.linalg.norm(population, axis=1))[:int(len(population) * 0.2)]]
+        
+        # Calcular la media y desviación estándar de los mejores individuos
+        mean_population = np.mean(best_individuals, axis=0)
+        std_population = np.std(best_individuals, axis=0)
+        
+        # Calcular la desviación normalizada y el ajuste adaptativo
+        deviations = (x - mean_population) / (np.linalg.norm(x - mean_population) + 1e-10)
+        progress_ratio = iteration / max_iterations
+        adaptive_factor = (1 - progress_ratio) * 0.5 + progress_ratio * 1.5
+        adjustments = deviations * np.minimum(np.linalg.norm(upper - mean_population), np.linalg.norm(lower - mean_population)) * adaptive_factor
+        
+        # Aplicar la corrección adaptativa basada en la desviación estándar
+        x_corrected = mean_population + adjustments
+        x_corrected = np.where(np.linalg.norm(x_corrected - mean_population) > np.linalg.norm(std_population), mean_population + deviations * np.linalg.norm(std_population), x_corrected)
+        
+        # Aplicar reflexión si sigue fuera de los límites
+        x_corrected = np.where(x_corrected < lower, lower + (lower - x_corrected) % (upper - lower), x_corrected)
+        x_corrected = np.where(x_corrected > upper, upper - (x_corrected - upper) % (upper - lower), x_corrected)
+        
+        # Componente estocástica controlada
+        x_final = np.clip(x_corrected + np.random.uniform(-0.1, 0.1, size=x.shape) * (upper - lower), lower, upper)
+        
+        return x_final
+
+    @staticmethod
+    def cdebp_2(x, population, lower, upper, iteration, max_iterations, best_solution):
+        """
+        Corrección Determinística y Estocástica Basada en la Población (CDEBP) a nivel vector con componente evolutiva.
+
+        :param x: np.ndarray, Vector de la solución actual
+        :param population: np.ndarray, Población actual de soluciones
+        :param lower: np.ndarray, Límites inferiores para cada dimensión
+        :param upper: np.ndarray, Límites superiores para cada dimensión
+        :param iteration: int, Número de la iteración actual
+        :param max_iterations: int, Número máximo de iteraciones
+        :param best_solution: np.ndarray, Mejor solución actual en la población
+
+        :return: np.ndarray, Vector de la solución corregido
+        """
+        # Seleccionar los mejores individuos de la población
+        best_individuals = population[np.argsort(np.linalg.norm(population, axis=1))[:int(len(population) * 0.2)]]
+        
+        # Calcular la media y desviación estándar de los mejores individuos
+        mean_population = np.mean(best_individuals, axis=0)
+        std_population = np.std(best_individuals, axis=0)
+        
+        # Calcular la desviación normalizada y el ajuste adaptativo
+        deviations = (x - mean_population) / (np.linalg.norm(x - mean_population) + 1e-10)
+        progress_ratio = iteration / max_iterations
+        adaptive_factor = (1 - progress_ratio) * 0.5 + progress_ratio * 1.5
+        adjustments = deviations * np.minimum(np.linalg.norm(upper - mean_population), np.linalg.norm(lower - mean_population)) * adaptive_factor
+        
+        # Aplicar la corrección adaptativa basada en la desviación estándar
+        x_corrected = mean_population + adjustments
+        x_corrected = np.where(np.linalg.norm(x_corrected - mean_population) > np.linalg.norm(std_population), mean_population + deviations * np.linalg.norm(std_population), x_corrected)
+        
+        # Aplicar reflexión si sigue fuera de los límites
+        x_corrected = np.where(x_corrected < lower, lower + (lower - x_corrected) % (upper - lower), x_corrected)
+        x_corrected = np.where(x_corrected > upper, upper - (x_corrected - upper) % (upper - lower), x_corrected)
+        
+        # Componente evolutiva basada en el mejor individuo
+        alpha = np.random.uniform(0, 1, size=x.shape)
+        x_corrected = np.where(x_corrected < lower, alpha * lower + (1 - alpha) * best_solution, x_corrected)
+        x_corrected = np.where(x_corrected > upper, alpha * upper + (1 - alpha) * best_solution, x_corrected)
+        
+        # Componente estocástica controlada
+        x_final = np.clip(x_corrected + np.random.uniform(-0.1, 0.1, size=x.shape) * (upper - lower), lower, upper)
+        
+        return x_final
+    
+    @staticmethod 
+    def cdebp_vector_follow_best(x, population, lower, upper, iteration, max_iterations):
+        """
+        Corrección Determinística y Estocástica Basada en la Población (CDEBP) a nivel vector siguiendo al mejor individuo.
+
+        :param x: np.ndarray, Vector de la solución actual
+        :param population: np.ndarray, Población actual de soluciones
+        :param lower: np.ndarray, Límites inferiores para cada dimensión
+        :param upper: np.ndarray, Límites superiores para cada dimensión
+        :param iteration: int, Número de la iteración actual
+        :param max_iterations: int, Número máximo de iteraciones
+
+        :return: np.ndarray, Vector de la solución corregido
+        """
+        # Encontrar el mejor individuo en la población
+        best_solution = population[np.argmin(np.linalg.norm(population - x, axis=1))]
+        
+        # Calcular la desviación normalizada y el ajuste adaptativo
+        deviations = (x - best_solution) / (np.linalg.norm(x - best_solution) + 1e-10)
+        progress_ratio = iteration / max_iterations
+        adaptive_factor = (1 - progress_ratio) * 0.5 + progress_ratio * 1.5
+        adjustments = deviations * np.minimum(np.linalg.norm(upper - best_solution), np.linalg.norm(lower - best_solution)) * adaptive_factor
+        
+        # Aplicar la corrección adaptativa
+        x_corrected = best_solution + adjustments
+        
+        # Aplicar reflexión si sigue fuera de los límites
+        x_corrected = np.where(x_corrected < lower, lower + (lower - x_corrected) % (upper - lower), x_corrected)
+        x_corrected = np.where(x_corrected > upper, upper - (x_corrected - upper) % (upper - lower), x_corrected)
+        
+        # Componente estocástica controlada
+        x_final = np.clip(x_corrected + np.random.uniform(-0.1, 0.1, size=x.shape) * (upper - lower), lower, upper)
+        
+        return x_final
+
+    def cdebp_vector_follow_best_and_centroid(x, population, lower, upper, iteration, max_iterations):
+        """
+        Corrección Determinística y Estocástica Basada en la Población (CDEBP) a nivel vector siguiendo al mejor individuo y usando el centroide.
+
+        :param x: np.ndarray, Vector de la solución actual
+        :param population: np.ndarray, Población actual de soluciones
+        :param lower: np.ndarray, Límites inferiores para cada dimensión
+        :param upper: np.ndarray, Límites superiores para cada dimensión
+        :param iteration: int, Número de la iteración actual
+        :param max_iterations: int, Número máximo de iteraciones
+
+        :return: np.ndarray, Vector de la solución corregido
+        """
+        # Encontrar el mejor individuo en la población
+        best_solution = population[np.argmin(np.linalg.norm(population - x, axis=1))]
+        
+        # Calcular la desviación normalizada y el ajuste adaptativo
+        deviations = (x - best_solution) / (np.linalg.norm(x - best_solution) + 1e-10)
+        progress_ratio = iteration / max_iterations
+        adaptive_factor = (1 - progress_ratio) * 0.5 + progress_ratio * 1.5
+        adjustments = deviations * np.minimum(np.linalg.norm(upper - best_solution), np.linalg.norm(lower - best_solution)) * adaptive_factor
+        
+        # Aplicar la corrección adaptativa
+        x_corrected = best_solution + adjustments
+        
+        # Método de corrección basado en el centroide
+        K = 1  # Número de vectores aleatorios
+        D = len(lower)
+        random_vectors = np.array([lower + np.random.rand(D) * (upper - lower) for _ in range(K)])
+        centroid_vector = np.mean(np.vstack([best_solution, random_vectors]), axis=0)
+        centroid_vector = np.clip(centroid_vector, lower, upper)
+        
+        # Método de corrección de Andrea
+        R = (lower + upper) / 2
+        alpha = np.min(
+            [
+                np.where(x_corrected < lower, (R - lower) / (R - x_corrected), 1),
+                np.where(x_corrected > upper, (upper - R) / (x_corrected - R), 1),
+            ],
+            axis=0
+        )
+        x_corrected = alpha * x_corrected + (1 - alpha) * R
+        
+        # Aplicar reflexión si sigue fuera de los límites
+        x_corrected = np.where(x_corrected < lower, lower + (lower - x_corrected) % (upper - lower), x_corrected)
+        x_corrected = np.where(x_corrected > upper, upper - (x_corrected - upper) % (upper - lower), x_corrected)
+        
+        # Componente estocástica controlada
+        x_final = np.clip(x_corrected + np.random.uniform(-0.1, 0.1, size=x.shape) * (upper - lower), lower, upper)
+        
+        return x_final
+    
+
+    @staticmethod
+    def cdebp_advanced(x, population, lower, upper, iteration, max_iterations, n_clusters=3):
+        """
+        Corrección Determinística y Estocástica Basada en la Población (CDEBP) Avanzada.
+
+        :param x: np.ndarray, Vector de la solución actual
+        :param population: np.ndarray, Población actual de soluciones
+        :param lower: np.ndarray, Límites inferiores para cada dimensión
+        :param upper: np.ndarray, Límites superiores para cada dimensión
+        :param iteration: int, Número de la iteración actual
+        :param max_iterations: int, Número máximo de iteraciones
+        :param n_clusters: int, Número de clústeres para el análisis de la población
+
+        :return: np.ndarray, Vector de la solución corregido
+        """
+        # Dividir la población en clústeres
+        kmeans = KMeans(n_clusters=n_clusters, random_state=0).fit(population)
+        labels = kmeans.labels_
+        cluster_id = labels[np.argmin(np.linalg.norm(population - x, axis=1))]
+        cluster_population = population[labels == cluster_id]
+        
+        # Calcular la media y desviación estándar del clúster
+        mean_cluster = np.mean(cluster_population, axis=0)
+        std_cluster = np.std(cluster_population, axis=0)
+        
+        # Calcular la desviación normalizada y el valor de ajuste adaptativo
+        deviations = (x - mean_cluster) / (np.linalg.norm(x - mean_cluster) + 1e-10)
+        progress_ratio = iteration / max_iterations
+        adaptive_factor = (1 - progress_ratio) * 0.5 + progress_ratio * 1.5
+        adjustments = deviations * np.minimum(np.linalg.norm(upper - mean_cluster), np.linalg.norm(lower - mean_cluster)) * adaptive_factor
+        
+        # Aplicar corrección adaptativa basada en desviación estándar del clúster
+        x_corrected = mean_cluster + adjustments
+        x_corrected = np.where(np.linalg.norm(x_corrected - mean_cluster) > np.linalg.norm(std_cluster), mean_cluster + deviations * np.linalg.norm(std_cluster), x_corrected)
+        
+        # Aplicar reflexión si sigue fuera de los límites
+        x_corrected = np.where(x_corrected < lower, lower + (lower - x_corrected) % (upper - lower), x_corrected)
+        x_corrected = np.where(x_corrected > upper, upper - (x_corrected - upper) % (upper - lower), x_corrected)
+        
+        # Componente estocástica controlada
+        x_final = np.clip(x_corrected + np.random.uniform(-0.1, 0.1, size=x.shape) * (upper - lower), lower, upper)
+        
+        # Penalización dinámica para soluciones que salen del espacio frecuentemente
+        if any(x_final < lower) or any(x_final > upper):
+            penalty_factor = 1 + 0.1 * (iteration / max_iterations)
+            x_final = mean_cluster + (x_final - mean_cluster) * penalty_factor
+            x_final = np.clip(x_final, lower, upper)
+        
+        return x_final
+    
+    @staticmethod
+    def scalar_compression_method(X, lower_bounds, upper_bounds, alpha=0.5):
+        compressed_X = []
+        for x, l, u in zip(X, lower_bounds, upper_bounds):
+            if x < l or x > u:
+                compressed_x = l + ((x - l) * (u - l)) / (u - l + alpha * (abs(x - u) + abs(x - l)))
+            else:
+                compressed_x = x
+            compressed_X.append(compressed_x)
+        return compressed_X
