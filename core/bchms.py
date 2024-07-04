@@ -23,7 +23,19 @@ class BCHM:
         return x_projected
     
     @staticmethod
-    def random(upper, lower, x):
+    def random_component(upper, lower, x):
+        # Crear una máscara para identificar los elementos fuera de los límites
+        mask_lower = x < lower
+        mask_upper = x > upper
+        # Crear una copia de x para no modificar el original
+        corrected_x = np.copy(x)        
+        # Asignar valores aleatorios dentro de los límites solo a los elementos fuera de los límites
+        corrected_x[mask_lower] = np.random.uniform(lower[mask_lower], upper[mask_lower])
+        corrected_x[mask_upper] = np.random.uniform(lower[mask_upper], upper[mask_upper])        
+        return corrected_x
+    
+    @staticmethod
+    def random_all(upper, lower, x):
         return np.random.uniform(lower, upper, size=x.shape)
 
     @staticmethod
@@ -55,56 +67,27 @@ class BCHM:
         return adjusted_z
     
     @staticmethod
-    def centroid_method(X, population, lower, upper, SFS, SIS, violations , K=1):
-        NP, D = population.shape
-        
-    
-        AFS = len(SFS)
-        
-        if AFS > 0 and np.random.rand() > 0.5:
-            Wp = SFS[np.random.randint(AFS)]
+    def centroid(X, population, lower, upper, SFS, SIS, gbest_individual, K=1):
+        if len(SFS) > 0 and np.random.rand() > 0.5:
+            random_position_index = np.random.choice(SFS) # Elegir una posición aleatoria de SFS
+            Wp = population[random_position_index] # Obtener el individuo de la población en esa posición            
         else:
             if len(SIS) > 0:
-                Wp = SIS[np.argmin(violations[violations > 0])]
-            else:
-                Wp = population[np.random.randint(NP)]
+                Wp = gbest_individual
+            else:                
+                Wp = population[np.random.randint(population.shape[0])]
 
-        Wr = np.empty((K, D))
-        for i in range(K):
-            Wi = np.copy(X)
-            mask_lower = Wi < lower
-            mask_upper = Wi > upper
-            Wi[mask_lower] = lower[mask_lower] + np.random.rand(np.sum(mask_lower)) * (upper[mask_lower] - lower[mask_lower])
-            Wi[mask_upper] = lower[mask_upper] + np.random.rand(np.sum(mask_upper)) * (upper[mask_upper] - lower[mask_upper])
-            Wr[i] = Wi
+        Wr = [BCHM.random_component(upper, lower, X) for _ in range(K)]
 
-        Xc = (Wp + Wr.sum(axis=0)) / (K + 1)
+        Wr = np.array(Wr)
 
-        return Xc
+        sum_components = Wp + Wr.sum(axis=0)
 
-    def res_and_rand(X, F, bounds, i, max_resamples=3):
-        D = X.shape[1]  
-        NP = X.shape[0]  
-        lower, upper = bounds
+        result = sum_components / (K + 1)
 
-        no_res = 0
-        valid = False
-        while no_res < max_resamples * D and not valid:
-            indices = np.arange(NP)
-            indices = np.delete(indices, i)
-            r1, r2, r3 = np.random.choice(indices, 3, replace=False)
-
-            V = X[r1] + F * (X[r2] - X[r3])
-
-            valid = np.all((V >= lower) & (V <= upper))
-
-            no_res += 1
-
-        if not valid:
-            V = np.clip(V, lower, upper)
-
-        return V
+        return result
     
+
     @staticmethod
     def vector_wise_correction(upper, lower, x, method="midpoint"):
         if method == "midpoint":
@@ -161,7 +144,7 @@ class BCHM:
                 x[j] = upper[j] - alpha * (x[j] - upper[j]) + beta * (upper[j] - X_mejor[j])
         return x
         
-    def new_centroid_2024(X, population, lower, upper, K=1):
+    def centroid_repair(X, population, lower, upper, K=1):
         NP, D = population.shape
         
         SFS = population[np.all((population >= lower) & (population <= upper), axis=1)]

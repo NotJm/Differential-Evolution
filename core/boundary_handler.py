@@ -2,7 +2,7 @@ import numpy as np
 import random
 from typing import Callable
 from .algorithm import Algorithm
-from sklearn.cluster import KMeans
+# from sklearn.cluster import KMeans
 
 # TODO: Graficar con promedio y programar centroide, leer articulos relacionados, investigar 2008
 # TODO: 2008 y 2014 no existen articulos

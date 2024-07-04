@@ -2,7 +2,7 @@ import gc
 import pandas as pd
 import os
 import glob
-from core.old_differential_evolution import Differential_Evolution
+from core.differential_evolution import Differential_Evolution
 from core.constraints_functions import ConstriantsFunctionsHandler
 from utils.constants import EXECUTIONS
 from utils.utility import generate_random_filename
@@ -41,6 +41,7 @@ def execute_algorithm(
                 g_functions=problema.rest_g,
                 h_functions=problema.rest_h,
                 centroid_method=(constraint_name == "centroid"),
+                centroid_repair_method=(constraint_name == "centroid_repair"),
                 beta_method=(constraint_name == "beta"),
                 evolutionary_method=(constraint_name == "evolutionary"),
                 resrand_method=(constraint_name == "res&rand"),

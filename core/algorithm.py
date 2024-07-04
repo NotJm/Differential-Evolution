@@ -1,6 +1,7 @@
 from typing import Callable, Tuple, List
 from utils.constants import SIZE_POPULATION
 import numpy as np
+from typing import List
 
 class Algorithm:
     
@@ -15,8 +16,6 @@ class Algorithm:
 
         return population
 
-    def isValid(self, upper: List[float], lower: List[float], indiviual: np.ndarray) -> bool:
-        for u, i, l in zip(upper, indiviual, lower):
-            if not (l <= i <= u):
-                return False
-        return True
+    
+    def isValid(self, upper: List[float], lower: List[float], individual: np.ndarray) -> bool:
+        return np.all((individual >= lower) & (individual <= upper))

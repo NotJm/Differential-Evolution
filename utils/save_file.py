@@ -20,5 +20,6 @@ def save_results_to_csv_constraint(
 # ! Save
 def save_results_to_csv(results, directory, problem_prefix):
     df = pd.DataFrame(results)
+    ensure_directory_exists(directory)
     filepath = f"{directory}/{problem_prefix}.csv"
     df.to_csv(filepath, index=False)
