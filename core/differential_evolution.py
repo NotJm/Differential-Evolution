@@ -20,6 +20,7 @@ class Differential_Evolution(Algorithm):
         CR: float = 0.9,
         centroid_method: bool = False,
         centroid_repair_method: bool = False,
+        adaptive_centroid_method: bool = False,
         beta_method: bool = False,
         evolutionary_method: bool = False,
         resrand_method: bool = False,
@@ -29,6 +30,7 @@ class Differential_Evolution(Algorithm):
 
         self.centroid_method = centroid_method
         self.centroid_repair_method = centroid_repair_method
+        self.adaptive_centroid_method = adaptive_centroid_method
         self.beta_method = beta_method
         self.evolutionary_method = evolutionary_method
         self.resrand_method = resrand_method
@@ -191,6 +193,15 @@ class Differential_Evolution(Algorithm):
                             self.population,
                             self.lower,
                             self.upper,
+                        )
+                    elif self.adaptive_centroid_method:
+                        trial = self.bounds_constraints(
+                            trial,
+                            self.population,
+                            self.lower,
+                            self.upper,
+                            gen,
+                            GENERATIONS,
                         )
                     elif self.beta_method:
                         trial = self.bounds_constraints(

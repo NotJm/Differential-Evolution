@@ -11,7 +11,7 @@ class CEC2017_C01(Problem):
     SUPERIOR = np.array([100] * D)
     INFERIOR = np.array([-100] * D)
     
-    def __init__(self):
+    def __init__(self): 
         
         rest_h = []
         rest_g = [self.CEC2017_C01_g1]

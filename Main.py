@@ -4,7 +4,7 @@ from core.bchms import BCHM
 from functions.cec2020problems import *
 from functions.cec2006problems import *
 from functions.cec2017problems import *
-from functions.cec2010problems import *
+from functions.cec2010problems_update import *
 from functions.cec2006problems import *
 from utils.execute import execute_algorithm
 from utils.plotting import (
@@ -12,7 +12,7 @@ from utils.plotting import (
     plot_convergence_violations_all,
     plot_violations_boxplot_all,
     plot_fitness_boxplot_from_csvs,
-    plot_violations_boxplot_from_csvs
+    plot_violations_boxplot_from_csvs,
 )
 from utils.save_file import save_results_to_csv
 
@@ -53,12 +53,11 @@ def main(problems, bchms, directory, problem_prefix):
                 ]
             )
 
-            
             plot_violations_boxplot_all(
                 problem_name, all_violations_data, directory, problem_prefix
             )
             plot_fitness_boxplot_all(
-                problem_name, all_fitness_data , directory, problem_prefix
+                problem_name, all_fitness_data, directory, problem_prefix
             )
 
     results_df = pd.DataFrame(
@@ -76,20 +75,20 @@ def main(problems, bchms, directory, problem_prefix):
 
 if __name__ == "__main__":
     problems = {
-        # "C01": CEC2017_C01,
-        # "C02": CEC2017_C02,
-        # "C03": CEC2017_C03,
-        # "C04": CEC2017_C04,
-        # "C05": CEC2017_C05,
+        "C01": CEC2010_C01,
+        "C02": CEC2010_C02,
+        "C03": CEC2010_C03,
+        "C04": CEC2010_C04,
+        "C05": CEC2010_C05,
         # "C06": CEC2017_C06,
         # "C07": CEC2017_C07,
-        "C08": CEC2017_C08,
-        "C09": CEC2017_C09,
-        "C10": CEC2017_C10,
-        "C11": CEC2017_C11,
-        "C12": CEC2017_C12,
-        "C13": CEC2017_C13,
-        "C14": CEC2017_C14,
+        # "C08": CEC2017_C08,
+        # "C09": CEC2017_C09,
+        # "C10": CEC2017_C10,
+        # "C11": CEC2017_C11,
+        # "C12": CEC2017_C12,
+        # "C13": CEC2017_C13,
+        # "C14": CEC2017_C14,
         # "C15": CEC2017_C15,
         # "C16": CEC2017_C16,
         # "C17": CEC2017_C17,
@@ -107,20 +106,21 @@ if __name__ == "__main__":
 
     bchms = {
         "centroid_repair": BCHM.centroid_repair,
+        "adaptive_centroid": BCHM.adaptive_centroid,
         "ADS": BCHM.ADS,
+        "beta": BCHM.beta,
+        "boundary": BCHM.boundary,
         "centroid": BCHM.centroid,
+        "reflection": BCHM.reflection,
+        "random": BCHM.random_component,
         "res&rand": None,
         "evolutionary": BCHM.evolutionary,
-        "reflection": BCHM.reflection,
-        "boundary": BCHM.boundary,
-        "random": BCHM.random_component,
         "wrapping": BCHM.wrapping,
-        "beta": BCHM.beta,
         "vector_wise_correction": BCHM.vector_wise_correction,
     }
 
-    DIRECTORY = "mnt/data/cec2017"
-    PROBLEM_PREFIX = "CEC2017"
-    
+    DIRECTORY = "mnt/data/cec2010"
+    PROBLEM_PREFIX = "CEC2010"
+
     main(problems, bchms, DIRECTORY, PROBLEM_PREFIX)
-    # plot_fitness_boxplot_from_csvs(DIRECTORY, PROBLEM_PREFIX, "C02")
+    # plot_fitness_boxplot_from_csvs(DIRECTORY, PROBLEM_PREFIX, "C01", exclude=["boundary"])

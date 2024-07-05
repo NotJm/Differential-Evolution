@@ -305,7 +305,7 @@ class BoundaryHandler:
     """ 2012 Gandomi Evolutionary """
 
     @staticmethod
-    def gandomi_evolutionary(z, lb, ub, best_solution):
+    def evolutionary(z, lb, ub, best_solution):
         a = np.random.rand()
         b = np.random.rand()
 

@@ -52,19 +52,16 @@ class BCHM:
         return new_x
 
     @staticmethod
-    def evolutionary(z, lb, ub, x_b):
-        adjusted_z = np.copy(z)
+    def evolutionary(z, lb, ub, best_solution):
+        a = np.random.rand()
+        b = np.random.rand()
 
-        a = np.random.rand(len(z))
-        b = np.random.rand(len(z))
+        x = np.copy(z)
 
-        below_lb = z < lb
-        adjusted_z[below_lb] = a[below_lb] * lb[below_lb] + (1 - a[below_lb]) * x_b[below_lb]
+        x[z < lb] = a * lb[z < lb] + (1 - a) * best_solution[z < lb]
+        x[z > ub] = b * ub[z > ub] + (1 - b) * best_solution[z > ub]
 
-        above_ub = z > ub
-        adjusted_z[above_ub] = b[above_ub] * ub[above_ub] + (1 - b[above_ub]) * x_b[above_ub]
-
-        return adjusted_z
+        return x
     
     @staticmethod
     def centroid(X, population, lower, upper, SFS, SIS, gbest_individual, K=1):
@@ -169,6 +166,38 @@ class BCHM:
             Wi[mask_upper] = lower[mask_upper] + np.random.rand(np.sum(mask_upper)) * (upper[mask_upper] - lower[mask_upper])
             Wr[i] = Wi
         
+        Xc = (Wp + Wr.sum(axis=0)) / (K + 1)
+
+        return Xc
+    
+    def adaptive_centroid   (X, population, lower, upper, generation, max_generations):
+        NP, D = population.shape
+
+        # Selecciona soluciones factibles e infactibles
+        SFS = population[np.all((population >= lower) & (population <= upper), axis=1)]
+        SIS = population[np.any((population < lower) | (population > upper), axis=1)]
+        AFS = len(SFS)
+
+        K = max(1, int(np.ceil((max_generations - generation) / max_generations * 5)))
+
+        if AFS > 0 and np.random.rand() > 0.5:
+            Wp = SFS[np.random.randint(AFS)]
+        else:
+            if len(SIS) > 0:
+                violations = np.sum(np.maximum(0, lower - SIS) + np.maximum(0, SIS - upper), axis=1)
+                Wp = SIS[np.argmin(violations)]
+            else:
+                Wp = population[np.random.randint(NP)]
+
+        Wr = np.empty((K, D))
+        for i in range(K):
+            Wi = np.copy(X)
+            mask_lower = Wi < lower
+            mask_upper = Wi > upper
+            Wi[mask_lower] = lower[mask_lower] + np.random.rand(np.sum(mask_lower)) * (upper[mask_lower] - lower[mask_lower])
+            Wi[mask_upper] = lower[mask_upper] + np.random.rand(np.sum(mask_upper)) * (upper[mask_upper] - lower[mask_upper])
+            Wr[i] = Wi
+
         Xc = (Wp + Wr.sum(axis=0)) / (K + 1)
 
         return Xc

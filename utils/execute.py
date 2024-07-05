@@ -42,6 +42,7 @@ def execute_algorithm(
                 h_functions=problema.rest_h,
                 centroid_method=(constraint_name == "centroid"),
                 centroid_repair_method=(constraint_name == "centroid_repair"),
+                adaptive_centroid=(constraint_name == "adaptive_centroid"),
                 beta_method=(constraint_name == "beta"),
                 evolutionary_method=(constraint_name == "evolutionary"),
                 resrand_method=(constraint_name == "res&rand"),
@@ -59,7 +60,7 @@ def execute_algorithm(
             print(
                 f"Excepcion Encontrada: Ejecucion {_ + 1} | Problema {problem_name} del {problem_prefix} | BCHM {constraint_name}"
             )
-            print(f"Razon: {e}")
+            raise e
         finally:
             if algorithm is not None:
                 del algorithm
