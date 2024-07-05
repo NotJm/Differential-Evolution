@@ -42,7 +42,7 @@ def execute_algorithm(
                 h_functions=problema.rest_h,
                 centroid_method=(constraint_name == "centroid"),
                 centroid_repair_method=(constraint_name == "centroid_repair"),
-                adaptive_centroid=(constraint_name == "adaptive_centroid"),
+                adaptive_centroid_method=(constraint_name == "adaptive_centroid"),
                 beta_method=(constraint_name == "beta"),
                 evolutionary_method=(constraint_name == "evolutionary"),
                 resrand_method=(constraint_name == "res&rand"),

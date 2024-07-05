@@ -105,7 +105,7 @@ if __name__ == "__main__":
     }
 
     bchms = {
-        "centroid_repair": BCHM.centroid_repair,
+        # "centroid_repair": BCHM.centroid_repair,
         "adaptive_centroid": BCHM.adaptive_centroid,
         "ADS": BCHM.ADS,
         "beta": BCHM.beta,
