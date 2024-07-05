@@ -145,10 +145,9 @@ def plot_fitness_boxplot_from_csvs(directory, problem_prefix, problem_name, excl
     plt.ylabel("Fitness")
     plt.xticks(rotation=45)
     plt.grid(True)
-    exclude_str = ",".join(exclude)
-    # plt.savefig(
-    #     f"{directory}/{problem_prefix}_fitness_boxplot_{problem_name}_({exclude_str}).png"
-    # )
+    plt.savefig(
+        f"{directory}/{problem_prefix}_fitness_boxplot_{problem_name}.png"
+    )
     plt.show()
     plt.close()
 
@@ -188,9 +187,8 @@ def plot_violations_boxplot_from_csvs(directory, problem_prefix, problem_name, e
     plt.ylabel("Violations")
     plt.xticks(rotation=45)
     plt.grid(True)
-    exclude_str = ",".join(exclude)
     plt.savefig(
-        f"{directory}/{problem_prefix}_violations_boxplot_{problem_name}_({exclude_str}).png"
+        f"{directory}/{problem_prefix}_violations_boxplot_{problem_name}.png"
     )
     plt.show()
     plt.close()

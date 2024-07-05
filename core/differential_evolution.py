@@ -18,24 +18,26 @@ class Differential_Evolution(Algorithm):
         h_functions: List[Callable] = [],
         F: float = 0.7,
         CR: float = 0.9,
-        centroid_method: bool = False,
+        ADS: bool = False,
         centroid_repair_method: bool = False,
         adaptive_centroid_method: bool = False,
+        
+        centroid_method: bool = False,
         beta_method: bool = False,
         evolutionary_method: bool = False,
         resrand_method: bool = False,
-        ADS: bool = False,
-        ABB: bool = False,
     ):
 
-        self.centroid_method = centroid_method
         self.centroid_repair_method = centroid_repair_method
         self.adaptive_centroid_method = adaptive_centroid_method
+        self.ADS = ADS
+        
+        
+        
+        self.centroid_method = centroid_method
         self.beta_method = beta_method
         self.evolutionary_method = evolutionary_method
         self.resrand_method = resrand_method
-        self.ADS = ADS
-        self.ABB = ABB
 
         self.F = F
         self.CR = CR
@@ -70,7 +72,9 @@ class Differential_Evolution(Algorithm):
         self.SIS = np.where(self.violations > 0)[0]
 
     def _mutation_operator_(self, idx):
-        if not self.resrand_method:
+        if self.resrand_method:
+            return self.res_and_rand(idx)
+        else:
             index = np.arange(len(self.population))
             index = np.delete(index, idx)
 
@@ -83,8 +87,6 @@ class Differential_Evolution(Algorithm):
             mutado = X_r1 + self.F * (X_r2 - X_r3)
 
             return mutado
-        else:
-            return self.res_and_rand(idx)
 
     def res_and_rand(self, idx, max_resamples=3):
         NP, D = self.population.shape
@@ -104,6 +106,7 @@ class Differential_Evolution(Algorithm):
             BCHM.random_component(self.upper, self.lower, V)
 
         return V
+    
 
     def _crossover_operator_(self, target, mutant):
         dimensions = len(target)

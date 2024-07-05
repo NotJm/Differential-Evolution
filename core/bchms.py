@@ -1,4 +1,5 @@
 import numpy as np
+from .algorithm import Algorithm
 
 class BCHM:
     
