@@ -18,10 +18,8 @@ class Differential_Evolution(Algorithm):
         h_functions: List[Callable] = [],
         F: float = 0.7,
         CR: float = 0.9,
-        ADS: bool = False,
         centroid_repair_method: bool = False,
-        adaptive_centroid_method: bool = False,
-        
+        evo_cen: bool = False,
         centroid_method: bool = False,
         beta_method: bool = False,
         evolutionary_method: bool = False,
@@ -29,11 +27,7 @@ class Differential_Evolution(Algorithm):
     ):
 
         self.centroid_repair_method = centroid_repair_method
-        self.adaptive_centroid_method = adaptive_centroid_method
-        self.ADS = ADS
-        
-        
-        
+        self.evo_cen = evo_cen
         self.centroid_method = centroid_method
         self.beta_method = beta_method
         self.evolutionary_method = evolutionary_method
@@ -46,6 +40,8 @@ class Differential_Evolution(Algorithm):
         self.h_functions = h_functions
         self.SFS = []
         self.SIS = []
+        self.SFSc = []
+        self.SISc = []
 
         self.population = self.generate(self.upper, self.lower)
         self.fitness = np.zeros(SIZE_POPULATION)
@@ -70,6 +66,10 @@ class Differential_Evolution(Algorithm):
     def _compute_SFS_SIS_(self):
         self.SFS = np.where(self.violations == 0)[0]
         self.SIS = np.where(self.violations > 0)[0]
+    
+    def _compute_centroid_repair_SFS_SIS_(self):
+        self.SFSc = np.where(np.all((self.population >= self.lower) & (self.population <= self.upper), axis=1))[0]
+        self.SISc = np.where(np.any((self.population < self.lower) | (self.population > self.upper), axis=1))[0]
 
     def _mutation_operator_(self, idx):
         if self.resrand_method:
@@ -173,6 +173,7 @@ class Differential_Evolution(Algorithm):
         for gen in tqdm(range(GENERATIONS), desc="Evolucionando"):
 
             self._compute_SFS_SIS_()
+            self._compute_centroid_repair_SFS_SIS_()
 
             for i in range(SIZE_POPULATION):
                 objective = self.population[i]
@@ -197,15 +198,6 @@ class Differential_Evolution(Algorithm):
                             self.lower,
                             self.upper,
                         )
-                    elif self.adaptive_centroid_method:
-                        trial = self.bounds_constraints(
-                            trial,
-                            self.population,
-                            self.lower,
-                            self.upper,
-                            gen,
-                            GENERATIONS,
-                        )
                     elif self.beta_method:
                         trial = self.bounds_constraints(
                             trial, self.lower, self.upper, self.population
@@ -214,18 +206,19 @@ class Differential_Evolution(Algorithm):
                         trial = self.bounds_constraints(
                             trial, self.lower, self.upper, self.gbest_individual
                         )
-                    elif self.ADS:
-                        trial = self.bounds_constraints(
-                            trial,
-                            self.lower,
-                            self.upper,
-                            self.gbest_individual,
-                            gen,
-                            GENERATIONS,
-                        )
                     elif self.resrand_method:
                         ...
-                    else:
+                    elif self.evo_cen:
+                        trial = self.bounds_constraints(
+                            trial,
+                            self.population,
+                            self.lower,
+                            self.upper,
+                            self.SIS,
+                            self.SFS,
+                            self.gbest_individual
+                        )     
+                    else: 
                         trial = self.bounds_constraints(self.upper, self.lower, trial)
 
                 self._selection_operator_(i, trial)

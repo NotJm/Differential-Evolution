@@ -24,7 +24,6 @@ def execute_algorithm(
     problema = problem_class()
     fitness_data = []
     violations_data = []
-    convergence_fitness_data = []
     convergence_violations_data = []
 
     for _ in range(EXECUTIONS):
@@ -42,11 +41,10 @@ def execute_algorithm(
                 h_functions=problema.rest_h,
                 centroid_method=(constraint_name == "centroid"),
                 centroid_repair_method=(constraint_name == "centroid_repair"),
-                adaptive_centroid_method=(constraint_name == "adaptive_centroid"),
+                evo_cen=(constraint_name == "TPC"),
                 beta_method=(constraint_name == "beta"),
                 evolutionary_method=(constraint_name == "evolutionary"),
                 resrand_method=(constraint_name == "res&rand"),
-                ADS=(constraint_name == "ADS"),
             )
 
             # No mostrar datos
@@ -80,59 +78,9 @@ def execute_algorithm(
         problem_prefix,
     )
 
-
     return (
         fitness_data,
         violations_data,
         convergence_violations_data,
         factible_fitness_data,
     )
-
-
-
-def calculate_average_violations(root_folder, problem_prefix):
-    average_violations = {}
-
-    # Iterar sobre todas las restricciones (subcarpetas en root_folder)
-    for restriction_folder in glob.glob(os.path.join(root_folder, "*")):
-        if os.path.isdir(restriction_folder):
-            restriction_name = os.path.basename(restriction_folder)
-            violation_counts = []
-
-            # Iterar sobre todos los archivos CSV dentro de la carpeta de restricción
-            for csv_file in glob.glob(
-                os.path.join(restriction_folder, f"{problem_prefix}*.csv")
-            ):
-                df = pd.read_csv(csv_file)
-                # Obtener las infracciones y agregarlas a la lista
-                violation_counts.extend(df["Violations"])
-
-            if violation_counts:
-                # Calcular el promedio de infracciones
-                average_violations[restriction_name] = sum(violation_counts) / len(
-                    violation_counts
-                )
-            else:
-                average_violations[restriction_name] = 0
-
-    return average_violations
-
-
-def generate_summary_xlsx(root_folder, problems, output_file):
-    summary_data = []
-
-    for problem_prefix in problems:
-        avg_violations = calculate_average_violations(root_folder, problem_prefix)
-        avg_violations["Problema"] = problem_prefix
-        summary_data.append(avg_violations)
-
-    # Crear un DataFrame de los datos resumidos
-    summary_df = pd.DataFrame(summary_data)
-    # Reordenar columnas para que 'Problema' sea la primera columna
-    columns_order = ["Problema"] + [
-        col for col in summary_df.columns if col != "Problema"
-    ]
-    summary_df = summary_df[columns_order]
-    # Guardar el DataFrame en un archivo Excel
-    summary_df.to_csv(output_file, index=False)
-    print(f"Archivo Excel generado: {output_file}")

@@ -1,5 +1,4 @@
 import numpy as np
-from .algorithm import Algorithm
 
 class BCHM:
     
@@ -40,7 +39,7 @@ class BCHM:
         return np.random.uniform(lower, upper, size=x.shape)
 
     @staticmethod
-    def wrapping(upper, lower, x) -> np.ndarray:
+    def wrapping(upper, lower, x):
         range_width = abs(upper - lower)
         new_x = np.copy(x)
 
@@ -85,9 +84,8 @@ class BCHM:
 
         return result
     
-
     @staticmethod
-    def vector_wise_correction(upper, lower, x, method="midpoint"):
+    def vector_wise_correction(x, upper, lower, method="midpoint"):
         if method == "midpoint":
             R = (lower + upper) / 2
         else:
@@ -102,6 +100,7 @@ class BCHM:
         )
         return alpha * x + (1 - alpha) * R
     
+    @staticmethod
     def beta(individual, lower_bound, upper_bound, population):
         corrected_individual = np.copy(individual)
         population_mean = np.mean(population, axis=0)
@@ -130,18 +129,7 @@ class BCHM:
         
         return corrected_individual
 
-
-    @staticmethod
-    def ADS(x, lower, upper, X_mejor, iter, max_iter, alpha_min=0.1, alpha_max=0.9, beta_min=0.1, beta_max=0.9):
-        for j in range(len(x)):
-            alpha = alpha_min + (alpha_max - alpha_min) * (iter / max_iter)**2
-            beta = beta_min + (beta_max - beta_min) * (1 - iter / max_iter)**2
-            if x[j] < lower[j]:
-                x[j] = lower[j] + alpha * (lower[j] - x[j]) + beta * (X_mejor[j] - lower[j])
-            elif x[j] > upper[j]:
-                x[j] = upper[j] - alpha * (x[j] - upper[j]) + beta * (upper[j] - X_mejor[j])
-        return x
-        
+    @staticmethod    
     def centroid_repair(X, population, lower, upper, K=1):
         NP, D = population.shape
         
@@ -171,34 +159,24 @@ class BCHM:
 
         return Xc
     
-    def adaptive_centroid   (X, population, lower, upper, generation, max_generations):
-        NP, D = population.shape
-
-        # Selecciona soluciones factibles e infactibles
-        SFS = population[np.all((population >= lower) & (population <= upper), axis=1)]
-        SIS = population[np.any((population < lower) | (population > upper), axis=1)]
-        AFS = len(SFS)
-
-        K = max(1, int(np.ceil((max_generations - generation) / max_generations * 5)))
-
-        if AFS > 0 and np.random.rand() > 0.5:
-            Wp = SFS[np.random.randint(AFS)]
-        else:
-            if len(SIS) > 0:
-                violations = np.sum(np.maximum(0, lower - SIS) + np.maximum(0, SIS - upper), axis=1)
-                Wp = SIS[np.argmin(violations)]
-            else:
-                Wp = population[np.random.randint(NP)]
-
-        Wr = np.empty((K, D))
-        for i in range(K):
-            Wi = np.copy(X)
-            mask_lower = Wi < lower
-            mask_upper = Wi > upper
-            Wi[mask_lower] = lower[mask_lower] + np.random.rand(np.sum(mask_lower)) * (upper[mask_lower] - lower[mask_lower])
-            Wi[mask_upper] = lower[mask_upper] + np.random.rand(np.sum(mask_upper)) * (upper[mask_upper] - lower[mask_upper])
-            Wr[i] = Wi
-
-        Xc = (Wp + Wr.sum(axis=0)) / (K + 1)
-
-        return Xc
+    @staticmethod
+    def evo_cen(x, population, lower, upper, SIS, SFS, gbest_individual, K=1):
+        x_evo = BCHM.evolutionary(x, lower, upper, gbest_individual)
+        
+        x_cen = BCHM.centroid(x_evo, population, lower, upper, SFS, SIS, gbest_individual, K)
+        
+        return x_cen
+    
+    @staticmethod
+    def evo_cen_beta(x, population, lower, upper, SIS, SFS, gbest_individual, K=1):
+        # Aplicar la corrección evolutiva
+        x_evo = BCHM.evolutionary(x, lower, upper, gbest_individual)
+        
+        # Aplicar la corrección por centrado
+        x_cen = BCHM.centroid(x_evo, population, lower, upper, SFS, SIS, gbest_individual, K)
+        
+        # Aplicar la corrección Beta
+        x_final = BCHM.beta(x_cen, lower, upper, population)
+        
+        return x_final
+    

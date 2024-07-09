@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import os
 import pandas as pd
-from utils.utility import ensure_directory_exists
+from utils.utility import ensure_directory_exists, generate_random_filename
 
 def plot_convergence_fitness(
     problem_name, constraint_name, convergence_fitness_data, directory, problem_prefix
@@ -113,6 +113,7 @@ def plot_fitness_boxplot_all(
     plt.close()
     
 def plot_fitness_boxplot_from_csvs(directory, problem_prefix, problem_name, exclude=[]):
+    
     fitness_data = {}
     for root, dirs, files in os.walk(directory):
         for file in files:
@@ -145,14 +146,18 @@ def plot_fitness_boxplot_from_csvs(directory, problem_prefix, problem_name, excl
     plt.ylabel("Fitness")
     plt.xticks(rotation=45)
     plt.grid(True)
+    directory = f"{directory}/graphics/custom/fitness"
+    ensure_directory_exists(directory)
     plt.savefig(
-        f"{directory}/{problem_prefix}_fitness_boxplot_{problem_name}.png"
+        f"{directory}/{problem_prefix}_fitness_boxplot_{problem_name}_{generate_random_filename()}.png"
     )
     plt.show()
     plt.close()
 
 
 def plot_violations_boxplot_from_csvs(directory, problem_prefix, problem_name, exclude=[]):
+
+    
     violations_data = {}
     for root, dirs, files in os.walk(directory):
         for file in files:
@@ -187,8 +192,10 @@ def plot_violations_boxplot_from_csvs(directory, problem_prefix, problem_name, e
     plt.ylabel("Violations")
     plt.xticks(rotation=45)
     plt.grid(True)
+    directory = f"{directory}/graphics/custom/violations"
+    ensure_directory_exists(directory)
     plt.savefig(
-        f"{directory}/{problem_prefix}_violations_boxplot_{problem_name}.png"
+        f"{directory}/{problem_prefix}_violations_boxplot_{problem_name}_{generate_random_filename()}.png"
     )
     plt.show()
     plt.close()
