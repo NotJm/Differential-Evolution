@@ -1,6 +1,4 @@
 import pandas as pd
-import smop.main
-from core.bchms import BCHM
 from functions.cec2020problems import *
 from functions.cec2006problems import *
 from functions.cec2017problems_update import *
@@ -59,13 +57,6 @@ def main(problems, bchms, directory, problem_prefix):
                 ]
             )
 
-            plot_violations_boxplot_all(
-                problem_name, all_violations_data, directory, problem_prefix
-            )
-            plot_fitness_boxplot_all(
-                problem_name, all_fitness_data, directory, problem_prefix
-            )
-
     results_df = pd.DataFrame(
         results,
         columns=[
@@ -76,7 +67,7 @@ def main(problems, bchms, directory, problem_prefix):
         ],
     )
 
-    save_results_to_csv(results_df, directory, problem_prefix)
+    # save_results_to_csv(results_df, directory, problem_prefix)
 
 
 if __name__ == "__main__":
@@ -84,109 +75,51 @@ if __name__ == "__main__":
     DIRECTORY = "mnt/data/cec2017"
     PROBLEM_PREFIX = "CEC2017"
 
-    problems = {
-        "C01": CEC2017_C01,
-        "C02": CEC2017_C02,
-        "C03": CEC2017_C03,
-        "C04": CEC2017_C04,
-        "C05": CEC2017_C05,
+    PROBLEMS = {
+        "CEC2017-1": CEC2017_C01,
+        "CEC2017-2": CEC2017_C02,
+        "CEC2017-3": CEC2017_C03,
+        "CEC2017-4": CEC2017_C04,
+        "CEC2017-5": CEC2017_C05,
+        "CEC2017-6": CEC2017_C06,
+        "CEC2017-7": CEC2017_C07,
+        "CEC2017-8": CEC2017_C08,
+        "CEC2017-9": CEC2017_C09,
+        "CEC2017-10": CEC2017_C10,
+        "CEC2017-11": CEC2017_C11,
+        "CEC2017-12": CEC2017_C12,
+        "CEC2017-13": CEC2017_C13,
+        "CEC2017-14": CEC2017_C14,
+        # "C15": CEC2017_C15,
+        # "C16": CEC2017_C16,
+        # "C17": CEC2017_C17,
+        # "C18": CEC2017_C18,
+        # "C19": CEC2017_C19,
+        # "C20": CEC2017_C20,
+        # "C21": CEC2017_C21,
+        # "C22": CEC2017_C22,
+        # "C23": CEC2017_C23,
+        # "C24": CEC2017_C24,
+        # "C25": CEC2017_C25,
+        # "C26": CEC2017_C26,
+        # "C27": CEC2017_C27,
+        # "C28": CEC2017_C28,
     }
+    import csv
+    with open('Experiment.csv', 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(['BCHM', 'Diversidad', 'Porcentaje de Factibilidad', 'Porcentaje Evaluaciones Realizadas', 'Mejor', 'Problema'])
 
-    # 5, 8, 17
+    BCHM = {"dataset": None}
 
-    bchms = {
-        "TPC": BCHM.evo_cen_beta,
-        # "centroid": BCHM.centroid,
-        # "res&rand": None,
-        # "beta": BCHM.beta,
-        # "boundary": BCHM.boundary,
-        # "reflection": BCHM.reflection,
-        # "random": BCHM.random_component,
-        # "evolutionary": BCHM.evolutionary,
-        # "wrapping": BCHM.wrapping,
-        # "vector_wise_correction": BCHM.vector_wise_correction,
-    }
+    # EXCLUDE = ["evo&cen", "TPC"]    
 
-    exclude = [
-        # "boundary",
-        # "beta",
-        # "centroid",
-        # "vector_wise_correction",
-        # "reflection",
-        # "evolutionary",
-        # "wrapping",
-        # "random",
-        # "res&rand",
-    ]
+    # CURRENT_PROBLEM = "C13"
 
-    main(problems, bchms, DIRECTORY, PROBLEM_PREFIX)
+    main(PROBLEMS, BCHM, DIRECTORY, PROBLEM_PREFIX)
 
-    # plot_fitness_boxplot_from_csvs(DIRECTORY, PROBLEM_PREFIX, "C22", exclude)
-    # plot_violations_boxplot_from_csvs(DIRECTORY, PROBLEM_PREFIX, "C17", exclude)
+    # plot_fitness_boxplot_from_csvs(DIRECTORY, PROBLEM_PREFIX, CURRENT_PROBLEM, EXCLUDE)
 
-    # generate_summary(DIRECTORY, "CEC2017.csv")
-    # generate_summary_violations(
-    #     DIRECTORY, "CEC2017violations.csv", 
-    #     ["C06",
-    #      "C07",
-    #      "C08",
-    #      "C09",
-    #      "C10",
-    #      "C11",
-    #      "C12",
-    #      "C14",
-    #      "C15",
-    #      "C16",
-    #      "C17",
-    #      "C18",
-    #      "C23",
-    #      "C24",
-    #     ]
-    # )
+    # plot_fitness_boxplot_from_csvs(DIRECTORY, PROBLEM_PREFIX, "C08", exclude)
 
-    # # # adaptive_results(f"CEC2017.csv", "prev2CEC2017.csv")
-    # adaptive_results_violations("CEC2017violations.csv", "prevCEC2017violations.csv")
-    
-    # import numpy as np
-    # import matplotlib.pyplot as plt
-
-    # # Valores de los límites inferiores y superiores
-    # lower = np.array([0, 0])
-    # upper = np.array([5, 5])
-
-    # # Coordenadas de los puntos relevantes
-    # x = np.array([-1, 6])  # Solución inicial fuera de los límites
-    # best_solution = np.array([2, 3])
-    # x_evo = np.array([0.8, 3.6])  # Solución ajustada
-    # x_cen = np.array([0.9, 2.8])  # Solución centrada
-
-    # # Crear la figura y los ejes
-    # fig, ax = plt.subplots()
-
-    # # Dibujar el espacio de búsqueda
-    # rect = plt.Rectangle(lower, upper[0] - lower[0], upper[1] - lower[1], edgecolor='black', facecolor='none')
-    # ax.add_patch(rect)
-
-    # # Dibujar los puntos relevantes
-    # ax.plot(x[0], x[1], 'ro', label='x (Inicial)')
-    # ax.plot(x_evo[0], x_evo[1], 'bo', label='x_evo')
-    # ax.plot(x_cen[0], x_cen[1], 'go', label='x_cen')
-
-    # # Anotaciones para los puntos
-    # ax.annotate('x (Inicial)', xy=(x[0], x[1]), xytext=(x[0]-1.5, x[1]+0.5),
-    #             arrowprops=dict(facecolor='black', shrink=0.05))
-    # ax.annotate('x_evo', xy=(x_evo[0], x_evo[1]), xytext=(x_evo[0]+0.2, x_evo[1]-1),
-    #             arrowprops=dict(facecolor='blue', shrink=0.05))
-    # ax.annotate('x_cen', xy=(x_cen[0], x_cen[1]), xytext=(x_cen[0]-1, x_cen[1]-0.5),
-    #             arrowprops=dict(facecolor='green', shrink=0.05))
-
-    # # Configuración del gráfico
-    # ax.set_xlim(-2, 7)
-    # ax.set_ylim(-2, 7)
-    # ax.set_xlabel('Dimensión 1')
-    # ax.set_ylabel('Dimensión 2')
-    # ax.set_title('Espacio de Búsqueda y Corrección del Individuo')
-    # ax.legend()
-    # plt.grid(True)
-    # plt.show()
-
+    # generate_summary_for_constraint(DIRECTORY, "CEC2017MulyWeight", "MultyWeight")

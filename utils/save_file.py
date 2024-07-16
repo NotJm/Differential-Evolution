@@ -91,6 +91,46 @@ def generate_summary(base_dir, output_path):
     
     final_df.to_csv(output_path, index=False)
     
+def generate_summary_for_constraint(base_dir, output_path, constriants):
+    final_data = []
+
+    for restriction in os.listdir(base_dir):
+        restriction_dir = os.path.join(base_dir, restriction)
+        if os.path.isdir(restriction_dir):
+            for file in os.listdir(restriction_dir):
+                if file.endswith('.csv'):
+                    file_path = os.path.join(restriction_dir, file)
+                    try:
+                        df = pd.read_csv(file_path)
+                        
+                        # Verifica que las columnas necesarias estén en el DataFrame
+                        if 'Fitness' in df.columns and 'Violations' in df.columns:
+                            feasible_df = df[df['Violations'] == 0]
+                            
+                            avg_fitness = feasible_df['Fitness'].mean()
+                            
+                            feasible_executions = feasible_df.shape[0]
+                            
+                            constriant = file.split('_')[2]
+                            
+                            problem = file.split('_')[1]
+                            
+                            # Procesa solo los problemas especificados en la lista
+                            if constriants and constriant not in constriants:
+                                continue
+                            
+                            final_data.append([problem, restriction, avg_fitness, feasible_executions])
+                        else:
+                            print(f"Skipping {file_path} as it does not contain required columns.")
+                    except Exception as e:
+                        print(f"Skipping {file_path} due to error: {e}")
+
+    final_df = pd.DataFrame(final_data, columns=['Problema', 'Restricción', 'Fitness Promedio', 'Ejecuciones Factibles'])
+    
+    final_df = final_df.sort_values(by=['Problema'])
+    
+    final_df.to_csv(output_path, index=False)
+    
 def generate_summary_for_problem(base_dir, output_path, problems=[]):
     final_data = []
 

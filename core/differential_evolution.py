@@ -1,37 +1,27 @@
+import numpy as np
+import csv
 from typing import Callable, Tuple, List
 from .algorithm import Algorithm
 from .constraints_functions import ConstriantsFunctionsHandler
 from .bchms import BCHM
 from utils.constants import SIZE_POPULATION, GENERATIONS
 from tqdm import tqdm
-import numpy as np
 
 
 class Differential_Evolution(Algorithm):
+
     def __init__(
         self,
+        problem,
         objective_function: Callable,
         constraints_functions: Callable,
-        bounds_constraints: Callable,
         bounds: Tuple[List, List] = ([], []),
         g_functions: List[Callable] = [],
         h_functions: List[Callable] = [],
         F: float = 0.7,
         CR: float = 0.9,
-        centroid_repair_method: bool = False,
-        evo_cen: bool = False,
-        centroid_method: bool = False,
-        beta_method: bool = False,
-        evolutionary_method: bool = False,
-        resrand_method: bool = False,
     ):
-
-        self.centroid_repair_method = centroid_repair_method
-        self.evo_cen = evo_cen
-        self.centroid_method = centroid_method
-        self.beta_method = beta_method
-        self.evolutionary_method = evolutionary_method
-        self.resrand_method = resrand_method
+        self.problem = problem
 
         self.F = F
         self.CR = CR
@@ -40,18 +30,68 @@ class Differential_Evolution(Algorithm):
         self.h_functions = h_functions
         self.SFS = []
         self.SIS = []
-        self.SFSc = []
-        self.SISc = []
 
         self.population = self.generate(self.upper, self.lower)
         self.fitness = np.zeros(SIZE_POPULATION)
         self.violations = np.zeros(SIZE_POPULATION)
         self.objective_function = objective_function
         self.constraints_functions = constraints_functions
-        self.bounds_constraints = bounds_constraints
         self._compute_fitness_and_violations_()
 
         self._get_gbest_pobulation_zero_()
+
+        # Crear archivo CSV y escribir encabezados
+        self.csv_file = "Experiment.csv"
+
+    def _select_method_bounds_constriants_(self):
+        BCHMS = [
+            "random_all",
+            "random_component",
+            "boundary",
+            "reflection",
+            "wrapping",
+            "centroid",
+            "evolutionary",
+            "beta",
+            "vector_wise_correction",
+            "res&rand",
+        ]
+
+        method = np.random.choice(BCHMS)
+
+        return method
+
+    def _bounds_constraints_(self, method, trial):
+        if method == "random_all":
+            trial = BCHM.random_all(self.upper, self.lower, trial)
+        elif method == "random_component":
+            trial = BCHM.random_component(self.upper, self.lower, trial)
+        elif method == "boundary":
+            trial = BCHM.boundary(self.upper, self.lower, trial)
+        elif method == "reflection":
+            trial = BCHM.reflection(self.upper, self.lower, trial)
+        elif method == "wrapping":
+            trial = BCHM.wrapping(self.upper, self.lower, trial)
+        elif method == "centroid":
+            trial = BCHM.centroid(
+                trial,
+                self.population,
+                self.lower,
+                self.upper,
+                self.SFS,
+                self.SIS,
+                self.gbest_individual,
+            )
+        elif method == "evolutionary":
+            trial = BCHM.evolutionary(
+                trial, self.lower, self.upper, self.gbest_individual
+            )
+        elif method == "beta":
+            trial = BCHM.beta(trial, self.lower, self.upper, self.population)
+        elif method == "vector_wise_correction":
+            trial = BCHM.vector_wise_correction(trial, self.upper, self.lower)
+
+        return trial, method
 
     def _compute_fitness_and_violations_(self):
         for index, individual in enumerate(self.population):
@@ -66,27 +106,60 @@ class Differential_Evolution(Algorithm):
     def _compute_SFS_SIS_(self):
         self.SFS = np.where(self.violations == 0)[0]
         self.SIS = np.where(self.violations > 0)[0]
-    
-    def _compute_centroid_repair_SFS_SIS_(self):
-        self.SFSc = np.where(np.all((self.population >= self.lower) & (self.population <= self.upper), axis=1))[0]
-        self.SISc = np.where(np.any((self.population < self.lower) | (self.population > self.upper), axis=1))[0]
+
+    def _compute_diversity_(self):
+        centroid = np.mean(self.population, axis=0)
+
+        distances = np.linalg.norm(self.population - centroid, axis=1)
+
+        std_deviation_distances = np.std(distances)
+
+        return std_deviation_distances
+
+    def _compute_percentage_factibility_(self):
+        num_factible = np.where(self.violations == 0)[0]
+        try:
+            percentage_factibility = len(num_factible) / SIZE_POPULATION
+            return percentage_factibility
+        except ZeroDivisionError:
+            return 0
+
+    def _compute_percentage_generation_(self, gen):
+        percentage_generation = gen / GENERATIONS
+        return percentage_generation
+
+    def _compare_objective_with_trial_(self, objective, trial):
+        trial_fitness = self.objective_function(trial)
+        trial_violations = ConstriantsFunctionsHandler.sum_of_violations(
+            self.g_functions, self.h_functions, trial
+        )
+
+        objective_fitness = self.objective_function(objective)
+        objective_violations = ConstriantsFunctionsHandler.sum_of_violations(
+            self.g_functions, self.h_functions, objective
+        )
+
+        if self.constraints_functions(
+            objective_fitness, objective_violations, trial_fitness, trial_violations
+        ):
+            return 1
+        else:
+            return 0
 
     def _mutation_operator_(self, idx):
-        if self.resrand_method:
-            return self.res_and_rand(idx)
-        else:
-            index = np.arange(len(self.population))
-            index = np.delete(index, idx)
+        index = np.arange(len(self.population))
+        index = np.delete(index, idx)
 
-            r1, r2, r3 = np.random.choice(index, 3, replace=False)
+        r1, r2, r3 = np.random.choice(index, 3, replace=False)
 
-            X_r1 = self.population[r1]
-            X_r2 = self.population[r2]
-            X_r3 = self.population[r3]
+        X_r1 = self.population[r1]
+        X_r2 = self.population[r2]
+        X_r3 = self.population[r3]
 
-            mutado = X_r1 + self.F * (X_r2 - X_r3)
+        mutado = X_r1 + self.F * (X_r2 - X_r3)
 
-            return mutado
+        return mutado
+           
 
     def res_and_rand(self, idx, max_resamples=3):
         NP, D = self.population.shape
@@ -97,16 +170,17 @@ class Differential_Evolution(Algorithm):
             indices = np.delete(indices, idx)
             r1, r2, r3 = np.random.choice(indices, 3, replace=False)
 
-            V = self.population[r1] + self.F * (self.population[r2] - self.population[r3])
+            V = self.population[r1] + self.F * (
+                self.population[r2] - self.population[r3]
+            )
 
             valid = self.isValid(self.upper, self.lower, V)
             no_res += 1
 
         if not valid:
-            BCHM.random_component(self.upper, self.lower, V)
+            V = BCHM.random_component(self.upper, self.lower, V)
 
         return V
-    
 
     def _crossover_operator_(self, target, mutant):
         dimensions = len(target)
@@ -138,11 +212,11 @@ class Differential_Evolution(Algorithm):
             self.population[idx] = trial
 
     def _get_gbest_pobulation_zero_(self):
-        position_initial = 0
+        gbest_position_initial = 0
 
-        self.gbest_fitness = self.fitness[position_initial]
-        self.gbest_violation = self.violations[position_initial]
-        self.gbest_individual = self.population[position_initial]
+        self.gbest_fitness = self.fitness[gbest_position_initial]
+        self.gbest_violation = self.violations[gbest_position_initial]
+        self.gbest_individual = self.population[gbest_position_initial]
 
         self.update_position_gbest_population()
 
@@ -161,69 +235,80 @@ class Differential_Evolution(Algorithm):
                 self.gbest_violation = current_violation
                 self.gbest_individual = self.population[idx]
 
-    def report(self):
+    def report(self, method, winner, diversity, percentage_factibility):
         print("================================")
+        print("Selected Method:", method)
         print("Optimal Solution")
         print("Individual:", self.gbest_individual)
+        print("Diversity:", diversity)
+        print(
+            "Percentage Factibility for Population:",
+            percentage_factibility,
+        )
+        print("Trial is best" if winner == 1 else "Target is best")
         print("Fitness:", self.gbest_fitness)
         print("Violation:", self.gbest_violation)
         print("================================")
 
-    def evolution(self, verbose: bool = True):
-        for gen in tqdm(range(GENERATIONS), desc="Evolucionando"):
+    def _rewrite_csv_(
+        self, method, diversity, percentage_factibility, percentage_generations, best
+    ):
+        # Registrar datos en el archivo CSV
+        with open(self.csv_file, "a", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow(
+                [
+                    method,
+                    diversity,  # Diversidad actual
+                    percentage_factibility,  # Porcentaje de factibilidad
+                    percentage_generations,
+                    best,
+                    self.problem,
+                ]
+            )
 
+    def evolution(self, verbose: bool = True):
+        for gen in tqdm(range(1, GENERATIONS + 1), desc="Evolucionando"):
+            # Calculo de SFS y SIS
             self._compute_SFS_SIS_()
-            self._compute_centroid_repair_SFS_SIS_()
+
+            # Calculo de diversidad
+            diversity = self._compute_diversity_()
+            # Calculo del porcentaje de factibilidad
+            percentage_factibility = self._compute_percentage_factibility_()
+            # Calculo del porcentaje de generaciones
+            percentage_generations = self._compute_percentage_generation_(gen)
 
             for i in range(SIZE_POPULATION):
+               
+                
                 objective = self.population[i]
                 mutant = self._mutation_operator_(i)
                 trial = self._crossover_operator_(objective, mutant)
 
                 if not self.isValid(self.upper, self.lower, trial):
-                    if self.centroid_method:
-                        trial = self.bounds_constraints(
-                            trial,
-                            self.population,
-                            self.lower,
-                            self.upper,
-                            self.SFS,
-                            self.SIS,
-                            self.gbest_individual,
-                        )
-                    elif self.centroid_repair_method:
-                        trial = self.bounds_constraints(
-                            trial,
-                            self.population,
-                            self.lower,
-                            self.upper,
-                        )
-                    elif self.beta_method:
-                        trial = self.bounds_constraints(
-                            trial, self.lower, self.upper, self.population
-                        )
-                    elif self.evolutionary_method:
-                        trial = self.bounds_constraints(
-                            trial, self.lower, self.upper, self.gbest_individual
-                        )
-                    elif self.resrand_method:
-                        ...
-                    elif self.evo_cen:
-                        trial = self.bounds_constraints(
-                            trial,
-                            self.population,
-                            self.lower,
-                            self.upper,
-                            self.SIS,
-                            self.SFS,
-                            self.gbest_individual
-                        )     
-                    else: 
-                        trial = self.bounds_constraints(self.upper, self.lower, trial)
+                     # Seleccion de metodos
+                    method = self._select_method_bounds_constriants_()
+                     
+                    self._bounds_constraints_(method, trial)
 
+                    # Comparacion de objectivo con el de prueba
+                    best = self._compare_objective_with_trial_(objective, trial)
+                    
+                    self._rewrite_csv_(
+                        method,
+                        diversity,
+                        percentage_factibility,
+                        percentage_generations,
+                        best,
+                    )
+                    
+                    
+                    
                 self._selection_operator_(i, trial)
-
+            
             self.update_position_gbest_population()
+                 
+           
 
-        if verbose:
-            self.report()
+            

@@ -33,18 +33,12 @@ def execute_algorithm(
         algorithm = None
         try:
             algorithm = Differential_Evolution(
+                problem_name,
                 problema.fitness,
                 ConstriantsFunctionsHandler.a_is_better_than_b_deb,
-                bounds_constraints=bounds[constraint_name],
                 bounds=(problema.SUPERIOR, problema.INFERIOR),
                 g_functions=problema.rest_g,
                 h_functions=problema.rest_h,
-                centroid_method=(constraint_name == "centroid"),
-                centroid_repair_method=(constraint_name == "centroid_repair"),
-                evo_cen=(constraint_name == "TPC"),
-                beta_method=(constraint_name == "beta"),
-                evolutionary_method=(constraint_name == "evolutionary"),
-                resrand_method=(constraint_name == "res&rand"),
             )
 
             # No mostrar datos
