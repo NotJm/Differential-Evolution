@@ -15,6 +15,7 @@ env.bak/
 venv.bak/
 pip-log.txt
 pip-delete-this-directory.txt
+Experiment.csv
 
 # Unit test / coverage reports
 htmlcov/
