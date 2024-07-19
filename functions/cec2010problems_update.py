@@ -618,9 +618,9 @@ class CEC2010_C11(Problem):
     
     def fitness(self, individuo: np.array) -> float:
         M = CEC2010_C11.select_matrix(D)
-        z = generate_z_y(individuo, self.o, 'matrix_multiply', M)
+        z = generate_z_y(individuo, self.o[:D], 'matrix_multiply', M)
         z = np.clip(z, self.INFERIOR, self.SUPERIOR)
-        f_x = (1/D) * np.sum(-z * np.cos(2 * np.sqrt(np.abs(z))))
+        f_x = np.sum(-z * np.cos(2 * np.sqrt(np.abs(z)))) / D
         return f_x
 
     @staticmethod

@@ -1,7 +1,7 @@
 import numpy as np
 from .Problem import Problem, ProblemType
 
-D = 10
+D = 30
 
 def generate_z_y(x, o, transformation=None, M=None):
     z = (x - o)

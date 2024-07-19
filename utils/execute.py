@@ -24,6 +24,7 @@ def execute_algorithm(
     problema = problem_class()
     fitness_data = []
     violations_data = []
+    convergence_fitness_data = []
     convergence_violations_data = []
 
     for _ in range(EXECUTIONS):
@@ -35,7 +36,8 @@ def execute_algorithm(
             algorithm = Differential_Evolution(
                 problem_name,
                 problema.fitness,
-                ConstriantsFunctionsHandler.a_is_better_than_b_deb,
+                bounds_constraints_method=constraint_name,
+                constraints_functions=ConstriantsFunctionsHandler.a_is_better_than_b_deb,
                 bounds=(problema.SUPERIOR, problema.INFERIOR),
                 g_functions=problema.rest_g,
                 h_functions=problema.rest_h,
@@ -47,6 +49,8 @@ def execute_algorithm(
             # Obteniendo datos necesarios
             fitness_data.append(algorithm.gbest_fitness)
             violations_data.append(algorithm.gbest_violation)
+            convergence_fitness_data.append(algorithm.gbest_fitness_list)
+            convergence_violations_data.append(algorithm.gbest_violations_list)
 
         except Exception as e:
             print(
