@@ -1,16 +1,12 @@
 import pandas as pd
-from functions.cec2020problems import *
-from functions.cec2006problems import *
-from functions.cec2017problems_update import *
-from functions.cec2010problems_update import *
+from utils.constants import *
 from utils.wilcoxon import compare_proposals_from_csv
 from utils.execute import execute_algorithm
+from utils.utility import calculate_mean_convergence_violations
 from utils.plotting import (
-    plot_fitness_boxplot_all,
-    plot_violations_boxplot_all,
     plot_fitness_boxplot_from_csvs,
     plot_violations_boxplot_from_csvs,
-    plot_convergence_violations_all
+    plot_convergence_from_json
 )
 from utils.save_file import (
     save_results_to_csv,
@@ -20,6 +16,7 @@ from utils.save_file import (
     generate_summary_for_problem,
     generate_summary_violations,
     generate_summary_for_constraint,
+    save_results_to_json
 )
 
 
@@ -50,6 +47,7 @@ def main(problems, bchms, directory, problem_prefix):
                 if factible_fitness_data
                 else "N/A"
             )
+            
             results.append(
                 [
                     problem_name,
@@ -59,14 +57,9 @@ def main(problems, bchms, directory, problem_prefix):
                 ]
             )
             
-        plot_convergence_violations_all(
-            problem_name,
-            all_violations_data,
-            bchms,
-            directory,
-            problem_prefix
-        )
-            
+            data = calculate_mean_convergence_violations(bchms, all_convergence_data)
+            save_results_to_json(data, problem_name, directory, problem_prefix, bchm)
+                        
     results_df = pd.DataFrame(
         results,
         columns=[
@@ -82,73 +75,9 @@ def main(problems, bchms, directory, problem_prefix):
 
 if __name__ == "__main__":
 
-    DIRECTORY = "mnt/data/cec2024"
-    CURRENT_PROBLEM = "C28"
-    PROBLEM_PREFIX = "CEC2024"
-    BASELINE = "evo&cen"
-    PROPOSAL = [
-        "beta",
-        "centroid",
-        "evolutionary",
-        "res&rand"
-    ]
-    DIRECTORY_BASELINE = f"{DIRECTORY}/{BASELINE}/{PROBLEM_PREFIX}_{CURRENT_PROBLEM}_{BASELINE}.csv"
-    DIRECTORY_PROPOSAL = f"{DIRECTORY}/{PROPOSAL}/{PROBLEM_PREFIX}_{CURRENT_PROBLEM}_{PROPOSAL}.csv"
-
-    EXCLUDE = [
-        
-        "random_component",
-        "boundary",
-        "vector_wise_correction",
-        "wrapping",
-        "random",
-        # "evolutionary",
-        # "res&rand"
-    ]
-    
-    BCHM = [
-        "AFC",
-        "beta",
-        "res&rand",
-        # "evolutionary",
-        # "reflection",
-        # "boundary"
-    ]
-    
-    PROBLEMS = {
-        "C01": CEC2017_C01,
-        # "C02": CEC2017_C02,
-        # "C03": CEC2017_C03,
-        # "C04": CEC2017_C04,
-        # "C05": CEC2017_C05,
-        # "C06": CEC2017_C06,
-        # "C07": CEC2017_C07,
-        # "C08": CEC2017_C08,
-        # "C09": CEC2017_C09,
-        # "C10": CEC2017_C10,
-        # "C11": CEC2017_C11,
-        # "C12": CEC2017_C12,
-        # "C13": CEC2017_C13,
-        # "C14": CEC2017_C14,
-        # "C15": CEC2017_C15,
-        # "C16": CEC2017_C16,
-        # "C17": CEC2017_C17,
-        # "C18": CEC2017_C18,
-        # "C19": CEC2017_C19,
-        # "C20": CEC2017_C20,
-        # "C21": CEC2017_C21,
-        # "C22": CEC2017_C22,
-        # "C23": CEC2017_C23,
-        # "C24": CEC2017_C24,
-        # "C25": CEC2017_C25,
-        # "C26": CEC2017_C26,
-        # "C27": CEC2017_C27,
-        # "C28": CEC2017_C28,
-    }
-
-    
-
     main(PROBLEMS, BCHM, DIRECTORY, PROBLEM_PREFIX)
+    
+    # plot_convergence_from_json(CURRENT_PROBLEM, DIRECTORY, PROBLEM_PREFIX)
 
     # plot_fitness_boxplot_from_csvs(DIRECTORY, PROBLEM_PREFIX, CURRENT_PROBLEM, EXCLUDE)
 

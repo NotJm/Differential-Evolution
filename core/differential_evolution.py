@@ -242,7 +242,7 @@ class Differential_Evolution(Algorithm):
                 self.gbest_fitness = current_fitness
                 self.gbest_violation = current_violation
                 self.gbest_individual = self.population[idx]
-                
+                                    
                 # Store gbest values for plotting
                 self.gbest_fitness_list.append(self.gbest_fitness)
                 self.gbest_violations_list.append(self.gbest_violation)

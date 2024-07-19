@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import os
 import pandas as pd
 from utils.utility import ensure_directory_exists, generate_random_filename
+from utils.save_file import load_results_from_json
 
 def plot_convergence_fitness(
     problem_name, constraint_name, convergence_fitness_data, directory, problem_prefix
@@ -41,77 +42,34 @@ def plot_fitness_boxplot(
     plt.savefig(filename)
     plt.close()
 
-def plot_convergence_violations_all(
+def plot_convergence_from_json(
     problem_name, 
-    all_convergence_data, 
-    bounds, 
     directory, 
-    problem_prefix
+    problem_prefix,
 ):
+    data = load_results_from_json(problem_name, directory, problem_prefix)
+    
+    if data is None:
+        return
+    
     plt.figure(figsize=(10, 6))
-    for constraint_name in bounds:
-        if constraint_name in all_convergence_data:
-            mean_convergence_violations = [
-                sum(gen) / len(gen)
-                for gen in zip(*all_convergence_data[constraint_name])
-            ]
-            plt.plot(mean_convergence_violations, label=constraint_name)
+    
+    for constraint_name, values in data.items():
+        plt.plot(values, label=constraint_name)
 
     plt.title(f"Convergence Plot (Violations) for {problem_name}")
     plt.xlabel("Generations")
     plt.ylabel("Violations")
     plt.legend()
     plt.grid(True)
-
-    directory = f"{directory}/convergence_violations_all"
-    ensure_directory_exists(directory)
-    filename = f"{directory}/{problem_prefix}_convergence_violations_{problem_name}.png"
-    plt.savefig(filename)
-    plt.close()
-
-def plot_violations_boxplot_all(
-    problem_name,
-    all_violations_data,
-    directory,
-    problem_prefix
-):
-    plt.figure(figsize=(12, 8))
-    data = [violations for violations in all_violations_data.values()]
-    labels = [constraint for constraint in all_violations_data.keys()]
-    plt.boxplot(data, labels=labels)
-    plt.title(f"Box Plot de Violations para {problem_name} del {problem_prefix}")
-    plt.xlabel("Restricción")
-    plt.ylabel("Violations")
-    plt.xticks(rotation=45)
-    plt.grid(True)
-    directory = f"{directory}/graphics/violations_all"
-    ensure_directory_exists(directory)
-    filename = f"{directory}/{problem_prefix}_boxplot_violations_{problem_name}.png"
-    plt.savefig(filename)
-    plt.close()
-
-
-def plot_fitness_boxplot_all(
-    problem_name,
-    all_fitness_data,
-    directory,
-    problem_prefix
-):
-    plt.figure(figsize=(12, 8))
-    data = [fitness for fitness in all_fitness_data.values()]
-    labels = [constraint for constraint in all_fitness_data.keys()]
-    plt.boxplot(data, labels=labels)
-    plt.title(f"Box Plot de Fitness para {problem_name} del {problem_prefix}")
-    plt.xlabel("Restricción")
-    plt.ylabel("Fitness")
-    plt.xticks(rotation=45)
-    plt.grid(True)
-    directory = f"{directory}/graphics/fitness_all"
-    ensure_directory_exists(directory)
-    filename = f"{directory}/{problem_prefix}_fitness_boxplot_{problem_name}.png"
-    plt.savefig(filename)
-    plt.close()
     
+    graphics_directory = f"{directory}/graphics/convergence_violations_all_methods"
+    ensure_directory_exists(graphics_directory)
+    filename = f"{graphics_directory}/{problem_prefix}_convergence_violations_{problem_name}_from_json.png"
+    plt.savefig(filename)
+    plt.close()
+
+
 def plot_fitness_boxplot_from_csvs(directory, problem_prefix, problem_name, exclude=[]):
     
     fitness_data = {}
@@ -153,7 +111,6 @@ def plot_fitness_boxplot_from_csvs(directory, problem_prefix, problem_name, excl
     )
     plt.show()
     plt.close()
-
 
 def plot_violations_boxplot_from_csvs(directory, problem_prefix, problem_name, exclude=[]):
 

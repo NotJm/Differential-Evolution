@@ -1,4 +1,5 @@
 import pandas as pd
+import json
 import os
 from utils.utility import ensure_directory_exists
 
@@ -242,3 +243,22 @@ def generate_summary_for_constraint(base_dir, output_path, constraint):
     final_df = final_df.sort_values(by=['Problema'])
     
     final_df.to_csv(output_path, index=False)
+    
+def save_results_to_json(data, problem_name, directory, problem_prefix, bchm):
+    directory = f"{directory}/json"
+    ensure_directory_exists(directory)
+    filename = f"{directory}/{problem_prefix}_violations_{problem_name}.json"
+    with open(filename, 'w') as json_file:
+        json.dump(data, json_file, indent=4)
+        
+def load_results_from_json(problem_name, directory, problem_prefix):
+    directory = f"{directory}/json"
+    filename = f"{directory}/{problem_prefix}_violations_{problem_name}.json"
+    
+    if os.path.exists(filename):
+        with open(filename, 'r') as json_file:
+            data = json.load(json_file)
+        return data
+    else:
+        print(f"No se encontró el archivo {filename}.")
+        return None

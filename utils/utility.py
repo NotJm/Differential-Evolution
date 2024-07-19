@@ -8,10 +8,8 @@ def ensure_directory_exists(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
         
-
 def generate_random_filename():
     return "".join(random.choices(string.ascii_lowercase + string.digits, k=10))
-
 
 def rename_problem_prefix(directory, old_prefix, new_prefix, extensions=[".csv"], problems=[]):
     renamed_files = []
@@ -28,8 +26,6 @@ def rename_problem_prefix(directory, old_prefix, new_prefix, extensions=[".csv"]
                             renamed_files.append((old_filepath, new_filepath))
                             break
     return renamed_files
-
-
 
 def calculate_average_violations(root_folder, problem_prefix):
     average_violations = {}
@@ -58,5 +54,14 @@ def calculate_average_violations(root_folder, problem_prefix):
 
     return average_violations
 
+def calculate_mean_convergence_violations(bounds, all_convergence_data):
+    mean_convergence_violations = {}
+    for constraint_name in bounds:
+        if constraint_name in all_convergence_data:
+            mean_convergence_violations[constraint_name] = [
+                sum(gen) / len(gen)
+                for gen in zip(*all_convergence_data[constraint_name])
+        ]
+    return mean_convergence_violations
 
 
