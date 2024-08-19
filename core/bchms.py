@@ -129,35 +129,7 @@ class BCHM:
         
         return corrected_individual
 
-    @staticmethod    
-    def centroid_repair(X, population, lower, upper, K=1):
-        NP, D = population.shape
-        
-        SFS = population[np.all((population >= lower) & (population <= upper), axis=1)]
-        SIS = population[np.any((population < lower) | (population > upper), axis=1)]
-        AFS = len(SFS)
-
-        if AFS > 0 and np.random.rand() > 0.5:
-            Wp = SFS[np.random.randint(AFS)]
-        else:
-            if len(SIS) > 0:
-                violations = np.sum(np.maximum(0, lower - SIS) + np.maximum(0, SIS - upper), axis=1)
-                Wp = SIS[np.argmin(violations)]
-            else:
-                Wp = population[np.random.randint(NP)]
-
-        Wr = np.empty((K, D))
-        for i in range(K):
-            Wi = np.copy(X)
-            mask_lower = Wi < lower
-            mask_upper = Wi > upper
-            Wi[mask_lower] = lower[mask_lower] + np.random.rand(np.sum(mask_lower)) * (upper[mask_lower] - lower[mask_lower])
-            Wi[mask_upper] = lower[mask_upper] + np.random.rand(np.sum(mask_upper)) * (upper[mask_upper] - lower[mask_upper])
-            Wr[i] = Wi
-        
-        Xc = (Wp + Wr.sum(axis=0)) / (K + 1)
-
-        return Xc
+   
     
     @staticmethod
     def evo_cen(x, population, lower, upper, SIS, SFS, gbest_individual, K=1):
@@ -167,16 +139,4 @@ class BCHM:
         
         return x_cen
     
-    @staticmethod
-    def evo_cen_beta(x, population, lower, upper, SIS, SFS, gbest_individual, K=1):
-        # Aplicar la corrección evolutiva
-        x_evo = BCHM.evolutionary(x, lower, upper, gbest_individual)
-        
-        # Aplicar la corrección por centrado
-        x_cen = BCHM.centroid(x_evo, population, lower, upper, SFS, SIS, gbest_individual, K)
-        
-        # Aplicar la corrección Beta
-        x_final = BCHM.beta(x_cen, lower, upper, population)
-        
-        return x_final
-    
+   

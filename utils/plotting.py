@@ -42,33 +42,35 @@ def plot_fitness_boxplot(
     plt.savefig(filename)
     plt.close()
 
-def plot_convergence_from_json(
-    problem_name, 
-    directory, 
-    problem_prefix,
-):
+def plot_convergence_from_json(problem_name, directory, problem_prefix):
     data = load_results_from_json(problem_name, directory, problem_prefix)
     
     if data is None:
         return
     
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(12, 8))
     
-    for constraint_name, values in data.items():
-        plt.plot(values, label=constraint_name)
+    line_styles = ['-', '--', '-.', ':', '-', '--']
+    markers = ['o', 's', 'D', '^', 'v', 'x']
+    colors = ['b', 'g', 'r', 'c', 'm', 'y']
+    
+    for i, (constraint_name, values) in enumerate(data.items()):
+        plt.plot(values, label=constraint_name, linestyle=line_styles[i % len(line_styles)], 
+                 marker=markers[i % len(markers)], color=colors[i % len(colors)], linewidth=2, markersize=6)
 
-    plt.title(f"Convergence Plot (Violations) for {problem_name}")
-    plt.xlabel("Generations")
-    plt.ylabel("Violations")
-    plt.legend()
-    plt.grid(True)
+    plt.title(f"Convergence Plot (Violations) for {problem_name}", fontsize=16)
+    plt.xlabel("Generations", fontsize=14)
+    plt.ylabel("Violations", fontsize=14)
+    plt.yscale('log')  # Añade escala logarítmica si las violaciones varían mucho
+    plt.legend(fontsize=12)
+    plt.grid(True, which="both", ls="--", linewidth=0.5)
     
     graphics_directory = f"{directory}/graphics/convergence_violations_all_methods"
     ensure_directory_exists(graphics_directory)
     filename = f"{graphics_directory}/{problem_prefix}_convergence_violations_{problem_name}_from_json.png"
-    plt.savefig(filename)
+    plt.savefig(filename, bbox_inches='tight', dpi=300)
+    plt.show()
     plt.close()
-
 
 def plot_fitness_boxplot_from_csvs(directory, problem_prefix, problem_name, exclude=[]):
     

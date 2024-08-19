@@ -243,9 +243,9 @@ class Differential_Evolution(Algorithm):
                 self.gbest_violation = current_violation
                 self.gbest_individual = self.population[idx]
                                     
-                # Store gbest values for plotting
-                self.gbest_fitness_list.append(self.gbest_fitness)
-                self.gbest_violations_list.append(self.gbest_violation)
+            # Store gbest values for plotting
+            self.gbest_fitness_list.append(self.gbest_fitness)
+            self.gbest_violations_list.append(self.gbest_violation)
 
     def report(self, method, winner, diversity, percentage_factibility):
         print("================================")
